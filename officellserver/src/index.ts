@@ -4,13 +4,14 @@ import morgan from "morgan";
 import helmet from "helmet";
 import { userRouter } from "./routes/user.route";
 import { ventRouter } from "./routes/vent.route";
+import { companyRouter } from "./routes/company.route";
 
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
-app.use(morgan('tiny'));
+app.use(morgan('combined'));
 app.use(helmet());
 
 app.get("/", (req ,res )=>{
@@ -19,6 +20,7 @@ app.get("/", (req ,res )=>{
 
 app.use("/v1/user", userRouter);
 app.use("/v1/post", ventRouter);
+app.use("/v1/company", companyRouter);
 
 
 app.listen( PORT, ()=>{

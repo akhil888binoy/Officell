@@ -1,9 +1,12 @@
 import express from 'express';
-import { getHello } from '../controllers/user.contoller';
-
+import { getUserProfile, loginUser, logoutUser, registerUser, verifyEmployment } from '../controllers/user.contoller';
 export const userRouter = express.Router();
 
 
-userRouter.get("/hello", getHello)
+userRouter.post("/register", registerUser);
+userRouter.post("/login", loginUser);
+userRouter.post("/logout", logoutUser );
+userRouter.post("verify-employment", verifyEmployment);
+userRouter.get("/profile/:id", getUserProfile);
 
 

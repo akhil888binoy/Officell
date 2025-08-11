@@ -13,3 +13,134 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id                  Int          @id @default(autoincrement())
+  linkedin_id         String       @unique
+  username            String       @unique
+  email               String       @unique
+  avatar_url          String
+  verification_status Status       @default(UNVERIFIED)
+  role                Role         @default(USER)
+  vents               Vent[]
+  votes               Vote[]
+  comments            Comment[]
+  reports             Reports[]    @relation("UserReports")
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  SubComment          SubComment[]
+}
+
+model Company {
+  id                Int      @id @default(autoincrement())
+  google_place_id   String?  @unique
+  name              String
+  domain            String?
+  industry          String?
+  branch_name       String? // Optional for small companies
+  formatted_address String? // From Google Maps
+  city              String?
+  state             String?
+  country           String?
+  lat               Decimal? // Optional
+  lng               Decimal? // Optional
+  vents             Vent[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Vent {
+  id                Int        @id @default(autoincrement())
+  company           Company    @relation(fields: [company_id], references: [id])
+  company_id        Int
+  author            User       @relation(fields: [author_id], references: [id])
+  author_id         Int
+  no_pii            Boolean
+  verified_employee Boolean
+  content           String
+  upvote            Int        @default(0)
+  downvote          Int        @default(0)
+  comments          Comment[]
+  categories        Category[] @relation("VentCategories")
+  votes             Vote[]
+  reports           Reports[]
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  Media             Media[]
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String
+  vents Vent[] @relation("VentCategories")
+}
+
+model Vote {
+  id        Int      @id @default(autoincrement())
+  vent      Vent     @relation(fields: [vent_id], references: [id])
+  vent_id   Int
+  user      User     @relation(fields: [user_id], references: [id])
+  user_id   Int
+  updatedAt DateTime @updatedAt
+}
+
+model Comment {
+  id          Int          @id @default(autoincrement())
+  vent        Vent         @relation(fields: [vent_id], references: [id])
+  vent_id     Int
+  author      User         @relation(fields: [author_id], references: [id])
+  author_id   Int
+  comment     String
+  subcomments SubComment[]
+  createdAt   DateTime     @default(now())
+}
+
+model SubComment {
+  id         Int      @id @default(autoincrement())
+  comment    Comment  @relation(fields: [comment_id], references: [id])
+  comment_id Int
+  author     User     @relation(fields: [author_id], references: [id])
+  author_id  Int
+  subcomment String
+  createdAt  DateTime @default(now())
+}
+
+model Reports {
+  id          Int          @id @default(autoincrement())
+  vent        Vent         @relation(fields: [vent_id], references: [id])
+  vent_id     Int
+  reporter    User         @relation("UserReports", fields: [reporter_id], references: [id])
+  reporter_id Int
+  status      ReportStatus @default(PENDING)
+}
+
+model Media {
+  id        Int       @id @default(autoincrement())
+  vent      Vent      @relation(fields: [vent_id], references: [id])
+  vent_id   Int
+  type      MediaType
+  url       String
+  createdAt DateTime  @default(now())
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  DISMISSED
+}
+
+enum Status {
+  VERIFIED
+  PENDING
+  UNVERIFIED
+}
+
+enum Role {
+  USER
+  ADMIN
+}

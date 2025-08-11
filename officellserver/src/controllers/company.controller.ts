@@ -1,6 +1,6 @@
 import {Request , Response } from 'express';
 
-export const registerUser = (req: Request , res : Response )=>{
+export const getAllCompanies = (req: Request , res : Response )=>{
 
     res.status(200).json({
         message: "Hello World"
@@ -8,7 +8,7 @@ export const registerUser = (req: Request , res : Response )=>{
 
 }
 
-export const loginUser = (req: Request , res : Response )=>{
+export const getCompany = (req: Request , res : Response )=>{
 
     res.status(200).json({
         message: "Hello World"
@@ -16,7 +16,7 @@ export const loginUser = (req: Request , res : Response )=>{
 
 }
 
-export const logoutUser = (req: Request , res : Response )=>{
+export const createCompany = (req: Request , res : Response )=>{
 
     res.status(200).json({
         message: "Hello World"
@@ -24,7 +24,7 @@ export const logoutUser = (req: Request , res : Response )=>{
 
 }
 
-export const verifyEmployment = (req: Request , res : Response )=>{
+export const updateCompany = (req: Request , res : Response )=>{
 
     res.status(200).json({
         message: "Hello World"
@@ -32,7 +32,7 @@ export const verifyEmployment = (req: Request , res : Response )=>{
 
 }
 
-export const getUserProfile = (req: Request , res : Response )=>{
+export const deleteCompany = (req: Request , res : Response )=>{
 
     res.status(200).json({
         message: "Hello World"
