@@ -17,9 +17,9 @@ datasource db {
 model User {
   id                  Int          @id @default(autoincrement())
   linkedin_id         String       @unique
-  username            String       @unique
+  username            String?      @unique
   email               String       @unique
-  avatar_url          String
+  avatar_url          String?
   verification_status Status       @default(UNVERIFIED)
   role                Role         @default(USER)
   vents               Vent[]
@@ -61,7 +61,7 @@ model Vent {
   upvote            Int        @default(0)
   downvote          Int        @default(0)
   comments          Comment[]
-  categories        Category[] @relation("VentCategories")
+  category          String 
   votes             Vote[]
   reports           Reports[]
   createdAt         DateTime   @default(now())
@@ -69,11 +69,7 @@ model Vent {
   Media             Media[]
 }
 
-model Category {
-  id    Int    @id @default(autoincrement())
-  name  String
-  vents Vent[] @relation("VentCategories")
-}
+
 
 model Vote {
   id        Int      @id @default(autoincrement())
@@ -111,6 +107,8 @@ model Reports {
   vent_id     Int
   reporter    User         @relation("UserReports", fields: [reporter_id], references: [id])
   reporter_id Int
+  report      String
+  category    String
   status      ReportStatus @default(PENDING)
 }
 

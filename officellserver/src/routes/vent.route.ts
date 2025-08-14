@@ -1,14 +1,17 @@
 import express from 'express';
-import { createVent, deleteVent, downVote, getAllVents, getVent, reportVent, updateVent, upVote } from '../controllers/vent.controller';
+import { addComment, createVent, deleteVent, downVote, getAllComment, getAllVents, getVent, reportVent, updateVent, upVote } from '../controllers/vent.controller';
+import { auth } from '../middleware/auth';
 
 export const ventRouter = express.Router();
 
-ventRouter.get("/vents", getAllVents);
-ventRouter.get("/vents/:id", getVent);
-ventRouter.post("/vents", createVent);
-ventRouter.put("/vents/:id", updateVent);
-ventRouter.delete("/vents/:id", deleteVent);
-ventRouter.post("/vents/:id/upvote", upVote);
-ventRouter.post("/vents/:id/downvote", downVote);
-ventRouter.post("/vents/:id/report", reportVent);
+ventRouter.get("/vents", auth , getAllVents);
+ventRouter.get("/vents/:id", auth , getVent);
+ventRouter.post("/vents", auth , createVent);
+ventRouter.put("/vents/:id", auth , updateVent);
+ventRouter.delete("/vents/:id", auth , deleteVent);
+ventRouter.post("/vents/:id/upvote", auth , upVote);
+ventRouter.post("/vents/:id/downvote",auth ,  downVote);
+ventRouter.post("/vents/:id/report", auth , reportVent);
+ventRouter.post("/vents/:id/comments",auth , addComment );
+ventRouter.get("/vents/:id/comments", auth ,getAllComment);
 
