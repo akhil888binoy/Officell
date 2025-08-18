@@ -1,12 +1,11 @@
 import {Request , Response } from 'express';
 import axios from 'axios';
-import {  PrismaClient } from '../generated/prisma/client';
-import { withAccelerate } from '@prisma/extension-accelerate';
-import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { redis } from '../middleware/cache/checkCache';
+import { prisma } from "../index";
 
 const REDIRECT_URI = 'http://localhost:3000/v1/auth/linkedin/callback';
-const prisma = new PrismaClient().$extends(withAccelerate())
+
 
 export const SECRET_KEY : jwt.Secret = 'SECRETKEYJSON';
 
@@ -27,6 +26,7 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
             client_secret: process.env.CLIENT_SECRET,
             },
     });
+
     const accessToken = tokenResponse.data.access_token;
 
     const profileResponse = await axios.get('https://api.linkedin.com/v2/userinfo', {
@@ -35,6 +35,7 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
         },
     });
 
+    console.log(profileResponse)
     const data = profileResponse.data;
 
     const user = await prisma.user.findUnique({
@@ -53,21 +54,27 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
         const token = jwt.sign({ _id: add_user.id }, SECRET_KEY, {
                 expiresIn: '2 days',
         });
+        await redis.set(`Profile:${add_user.id}`, JSON.stringify(add_user),'EX', 3600);
+
         res.cookie('auth', token , {
             maxAge: 1800000, // 30 minutes   
             httpOnly: true,
         });
+
         res.json("Not  exist")
     }
 
     const token = jwt.sign({_id : user?.id}, SECRET_KEY , {
         expiresIn: '2 days',
-    })
-    
-        res.cookie('auth', token , {
+    });
+
+    await redis.set(`Profile:${user?.id}`, JSON.stringify(user),'EX', 3600);
+
+    res.cookie('auth', token,{
             maxAge: 1800000, // 30 minutes   
             httpOnly: true,
-        });
+    });
+
         res.json("Already exist")
 
     } catch (error: any ) {
@@ -83,16 +90,18 @@ export const getUserProfile = async (req: Request | any  , res : Response ) => {
         });
         
         if (user !== null){
+            await redis.set(`Profile:${_id}`, JSON.stringify(user),'EX', 3600);
             res.status(200).json({
-            message : "Get Profile Successfull",
-            user : user
+                message : "Get Profile Successfull",
+                user : user
             }); 
-        }
 
-        res.status(401).json({
-                message : "User doesnt exist ",
+        }else{
+                res.status(401).json({
+                message : "User doesn't exist",
                 id : _id
             }); 
+        }
 
     } catch (error: any ) {
         res.status(500).send(error.response.data);
@@ -102,6 +111,7 @@ export const getUserProfile = async (req: Request | any  , res : Response ) => {
 export const addUsername = async (req: Request | any  , res : Response ) => {
     const { _id } = req.decoded;
     const {new_username} = req.body;
+    
     try {
         const existing_username = await prisma.user.findUnique({
             where: {username: new_username}
@@ -114,6 +124,7 @@ export const addUsername = async (req: Request | any  , res : Response ) => {
                         username: new_username
                     }
             });
+            await redis.set(`Profile:${_id}`, JSON.stringify(user),'EX', 3600);
             res.status(200).json({
                 message : "Update Username Successfull",
                 user : user

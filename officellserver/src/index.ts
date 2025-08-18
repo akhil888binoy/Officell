@@ -7,10 +7,13 @@ import { ventRouter } from "./routes/vent.route";
 import { companyRouter } from "./routes/company.route";
 import { reportRouter } from "./routes/report.route";
 import { commentRouter } from "./routes/comment.route";
+import {  PrismaClient } from './generated/prisma';
+import { withAccelerate } from '@prisma/extension-accelerate';
 
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
+export const prisma = new PrismaClient().$extends(withAccelerate())
 
 app.use(express.json());
 app.use(morgan('combined'));

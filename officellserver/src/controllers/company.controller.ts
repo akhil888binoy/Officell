@@ -1,8 +1,6 @@
 import {Request , Response } from 'express';
-import {  PrismaClient } from '../generated/prisma/client';
-import { withAccelerate } from '@prisma/extension-accelerate';
-
-const prisma = new PrismaClient().$extends(withAccelerate())
+import { redis } from '../middleware/cache/checkCache';
+import { prisma } from "../index";
 
 
 export const getAllCompanies = async (req: Request , res : Response )=>{
@@ -11,13 +9,22 @@ export const getAllCompanies = async (req: Request , res : Response )=>{
     try {
 
     const companies = await prisma.company.findMany({
-        where:{
-            domain : String(domain) ,  
-            name:{contains: String(company_name)}
+        where : { 
+                ...( company_name ? {
+                    name: {
+                        contains: String(company_name),
+                        mode: 'insensitive'
+                    }
+                }
+            : domain ?  {
+                domain: String(domain)
+            } : {})
         },
-        take: Number(pageSize),
-        skip: Number(currentPage) * Number(pageSize),
-    });
+            take :  Number(pageSize) ,
+            skip: Number(currentPage) * Number(pageSize),
+            orderBy: { createdAt : 'desc'}
+        });
+
 
     res.status(200).json({
         message: "Get Companies Successfull",
@@ -38,6 +45,7 @@ export const getCompany = async (req: Request , res : Response )=>{
     const company = await prisma.company.findUnique({
         where:{id : Number(id)}
     });
+    await redis.set(`Company:${id}`, JSON.stringify(company),'EX', 3600);
     res.status(200).json({
         message: "Get Company Successfull",
         company:company
@@ -64,10 +72,10 @@ export const createCompany = async (req: Request , res : Response )=>{
         lat,
         lng,
     } = req.body;
-
+    
     try {
 
-        const existing_company = await prisma.company.findMany({
+        const existing_company = await prisma.company.findUnique({
             where: {google_place_id : google_place_id}
         });
 
@@ -90,6 +98,7 @@ export const createCompany = async (req: Request , res : Response )=>{
                 lng
             }
         });
+        await redis.set(`Company:${add_company.id}`, JSON.stringify(add_company),'EX', 3600);
         res.status(201).json({
             message: "Add Company Successfull",
             company : add_company

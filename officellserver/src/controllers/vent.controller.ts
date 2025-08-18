@@ -1,18 +1,24 @@
 import {Request , Response } from 'express';
-import {  PrismaClient } from '../generated/prisma/client';
-import { withAccelerate } from '@prisma/extension-accelerate';
-
-const prisma = new PrismaClient().$extends(withAccelerate())
+import { redis } from '../middleware/cache/checkCache';
+import { prisma } from "../index";
 
 export const getAllVents = async (req: Request , res : Response )=>{
 
     const {currentPage , pageSize , category , company_id } = req.query;
-
+    
     try {
         const vents = await prisma.vent.findMany({
-            where : { category: String(category) , company_id: Number(company_id)},
+            where : { 
+                ...( company_id ? {
+                    company_id: Number(company_id)
+                }
+            : category ?  {
+                category: String(category)
+            } :{})
+        },
             take :  Number(pageSize) ,
             skip: Number(currentPage) * Number(pageSize),
+            orderBy: {createdAt : 'desc'}
         });
         
         res.status(200).json({
@@ -30,12 +36,14 @@ export const getAllVents = async (req: Request , res : Response )=>{
 
 export const getVent = async (req: Request , res : Response )=> {
 
-    const {id } = req.query;
+    const {id } = req.params;
 
     try {
         const vent = await prisma.vent.findUnique({
             where: {id : Number(id)}
         })
+
+        await redis.set(`Vent:${id}`, JSON.stringify(vent), 'EX', 3600);
         res.status(200).json({
             message: "Get Vent successfully",
             vent: vent
@@ -65,6 +73,7 @@ export const createVent = async (req: Request | any , res : Response )=> {
                     downvote: 0,
             }
         });
+        await redis.set(`Vent:${vent.id}`, JSON.stringify(vent), 'EX', 3600);
 
         res.status(200).json({
             message: "Add Vent Successful",
@@ -88,7 +97,7 @@ export const updateVent = async (req: Request | any , res : Response )=>{
             where: { id : Number(id) , author_id: _id },    
             data:{ company_id: company_id , no_pii: no_pii , content: content , category: category}
         });
-
+        await redis.set(`Vent:${update_vent.id}`, JSON.stringify(update_vent), 'EX', 3600);
         res.status(200).json({ 
             message : "Update vent Successfully",
             vent : update_vent
@@ -111,7 +120,7 @@ export const deleteVent = async (req: Request | any , res : Response )=>{
                 author_id: _id
             }
         });
-
+        await redis.del(`Vent:${delete_vent.id}`);
         res.status(200).json({message : "Vent Deleted" , vent : delete_vent});
     } catch (error : any ) {
         console.error(error);
@@ -123,6 +132,81 @@ export const upVote = async (req: Request | any  , res : Response )=>{
     const { id } = req.params;
     const {_id } = req.decoded;
     try {
+        const existing_vote = await prisma.vote.findFirst({
+            where : {
+                user_id: Number(_id),
+                vent_id: Number(id),
+            }
+        });
+        
+        if (existing_vote !== null && existing_vote.vote == 'UPVOTE'){
+
+            const no_vote = await prisma.vent.update({
+                where:{ id : Number(id) },
+                data:{upvote : {decrement: 1}}
+            });
+
+            const add_vote = await prisma.vote.updateMany({
+                where : {
+                    user_id: Number(_id),
+                    vent_id: Number(id),
+                },
+                data:{
+                    vote: 'NOVOTE'
+                }
+            });
+            await redis.set(`Vent:${no_vote.id}`, JSON.stringify(no_vote), 'EX', 3600);
+
+            res.status(200).json({
+                message : "Successfully NoVote",
+                vent : no_vote
+            });
+
+        }else if (existing_vote !== null && existing_vote.vote == 'DOWNVOTE'){
+            const no_vote = await prisma.vent.update({
+                where:{ id : Number(id) },
+                data:{upvote : {increment: 1} , downvote : {decrement : 1}}
+            });
+
+            const add_vote = await prisma.vote.updateMany({
+                where : {
+                    user_id: Number(_id),
+                    vent_id: Number(id),
+                },
+                data:{
+                    vote: 'UPVOTE'
+                }
+            });
+
+            await redis.set(`Vent:${no_vote.id}`, JSON.stringify(no_vote), 'EX', 3600);
+            res.status(200).json({
+                message : "Successfully NoVote",
+                vent : no_vote
+            });
+        }
+        else if (existing_vote !== null && existing_vote.vote == 'NOVOTE' ){
+            const no_vote = await prisma.vent.update({
+                where:{ id : Number(id) },
+                data:{upvote : {increment: 1}}
+            });
+
+            const add_vote = await prisma.vote.updateMany({
+                where : {
+                    user_id: Number(_id),
+                    vent_id: Number(id),
+                },
+                data:{
+                    vote: 'UPVOTE'
+                }
+            });
+            await redis.set(`Vent:${no_vote.id}`, JSON.stringify(no_vote), 'EX', 3600);
+            res.status(200).json({
+                message : "Successfully Upvote",
+                vent : no_vote
+            });
+        }
+        else{
+
         const incremet_vote = await prisma.vent.update({
             where:{ id : Number(id) },
             data:{upvote : {increment: 1}}
@@ -131,14 +215,17 @@ export const upVote = async (req: Request | any  , res : Response )=>{
         const add_vote = await prisma.vote.create({
             data:{
                 vent_id: incremet_vote.id,
-                user_id: _id
+                user_id: _id,
+                vote: 'UPVOTE'
             }
         });
-
+        await redis.set(`Vent:${incremet_vote.id}`, JSON.stringify(incremet_vote), 'EX', 3600);
         res.status(200).json({
             message : "Successfully Upvote",
             vent : incremet_vote
         });
+    }
+
 
     } catch (error: any ) {
         console.error(error);
@@ -151,21 +238,101 @@ export const downVote = async (req: Request | any , res : Response )=>{
     const {_id } = req.decoded;
 
     try {
+
+        const existing_vote = await prisma.vote.findFirst({
+                where: {
+                user_id: Number(_id),
+                vent_id: Number(id),
+            }
+        });
+        
+        
+        if (existing_vote !== null && existing_vote.vote =='DOWNVOTE'){
+
+            const no_vote = await prisma.vent.update({
+                where:{ id : Number(id) },
+                data:{downvote : {decrement: 1}}
+            });
+
+            const add_vote = await prisma.vote.updateMany({
+                where : {
+                    user_id: Number(_id),
+                    vent_id: Number(id),
+                },
+                data:{
+                    vote: 'NOVOTE'
+                }
+            }); 
+            await redis.set(`Vent:${no_vote.id}`, JSON.stringify(no_vote), 'EX', 3600);
+            
+            res.status(200).json({
+                message: "Sucessfully NoVote"
+            });
+
+        }else if (existing_vote !== null && existing_vote.vote == 'UPVOTE'){
+            const no_vote = await prisma.vent.update({
+                where:{ id : Number(id) },
+                data:{downvote : {increment: 1} , upvote: {decrement: 1}}
+            });
+
+            const add_vote = await prisma.vote.updateMany({
+                where : {
+                    user_id: Number(_id),
+                    vent_id: Number(id),
+                },
+                data:{
+                    vote: 'NOVOTE'
+                }
+            }); 
+            await redis.set(`Vent:${no_vote.id}`, JSON.stringify(no_vote), 'EX', 3600);
+            res.status(200).json({
+                message: "Sucessfully NoVote"
+            });
+        }
+        else if (existing_vote !== null && existing_vote.vote =='NOVOTE'){
+            const no_vote = await prisma.vent.update({
+                where:{ id : Number(id) },
+                data:{downvote : {increment: 1}}
+            });
+
+            const add_vote = await prisma.vote.updateMany({
+                where : {
+                    user_id: Number(_id),
+                    vent_id: Number(id),
+                },
+                data:{
+                    vote: 'DOWNVOTE'
+                }
+            }); 
+            await redis.set(`Vent:${no_vote.id}`, JSON.stringify(no_vote), 'EX', 3600);
+
+            res.status(200).json({
+                message: "Sucessfully NoVote"
+            });
+
+        }else{
+
         const decrement_vote = await prisma.vent.update({
             where:{ id : Number(id) },
             data:{ downvote : {increment: 1}}
         });
+
         const add_vote = await prisma.vote.create({
             data:{
                 vent_id: decrement_vote.id,
-                user_id: _id
+                user_id: _id,
+                vote: 'DOWNVOTE'
             }
         });
+        await redis.set(`Vent:${decrement_vote.id}`, JSON.stringify(decrement_vote), 'EX', 3600);
 
         res.status(200).json({
             message : "Successfully DownVote",
             vent : decrement_vote
         });
+    }
+
+
     } catch (error : any ) {
         console.error(error);
         res.status(500).send(error.response.data)
