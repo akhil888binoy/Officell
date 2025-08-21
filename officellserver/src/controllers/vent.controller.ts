@@ -1,6 +1,6 @@
 import {Request , Response } from 'express';
-import { redis } from '../middleware/cache/checkCache';
 import { prisma } from "../index";
+import { redisConnection } from '../redis/connection';
 
 export const getAllVents = async (req: Request , res : Response )=>{
 
@@ -35,6 +35,7 @@ export const getAllVents = async (req: Request , res : Response )=>{
 }
 
 export const getVent = async (req: Request , res : Response )=> {
+        const redis = await redisConnection();
 
     const {id } = req.params;
 
@@ -43,7 +44,8 @@ export const getVent = async (req: Request , res : Response )=> {
             where: {id : Number(id)}
         })
 
-        await redis.set(`Vent:${id}`, JSON.stringify(vent), 'EX', 3600);
+        await redis.set(`Vent:${id}`, JSON.stringify(vent) );
+        await redis.expire(`Vent:${id}`, 3600);
         res.status(200).json({
             message: "Get Vent successfully",
             vent: vent
@@ -56,8 +58,9 @@ export const getVent = async (req: Request , res : Response )=> {
 }
 
 export const createVent = async (req: Request | any , res : Response )=> {
+            const redis = await redisConnection();
     const {_id} = req.decoded;
-    const {company_id , no_pii , verified_employee, content , category} = req.body;
+    const {company_id , no_pii , verified_employee, content , category, media_url, media_type} = req.body;
 
     try {
 
@@ -73,7 +76,16 @@ export const createVent = async (req: Request | any , res : Response )=> {
                     downvote: 0,
             }
         });
-        await redis.set(`Vent:${vent.id}`, JSON.stringify(vent), 'EX', 3600);
+        const media = await prisma.media.create({
+            data:{
+                vent_id: vent.id,
+                type: media_type,
+                url: media_url
+            }
+        });
+
+        await redis.set(`Vent:${vent.id}`, JSON.stringify(vent));
+        await redis.expire(`Vent:${vent.id}`, 3600);
 
         res.status(200).json({
             message: "Add Vent Successful",
@@ -87,17 +99,34 @@ export const createVent = async (req: Request | any , res : Response )=> {
 }
 
 export const updateVent = async (req: Request | any , res : Response )=>{
+            const redis = await redisConnection();
+
     const { id } = req.params;
 
     const {_id} = req.decoded;
 
-    const { company_id , no_pii , content , category} = req.body;
+    const { company_id , no_pii , content , category, media_url , media_type} = req.body;
     try {
         const update_vent = await prisma.vent.update({
             where: { id : Number(id) , author_id: _id },    
-            data:{ company_id: company_id , no_pii: no_pii , content: content , category: category}
+            data:{ 
+                company_id: company_id ,
+                no_pii: no_pii , 
+                content: content , 
+                category: category 
+            }
         });
-        await redis.set(`Vent:${update_vent.id}`, JSON.stringify(update_vent), 'EX', 3600);
+        const update_media = await prisma.media.updateMany({
+            where:{
+                vent_id: id 
+            },
+            data:{
+                url: media_url,
+                type: media_type
+            }
+        })
+        await redis.set(`Vent:${update_vent.id}`, JSON.stringify(update_vent));
+        await redis.expire(`Vent:${update_vent.id}`,3600);
         res.status(200).json({ 
             message : "Update vent Successfully",
             vent : update_vent
@@ -110,6 +139,8 @@ export const updateVent = async (req: Request | any , res : Response )=>{
 }
 
 export const deleteVent = async (req: Request | any , res : Response )=>{
+            const redis = await redisConnection();
+
     const { id } = req.params;
     const {_id} = req.decoded;
 
@@ -129,6 +160,8 @@ export const deleteVent = async (req: Request | any , res : Response )=>{
 }
 
 export const upVote = async (req: Request | any  , res : Response )=>{
+            const redis = await redisConnection();
+
     const { id } = req.params;
     const {_id } = req.decoded;
     try {
@@ -155,8 +188,8 @@ export const upVote = async (req: Request | any  , res : Response )=>{
                     vote: 'NOVOTE'
                 }
             });
-            await redis.set(`Vent:${no_vote.id}`, JSON.stringify(no_vote), 'EX', 3600);
-
+            await redis.set(`Vent:${no_vote.id}`, JSON.stringify(no_vote));
+            await redis.expire(`Vent:${no_vote.id}` , 3600);
             res.status(200).json({
                 message : "Successfully NoVote",
                 vent : no_vote
@@ -178,7 +211,8 @@ export const upVote = async (req: Request | any  , res : Response )=>{
                 }
             });
 
-            await redis.set(`Vent:${no_vote.id}`, JSON.stringify(no_vote), 'EX', 3600);
+            await redis.set(`Vent:${no_vote.id}`, JSON.stringify(no_vote));
+            await redis.expire(`Vent:${no_vote.id}` , 3600);
             res.status(200).json({
                 message : "Successfully NoVote",
                 vent : no_vote
@@ -199,7 +233,8 @@ export const upVote = async (req: Request | any  , res : Response )=>{
                     vote: 'UPVOTE'
                 }
             });
-            await redis.set(`Vent:${no_vote.id}`, JSON.stringify(no_vote), 'EX', 3600);
+            await redis.set(`Vent:${no_vote.id}`, JSON.stringify(no_vote));
+            await redis.expire(`Vent:${no_vote.id}` , 3600)
             res.status(200).json({
                 message : "Successfully Upvote",
                 vent : no_vote
@@ -219,7 +254,8 @@ export const upVote = async (req: Request | any  , res : Response )=>{
                 vote: 'UPVOTE'
             }
         });
-        await redis.set(`Vent:${incremet_vote.id}`, JSON.stringify(incremet_vote), 'EX', 3600);
+        await redis.set(`Vent:${incremet_vote.id}`, JSON.stringify(incremet_vote));
+        await redis.expire(`Vent:${incremet_vote.id}` , 3600);
         res.status(200).json({
             message : "Successfully Upvote",
             vent : incremet_vote
@@ -234,6 +270,7 @@ export const upVote = async (req: Request | any  , res : Response )=>{
 }
 
 export const downVote = async (req: Request | any , res : Response )=>{
+            const redis = await redisConnection();
     const { id } = req.params;
     const {_id } = req.decoded;
 
@@ -263,8 +300,8 @@ export const downVote = async (req: Request | any , res : Response )=>{
                     vote: 'NOVOTE'
                 }
             }); 
-            await redis.set(`Vent:${no_vote.id}`, JSON.stringify(no_vote), 'EX', 3600);
-            
+            await redis.set(`Vent:${no_vote.id}`, JSON.stringify(no_vote));
+            await redis.expire(`Vent:${no_vote.id}` , 3600);
             res.status(200).json({
                 message: "Sucessfully NoVote"
             });
@@ -284,7 +321,8 @@ export const downVote = async (req: Request | any , res : Response )=>{
                     vote: 'NOVOTE'
                 }
             }); 
-            await redis.set(`Vent:${no_vote.id}`, JSON.stringify(no_vote), 'EX', 3600);
+            await redis.set(`Vent:${no_vote.id}`, JSON.stringify(no_vote));
+            await redis.expire(`Vent:${no_vote.id}` , 3600);
             res.status(200).json({
                 message: "Sucessfully NoVote"
             });
@@ -304,7 +342,8 @@ export const downVote = async (req: Request | any , res : Response )=>{
                     vote: 'DOWNVOTE'
                 }
             }); 
-            await redis.set(`Vent:${no_vote.id}`, JSON.stringify(no_vote), 'EX', 3600);
+            await redis.set(`Vent:${no_vote.id}`, JSON.stringify(no_vote));
+            await redis.expire(`Vent:${no_vote.id}` , 3600);
 
             res.status(200).json({
                 message: "Sucessfully NoVote"
@@ -324,7 +363,8 @@ export const downVote = async (req: Request | any , res : Response )=>{
                 vote: 'DOWNVOTE'
             }
         });
-        await redis.set(`Vent:${decrement_vote.id}`, JSON.stringify(decrement_vote), 'EX', 3600);
+        await redis.set(`Vent:${decrement_vote.id}`, JSON.stringify(decrement_vote));
+        await redis.expire(`Vent:${decrement_vote.id}` , 3600);
 
         res.status(200).json({
             message : "Successfully DownVote",

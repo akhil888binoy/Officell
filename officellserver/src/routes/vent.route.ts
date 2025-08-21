@@ -3,7 +3,8 @@ import { addComment, createVent, deleteVent, downVote, getAllComment, getAllVent
 import { auth } from '../middleware/auth';
 import { validateData } from '../middleware/validation';
 import { addCommentSchema, createVentSchema, reportVentSchema, updateVentSchema } from '../schemas/ventSchema';
-import { checkCacheVent, redis } from '../middleware/cache/checkCache';
+import { checkCacheVent } from '../middleware/cache/checkCache';
+
 export const ventRouter = express.Router();
 
 ventRouter.get("/vents", auth , getAllVents);

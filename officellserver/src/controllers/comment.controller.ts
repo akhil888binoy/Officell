@@ -85,10 +85,11 @@ export const deleteSubcomment= async ( req: Request | any , res: Response)=>{
 
 export const updateComment = async(req: Request | any , res: Response)=>{
     const {id} = req.params;
+    const {_id} = req.decoded;
     const {comment}=req.body;
     try {
         const update_comment= await prisma.comment.update({ 
-            where:{id: Number(id)},
+            where:{id: Number(id), author_id: Number(_id)},
             data:{
                 comment:String(comment)
             }

@@ -6,6 +6,8 @@ export const createVentSchema = z.object({
     verified_employee : z.boolean(), 
     content : z.string(),
     category : z.string(),
+    media_url: z.string(),
+    media_type: z.string()
 });
 
 

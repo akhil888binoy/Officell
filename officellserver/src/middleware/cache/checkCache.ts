@@ -1,15 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import Redis from 'ioredis';
-
-export const redis = new Redis({
-    port: 14896, 
-    host: "redis-14896.c9.us-east-1-4.ec2.redns.redis-cloud.com", 
-    username: 'default',
-    password: process.env.REDIS_PASSWORD,
-});
+import { redisConnection } from '../../redis/connection';
 
 export const checkCacheCompany= async(req : Request , res: Response , next: NextFunction)=>{
     try {
+        const redis = await redisConnection();
         const {id} = req.params;
         const cacheCompanyData = await redis.get(`Company:${id}`);
 
@@ -29,6 +24,7 @@ export const checkCacheCompany= async(req : Request , res: Response , next: Next
 
 export const checkCacheProfile = async( req: Request | any , res: Response, next: NextFunction)=>{
     try {
+        const redis = await redisConnection();
         const {_id} = req.decoded;
         const cacheProfile = await redis.get(`Profile:${_id}`);
         if(cacheProfile){
@@ -50,6 +46,7 @@ export const checkCacheProfile = async( req: Request | any , res: Response, next
 
 export const checkCacheVent = async (req: Request, res: Response , next: NextFunction)=>{
     try {
+        const redis = await redisConnection();
         const {id} = req.params;
         const cacheVentData = await redis.get(`Vent:${id}`);
 

@@ -4,8 +4,8 @@ import { auth } from '../middleware/auth';
 import { validateData } from '../middleware/validation';
 import { addUsernameSchema } from '../schemas/userSchema';
 import { checkCacheProfile } from '../middleware/cache/checkCache';
-export const userRouter = express.Router();
 
+export const userRouter = express.Router();
 
 userRouter.get("/auth/linkedin", authLinkedin);
 userRouter.get("/auth/linkedin/callback", authLinkedinCallback);

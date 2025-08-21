@@ -1,13 +1,14 @@
 import {Request , Response } from 'express';
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
-import { redis } from '../middleware/cache/checkCache';
 import { prisma } from "../index";
+import { redisConnection } from '../redis/connection';
 
 const REDIRECT_URI = 'http://localhost:3000/v1/auth/linkedin/callback';
 
 
 export const SECRET_KEY : jwt.Secret = 'SECRETKEYJSON';
+
 
 export const authLinkedin = (req: Request , res : Response )=>{
     const linkedinAuthUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.CLIENT_ID}&redirect_uri=${REDIRECT_URI}&state=123456&scope=profile%20email%20openid`;
@@ -15,8 +16,11 @@ export const authLinkedin = (req: Request , res : Response )=>{
 }
 
 export const authLinkedinCallback = async (req: Request , res : Response )=>{
-        const code = req.query.code;
+    const code = req.query.code;
+    const redis = await redisConnection();
+
     try {
+
     const tokenResponse = await axios.post('https://www.linkedin.com/oauth/v2/accessToken', null, {
         params: {
             grant_type: 'authorization_code',
@@ -27,21 +31,18 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
             },
     });
 
-    const accessToken = tokenResponse.data.access_token;
+    const accessToken = tokenResponse?.data.access_token;
 
-    const profileResponse = await axios.get('https://api.linkedin.com/v2/userinfo', {
+    const profileResponse: any  = await axios.get('https://api.linkedin.com/v2/userinfo', {
         headers: {
             Authorization: `Bearer ${accessToken}`,
         },
     });
 
-    console.log(profileResponse)
-    const data = profileResponse.data;
-
+    const data = profileResponse?.data;
     const user = await prisma.user.findUnique({
-        where:{linkedin_id : String(profileResponse.data.sub)}
+        where:{linkedin_id : String(data.sub)}
     });
-
 
     if (user == null){
 
@@ -54,43 +55,48 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
         const token = jwt.sign({ _id: add_user.id }, SECRET_KEY, {
                 expiresIn: '2 days',
         });
-        await redis.set(`Profile:${add_user.id}`, JSON.stringify(add_user),'EX', 3600);
-
+        await redis.set(`Profile:${add_user.id}`, JSON.stringify(add_user));
+        await redis.expire(`Profile:${add_user.id}` , 3600);
         res.cookie('auth', token , {
             maxAge: 1800000, // 30 minutes   
             httpOnly: true,
         });
 
         res.json("Not  exist")
-    }
+    }else{
 
-    const token = jwt.sign({_id : user?.id}, SECRET_KEY , {
-        expiresIn: '2 days',
-    });
+        const token = jwt.sign({_id : user?.id}, SECRET_KEY , {
+            expiresIn: '2 days',
+        });
 
-    await redis.set(`Profile:${user?.id}`, JSON.stringify(user),'EX', 3600);
+        await redis.set(`Profile:${user?.id}`, JSON.stringify(user));
+        await redis.expire(`Profile:${user?.id}` , 3600);
 
-    res.cookie('auth', token,{
-            maxAge: 1800000, // 30 minutes   
-            httpOnly: true,
-    });
+
+        res.cookie('auth', token,{
+                maxAge: 1800000, // 30 minutes   
+                httpOnly: true,
+        });
 
         res.json("Already exist")
+    }
 
-    } catch (error: any ) {
-        res.status(500).send(error.response.data);
+    } catch (error: any) {
+        res.status(500).json({error: error});
     }
 }
 
 export const getUserProfile = async (req: Request | any  , res : Response ) => {
     const { _id } = req.decoded;
+    const redis = await redisConnection();
     try {
         const user = await prisma.user.findUnique({
             where:{id : _id}
         });
         
         if (user !== null){
-            await redis.set(`Profile:${_id}`, JSON.stringify(user),'EX', 3600);
+            await redis.set(`Profile:${_id}`, JSON.stringify(user));
+            await redis.expire(`Profile:${_id}`, 3600);
             res.status(200).json({
                 message : "Get Profile Successfull",
                 user : user
@@ -111,7 +117,8 @@ export const getUserProfile = async (req: Request | any  , res : Response ) => {
 export const addUsername = async (req: Request | any  , res : Response ) => {
     const { _id } = req.decoded;
     const {new_username} = req.body;
-    
+    const redis = await redisConnection();
+
     try {
         const existing_username = await prisma.user.findUnique({
             where: {username: new_username}
@@ -124,7 +131,8 @@ export const addUsername = async (req: Request | any  , res : Response ) => {
                         username: new_username
                     }
             });
-            await redis.set(`Profile:${_id}`, JSON.stringify(user),'EX', 3600);
+            await redis.set(`Profile:${_id}`, JSON.stringify(user));
+            await redis.expire(`Profile:${_id}` , 3600);
             res.status(200).json({
                 message : "Update Username Successfull",
                 user : user

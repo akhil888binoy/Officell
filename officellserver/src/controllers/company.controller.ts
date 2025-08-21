@@ -1,6 +1,6 @@
 import {Request , Response } from 'express';
-import { redis } from '../middleware/cache/checkCache';
 import { prisma } from "../index";
+import { redisConnection } from '../redis/connection';
 
 
 export const getAllCompanies = async (req: Request , res : Response )=>{
@@ -40,12 +40,14 @@ export const getAllCompanies = async (req: Request , res : Response )=>{
 
 export const getCompany = async (req: Request , res : Response )=>{
     const{id} = req.params;
-
+    const redis = await redisConnection();
+    
    try {
     const company = await prisma.company.findUnique({
         where:{id : Number(id)}
     });
-    await redis.set(`Company:${id}`, JSON.stringify(company),'EX', 3600);
+    await redis.set(`Company:${id}`, JSON.stringify(company));
+    await redis.expire(`Company:${id}` , 3600);
     res.status(200).json({
         message: "Get Company Successfull",
         company:company
@@ -58,7 +60,7 @@ export const getCompany = async (req: Request , res : Response )=>{
 }
 
 export const createCompany = async (req: Request , res : Response )=>{
-
+    const redis = await redisConnection();
     const { 
         google_place_id , 
         name , 
@@ -98,7 +100,8 @@ export const createCompany = async (req: Request , res : Response )=>{
                 lng
             }
         });
-        await redis.set(`Company:${add_company.id}`, JSON.stringify(add_company),'EX', 3600);
+        await redis.set(`Company:${add_company.id}`, JSON.stringify(add_company));
+        await redis.expire(`Company:${add_company.id}` , 3600);
         res.status(201).json({
             message: "Add Company Successfull",
             company : add_company
