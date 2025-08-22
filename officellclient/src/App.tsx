@@ -1,6 +1,5 @@
 
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import "./App.css";
 import { FeedPage } from './pages/FeedPage';
 import { CompaniesPage } from './pages/CompaniesPage';
 import { CompanyDetailsPage } from './pages/CompanyDetailsPage';
