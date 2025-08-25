@@ -1,21 +1,31 @@
-import {Navbar} from "../components/Navbar";
+import {CategoryBar} from "../components/CategoryBar";
+import { CategoryBarM } from "../components/CategoryBarM";
+import PostCard from "../components/PostCard";
+import { Sidebar } from "../components/Sidebar";
+import { UserCard } from "../components/UserCard";
+import { VentCard } from "../components/VentCard";
 
-export const FeedPage =()=>{
-    
-    return(
-        <div className=" w-screen h-screen flex flex-row bg-amber-900">
-            {/* Navbar */}
-            <div className ="" >
-                <Navbar></Navbar>
-            </div>
-            {/* Feeds */}
-            <div className="bg-amber-600 h-7xl w-7xl">
-                Feeds
-            </div>
-            {/* Filters & Categories */}
-            <div className="bg-red-700 h-2xl w-2xl">
-                Filters and categories
-            </div>
+export const FeedPage = () => {
+  return (
+    <div className="w-screen h-screen flex bg-gray-950">
+      {/* Sidebar */}
+      <div >
+      <Sidebar/>
+      <CategoryBarM></CategoryBarM>
+      </div>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-row transition-all duration-300 sm:ml-64">
+        {/* Feeds */}
+        <div className="flex-1 bg-gray-950 ">
+            <PostCard />
+            <VentCard></VentCard>
         </div>
-    );
-}
+        {/* Filters & Categories (desktop only) */}
+        <div className="bg-gray-950 w-80 h-screen hidden border-l border-gray-700 lg:block p-4 ">
+          <UserCard username="Anonymous123" location="Bangalore, India" />
+          <CategoryBar></CategoryBar>
+        </div>
+      </div>
+    </div>
+  );
+};

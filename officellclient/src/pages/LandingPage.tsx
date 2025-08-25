@@ -38,10 +38,11 @@ export const LandingPage=()=>{
                         </div>
             <div className="lg:w-69 lg:h-70 w-20 h-30 border-white lg:border-[18px] border-[10px] rounded-full 
                     flex items-center justify-center hover:bg-white  active:bg-white transition cursor-pointer group">
-                
+                <a href="/login" >
                 <span className="lg:text-2xl text-[10px] font-bold uppercase text-white group-hover:text-black group-active:text-black">
                     Get in
                 </span>
+                 </a>
                 </div>
 
             <div className="flex flex-col leading-[0.9]">

@@ -8,6 +8,7 @@ import { CreateVentPage } from './pages/CreateVentPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { AdminReportsPage } from './pages/AdminReportsPage';
 import { LandingPage } from './pages/LandingPage';
+import LoginPage from './pages/LoginPage';
 
 function App() {
 
@@ -15,6 +16,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage></LandingPage>} ></Route>
+        <Route path="/login" element={<LoginPage></LoginPage>} ></Route>
         <Route path="/feed" element={<FeedPage></FeedPage>} ></Route>
         <Route path="/companies" element={<CompaniesPage></CompaniesPage>} ></Route>
         <Route path="/companies/:id" element={<CompanyDetailsPage></CompanyDetailsPage>} ></Route>
