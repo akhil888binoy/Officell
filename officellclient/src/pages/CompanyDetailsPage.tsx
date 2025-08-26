@@ -11,19 +11,26 @@ export const CompanyDetailsPage = () => {
   return (
     <div className="w-screen h-screen flex bg-gray-950">
       {/* Sidebar */}
-      <div >
+           <div className="h-screen border-r-1 border-gray-700  " >
       <Sidebar/>
       <CategoryBarM></CategoryBarM>
       </div>
       {/* Main Content */}
       <div className="flex-1 flex flex-row transition-all duration-300 sm:ml-64">
         {/* Feeds */}
-        <div className="flex-1 bg-gray-950 ">
+        <div className="flex-1 bg-gray-950 overflow-y-scroll ">
             <PostCard />
             <CompanyCard></CompanyCard>
-            <h3 className="text-1xl sm:text-3xl md:text-6xl border-b border-gray-700 lg:text-[20px]   font-arimo text-white font-bold  lg:pt-3 lg:px-3 lg:pb-3 pt-2 px-2 pb-2">
-                Confessions
-            </h3>
+            <VentCard></VentCard>
+            <VentCard></VentCard>
+            <VentCard></VentCard>
+            <VentCard></VentCard>
+            <VentCard></VentCard>
+            <VentCard></VentCard>
+            <VentCard></VentCard>
+            <VentCard></VentCard>
+            <VentCard></VentCard>
+            <VentCard></VentCard>
             <VentCard></VentCard>
         </div>
         {/* Filters & Categories (desktop only) */}

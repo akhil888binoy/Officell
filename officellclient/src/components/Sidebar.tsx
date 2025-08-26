@@ -4,8 +4,7 @@ import { Drawer } from 'flowbite';
 import { VscAccount } from "react-icons/vsc";
 import { FaFireAlt } from 'react-icons/fa';
 import { RiBuilding2Line } from 'react-icons/ri';
-import { IoSettingsOutline } from 'react-icons/io5';
-import { BiMessageDetail, BiMessageEdit } from 'react-icons/bi';
+import { BiMessageDetail } from 'react-icons/bi';
 
 // Initialize drawer component
 const initDrawer = () => {
@@ -13,7 +12,7 @@ const initDrawer = () => {
   const options = {
   placement: 'left',
   backdrop: true,
-  backdropClasses: 'bg-gray-900 bg-opacity-50 fixed inset-0 z-30', // 👈 important
+  backdropClasses: 'bg-gray-900 bg-opacity-50 fixed inset-0 z-30', 
   bodyScrolling: false,
   edge: false,
   edgeOffset: '',
@@ -46,7 +45,7 @@ export const Sidebar = () => {
   }, []);
 
   return (
-    <div>
+    <div >
       <button 
         data-drawer-target="logo-sidebar" 
         data-drawer-toggle="logo-sidebar" 
@@ -99,20 +98,6 @@ export const Sidebar = () => {
                 <a href="/companies" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
                   <span className="text-[20px] lg:text-[25px]"><RiBuilding2Line /></span> 
                   <span className="ms-3 text-[20px] lg:text-[25px] tracking-widest font-light">Companies</span>
-                </a>
-              </li>
-              {/* My Posts */}
-              <li>
-                <a href="/myposts" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                  <span className="text-[20px] lg:text-[25px]"><BiMessageEdit /></span> 
-                  <span className="ms-3 text-[20px] lg:text-[25px] tracking-widest font-light">My Posts</span>
-                </a>
-              </li>
-              {/* Settings */}
-              <li>
-                <a href="/myposts" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
-                  <span className="text-[20px] lg:text-[25px]"><IoSettingsOutline /></span> 
-                  <span className="ms-3 text-[20px] lg:text-[25px] tracking-widest font-light">Settings</span>
                 </a>
               </li>
             </ul>

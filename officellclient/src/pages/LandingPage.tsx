@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import DecryptedText from "../styles/DecryptedText"
 import ScrambledText from "../styles/ScrambledText";
 
@@ -36,14 +37,15 @@ export const LandingPage=()=>{
                             <h1 className="lg:text-[160px] text-[80px] font-arimo font-medium dark:text-white ">N</h1>
                             <h1 className="lg:text-[160px] text-[80px] font-arimo font-medium dark:text-white">N</h1>
                         </div>
-            <div className="lg:w-69 lg:h-70 w-20 h-30 border-white lg:border-[18px] border-[10px] rounded-full 
-                    flex items-center justify-center hover:bg-white  active:bg-white transition cursor-pointer group">
-                <a href="/login" >
-                <span className="lg:text-2xl text-[10px] font-bold uppercase text-white group-hover:text-black group-active:text-black">
-                    Get in
-                </span>
-                 </a>
-                </div>
+                        <Link to={`/login`}>
+                        <div className="lg:w-69 lg:h-70 w-20 h-30 border-white lg:border-[18px] border-[10px] rounded-full 
+                            flex items-center justify-center hover:bg-white  active:bg-white transition cursor-pointer group">
+                        <span className="lg:text-2xl text-[10px] font-bold uppercase text-white group-hover:text-black group-active:text-black">
+                            Get in
+                        </span>
+                        </div>
+                </Link>
+          
 
             <div className="flex flex-col leading-[0.9]">
                 <ScrambledText

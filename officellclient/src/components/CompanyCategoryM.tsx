@@ -24,7 +24,7 @@ const initDrawer = () => {
   const options = {
   placement: 'left',
   backdrop: true,
-  backdropClasses: 'bg-gray-900 bg-opacity-50 fixed inset-0 z-30', // 👈 important
+  backdropClasses: 'bg-gray-900 bg-opacity-50 fixed inset-0 z-30', 
   bodyScrolling: false,
   edge: false,
   edgeOffset: '',

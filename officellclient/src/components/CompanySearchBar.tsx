@@ -12,7 +12,7 @@ export default function CompanySearchBar({ onSearch }: { onSearch: (query: strin
   return (
 <form
   onSubmit={handleSubmit}
-  className="flex items-center w-[90%] sm:w-[80%] md:w-[70%] lg:w-full max-w-md mx-auto bg-gray-950 mt-5 mb-5 shadow-md border rounded-4xl border-gray-700 px-3 py-2"
+  className="flex items-center w-[90%] sm:w-[80%] md:w-[70%] lg:w-full max-w-md mx-auto bg-gray-950 mt-5 mb-5  border rounded-4xl border-gray-700 px-3 py-2"
 >
   <FaSearch className="text-gray-400 mr-3 text-lg" />
   <input

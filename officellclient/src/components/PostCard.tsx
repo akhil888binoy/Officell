@@ -4,6 +4,7 @@ import { MdOutlineAttachFile } from "react-icons/md"
 import { RiBuilding2Line } from "react-icons/ri"
 
 const PostCard = () => {
+
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
   const handleInput = () => {
@@ -15,7 +16,7 @@ const PostCard = () => {
   }
 
   return (
-    <div className="w-full  border-gray-700 bg-gray-950 border-l sm:border-l-0">
+    <div className="w-full   bg-gray-950 ">
       {/* Input */}
       <div className="px-3 sm:px-6 lg:px-10 pt-4 sm:pt-5 pb-2 ">
         <textarea
@@ -28,7 +29,7 @@ const PostCard = () => {
       </div>
 
       {/* Action Row */}
-      <div className="flex items-center justify-between gap-2 px-3 sm:px-6 lg:px-10 pb-3 pt-3">
+      <div className="flex items-center justify-between gap-2 px-3 sm:px-6 lg:px-10 pb-3 pt-3 border-gray-700 border-b">
         {/* Left side icons */}
         <div className="flex gap-x-2 sm:gap-x-3">
           <button className="flex items-center justify-center rounded-full p-1.5 sm:p-2 text-white hover:bg-gray-800 active:scale-95 transition">

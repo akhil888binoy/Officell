@@ -9,17 +9,25 @@ export const CompaniesPage = () => {
   return (
     <div className="w-screen h-screen flex bg-gray-950">
       {/* Sidebar */}
-      <div >
+           <div className="h-screen border-r-1 border-gray-700  " >
       <Sidebar/>
       <CompanyCategoryM></CompanyCategoryM>
       </div>
       {/* Main Content */}
       <div className="flex-1 flex flex-row transition-all duration-300 sm:ml-64">
         {/* Feeds */}
-        <div className="flex-1 bg-gray-950 ">
+        <div className="flex-1 bg-gray-950 overflow-y-scroll ">
             <CompanySearchBar onSearch={(q) => console.log("Searching for:", q)} />
                 <CompanyCard/>
                 <CompanyCard/>
+                <CompanyCard/>
+                <CompanyCard/>
+                <CompanyCard/>
+                <CompanyCard/>
+                <CompanyCard/>
+                <CompanyCard/>
+                <CompanyCard/>
+
         </div>
         {/* Filters & Categories (desktop only) */}
         <div className="bg-gray-950 w-80 h-screen hidden border-l border-gray-700 lg:block p-4 ">
