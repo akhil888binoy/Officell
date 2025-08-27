@@ -2,20 +2,36 @@ import { useState } from "react";
 import { FaUser } from "react-icons/fa";
 import { CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
 export default function AddUsernamePage() {
+
   const [username, setUsername] = useState("");
-  const [step, setStep] = useState(2); // Step 1 done, so start at Step 2
+  const [step, setStep] = useState(2); 
   const navigate = useNavigate();
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (username.trim()) {
-      setStep(3);
 
-      // Small delay so user sees "All Done!" before redirect
+      setStep(3);
+      const token =  Cookies.get("Auth");
+      console.log(token);
+      const headers={
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+
+      const  response = await axios.post("http://localhost:3000/v1/add-username", {
+        new_username: username
+      },{
+          headers:headers
+      });
+      console.log(response);
       setTimeout(() => {
         navigate("/feed");
       }, 1200);
+
     }
   };
 
@@ -85,7 +101,7 @@ export default function AddUsernamePage() {
 
       {step === 3 && (
         <div className="text-center">
-          <h2 className="text-2xl font-arimo text-green-400">🎉 All Done!</h2>
+          <h2 className="text-2xl font-bold text-green-400 tracking-tighter" >🎉 All Done !</h2>
           <p className="mt-2 text-gray-400 font-arimo">
             Your username <span className="text-white font-semibold">{username}</span> has been saved.
           </p>

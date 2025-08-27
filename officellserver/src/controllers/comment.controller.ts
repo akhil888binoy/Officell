@@ -21,7 +21,7 @@ export const addSubcomment = async (req: Request | any , res: Response)=>{
 
     } catch (error: any ) {
         console.error(error);
-        res.status(500).send(error.response.data);
+        res.status(500).json(error);
     }
 
 }
@@ -40,7 +40,7 @@ export const getAllSubcomments = async (req: Request, res: Response )=>{
         });
     } catch (error : any ) {
         console.error(error);
-        res.status(500).send(error.response.data);
+        res.status(500).json(error);
     }
 }
 export const updateSubcomment= async(req: Request | any , res: Response)=>{
@@ -61,7 +61,7 @@ export const updateSubcomment= async(req: Request | any , res: Response)=>{
         });
     } catch (error: any ) {
         console.error(error);
-        res.status(500).send(error.response.data)
+        res.status(500).json(error)
     }
 }
 export const deleteSubcomment= async ( req: Request | any , res: Response)=>{
@@ -78,7 +78,7 @@ export const deleteSubcomment= async ( req: Request | any , res: Response)=>{
         });
     } catch (error: any ) {
         console.error(error);
-        res.status(500).send(error.response.data);
+        res.status(500).json(error);
     }
 }
 
@@ -100,7 +100,7 @@ export const updateComment = async(req: Request | any , res: Response)=>{
         });
     } catch (error : any ) {
         console.error(error);
-        res.status(500).send(error.response.data);
+        res.status(500).json(error);
     }
 }
 export const deleteComment = async (req:Request | any , res: Response)=>{
@@ -117,7 +117,7 @@ export const deleteComment = async (req:Request | any , res: Response)=>{
         });
     } catch (error: any) {
         console.error(error);
-        res.status(500).send(error.response.data);
+        res.status(500).json(error);
     }
 }
 

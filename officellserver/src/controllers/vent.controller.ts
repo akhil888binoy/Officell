@@ -29,7 +29,7 @@ export const getAllVents = async (req: Request , res : Response )=>{
         })
     } catch (error : any ) {
         console.error(error );
-        res.status(500).send(error.response.data);
+        res.status(500).json(error);
     }
 
 }
@@ -52,7 +52,7 @@ export const getVent = async (req: Request , res : Response )=> {
         });
     } catch (error: any ) {
         console.error(error);
-        res.status(500).send(error.response.data);
+        res.status(500).json(error);
     }
     
 }
@@ -94,7 +94,7 @@ export const createVent = async (req: Request | any , res : Response )=> {
 
     } catch (error : any ) {
         console.error(error)
-        res.status(500).send(error.response.data)
+        res.status(500).json(error)
     }
 }
 
@@ -134,7 +134,7 @@ export const updateVent = async (req: Request | any , res : Response )=>{
 
     } catch (error : any ) {
         console.error(error);
-        res.status(500).send(error.response.data);
+        res.status(500).json(error);
     }
 }
 
@@ -155,7 +155,7 @@ export const deleteVent = async (req: Request | any , res : Response )=>{
         res.status(200).json({message : "Vent Deleted" , vent : delete_vent});
     } catch (error : any ) {
         console.error(error);
-        res.status(500).send(error.response.data);
+        res.status(500).json(error);
     }
 }
 
@@ -265,7 +265,7 @@ export const upVote = async (req: Request | any  , res : Response )=>{
 
     } catch (error: any ) {
         console.error(error);
-        res.status(500).send(error.response.data)
+        res.status(500).json(error)
     }
 }
 
@@ -375,7 +375,7 @@ export const downVote = async (req: Request | any , res : Response )=>{
 
     } catch (error : any ) {
         console.error(error);
-        res.status(500).send(error.response.data)
+        res.status(500).json(error)
     }
 }
 
@@ -398,7 +398,7 @@ export const reportVent = async (req: Request | any  , res : Response )=>{
         });
     } catch (error : any ) {
         console.error(error);
-        res.status(500).send(error.response.data)
+        res.status(500).json(error)
     } 
 
 }
@@ -424,7 +424,7 @@ export const addComment = async (req: Request  | any , res : Response )=>{
 
     } catch (error : any ) {
         console.error(error);
-        res.status(500).send(error.response.data)
+        res.status(500).json(error)
     }
 
 }
@@ -443,7 +443,7 @@ export const getAllComment = async (req: Request , res : Response )=>{
 
     } catch (error: any ) {
         console.error(error);
-        res.status(500).send(error.response.data);
+        res.status(500).json(error);
     }
 
 }

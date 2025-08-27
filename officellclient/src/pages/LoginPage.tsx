@@ -1,6 +1,7 @@
 import { FaLinkedin } from "react-icons/fa";
 
 export default function LoginPage() {
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-950 px-6 py-12">
       <div className="w-full max-w-md rounded-2xl bg-white/5 backdrop-blur-lg p-8 shadow-xl border border-white/10">
@@ -25,16 +26,14 @@ export default function LoginPage() {
           <button
             type="button"
             className="w-full flex items-center justify-center gap-3 rounded-xl bg-[#0A66C2] px-4 py-3 font-semibold text-white shadow-lg hover:bg-[#004182] focus:ring-2 focus:ring-[#0A66C2] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
-            onClick={() => {
-              // Replace with your LinkedIn OAuth URL
-              window.location.href = "/api/auth/linkedin";
-            }}
+            onClick={()=>{ window.location.href = 'http://localhost:3000/v1/auth/linkedin' }}
           >
             <FaLinkedin className="text-xl" />
             Sign in with LinkedIn
           </button>
         </div>
-
+        <h2>
+        </h2>
         {/* Privacy Disclaimer */}
         <p className="mt-4 text-xs text-center text-gray-400 leading-relaxed">
           🔒 Your identity will <span className="font-semibold text-gray-200">never be shown</span>.  
@@ -43,5 +42,6 @@ export default function LoginPage() {
         </p>
       </div>
     </div>
+
   );
 }

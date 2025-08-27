@@ -1,7 +1,9 @@
 // src/components/CommentCard.jsx
 import { useState } from "react";
+import { FaTrash } from "react-icons/fa";
 
 export const CommentCard = ({ comment, onReply }) => {
+  
   const [showReplies, setShowReplies] = useState(false);
   const [replying, setReplying] = useState(false);
   const [replyText, setReplyText] = useState("");
@@ -15,12 +17,18 @@ export const CommentCard = ({ comment, onReply }) => {
   };
 
   return (
-    <div className="bg-gray-950 p-3 sm:p-4 border-b border-gray-700">
-      {/* Comment Content */}
-      <p className="text-gray-200 text-sm sm:text-base leading-relaxed break-words">
-        {comment.text}
-      </p>
 
+    <div className="bg-gray-950 p-3 sm:p-4 ">
+       {/* Comment Content */}
+            <div className="flex items-start justify-between">
+        <p className="text-gray-200 text-sm sm:text-base leading-relaxed break-words flex-1">
+          {comment.text}
+        </p>
+        <button className="flex items-center gap-2 text-gray-400 hover:text-red-400 active:text-red-600 transition ml-2">
+          <FaTrash />
+        </button>
+      </div>
+      
       {/* Actions */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2 sm:mt-3 text-xs sm:text-sm text-gray-400 gap-2 sm:gap-0">
         <span className="text-gray-400">{comment.author}</span>
@@ -41,6 +49,7 @@ export const CommentCard = ({ comment, onReply }) => {
                 : `View Replies (${comment.replies.length})`}
             </button>
           )}
+          
         </div>
       </div>
 

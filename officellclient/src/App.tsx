@@ -11,6 +11,7 @@ import LoginPage from './pages/LoginPage';
 import SettingsPage from './pages/SettingsPage';
 import RegisterCompanyPage from './pages/RegisterCompanyPage';
 import AddUsernamePage from './pages/AddUsernamePage';
+import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
 
@@ -28,6 +29,7 @@ function App() {
         <Route path="/profile" element={<ProfilePage></ProfilePage>} ></Route>
         <Route path="/settings" element={<SettingsPage></SettingsPage>} ></Route>
         <Route path="/admin/reports" element={<AdminReportsPage></AdminReportsPage>} ></Route>
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );

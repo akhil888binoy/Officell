@@ -5,6 +5,8 @@ import { VscAccount } from "react-icons/vsc";
 import { FaFireAlt } from 'react-icons/fa';
 import { RiBuilding2Line } from 'react-icons/ri';
 import { BiMessageDetail } from 'react-icons/bi';
+import Cookies from 'js-cookie';
+import { redirect, useNavigate } from 'react-router-dom';
 
 // Initialize drawer component
 const initDrawer = () => {
@@ -38,9 +40,17 @@ const initDrawer = () => {
   }
 };
 
+
+
 export const Sidebar = () => {
+  const navigate = useNavigate();
+
+    const handleLogout = async ()=>{
+      Cookies.remove("Auth");
+      navigate("/");
+  }
+
   useEffect(() => {
-    // Initialize the drawer when component mounts
     initDrawer();
   }, []);
 
@@ -104,8 +114,8 @@ export const Sidebar = () => {
           </div>
 
           {/* Bottom Button */}
-          <button className="border border-white text-white px-12 py-4 rounded-full tracking-widest uppercase font-bold bg-transparent hover:bg-white active:bg-white active:text-black hover:text-black  transition duration-200 mb-4">
-            Post
+          <button onClick ={handleLogout} className="border border-white text-white px-12 py-4 rounded-full tracking-widest uppercase font-bold bg-transparent hover:bg-white active:bg-white active:text-black hover:text-black  transition duration-200 mb-4">
+            Logout
           </button>
         </div>
       </aside>

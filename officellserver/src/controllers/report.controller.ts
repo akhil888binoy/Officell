@@ -13,7 +13,7 @@ export const getReports= async (req: Request , res: Response)=>{
         });
     } catch (error : any ) {
         console.error(error);
-        res.status(500).send(error.response.data);
+        res.status(500).json(error);
     }
 }
 

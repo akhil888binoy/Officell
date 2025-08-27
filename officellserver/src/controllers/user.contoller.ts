@@ -17,6 +17,7 @@ export const authLinkedin = (req: Request , res : Response )=>{
 
 export const authLinkedinCallback = async (req: Request , res : Response )=>{
     const code = req.query.code;
+
     const redis = await redisConnection();
 
     try {
@@ -32,6 +33,7 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
     });
 
     const accessToken = tokenResponse?.data.access_token;
+    console.log("Access Token", accessToken);
 
     const profileResponse: any  = await axios.get('https://api.linkedin.com/v2/userinfo', {
         headers: {
@@ -40,6 +42,7 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
     });
 
     const data = profileResponse?.data;
+    console.log("Data",data);
     const user = await prisma.user.findUnique({
         where:{linkedin_id : String(data.sub)}
     });
@@ -55,14 +58,17 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
         const token = jwt.sign({ _id: add_user.id }, SECRET_KEY, {
                 expiresIn: '2 days',
         });
+
         await redis.set(`Profile:${add_user.id}`, JSON.stringify(add_user));
         await redis.expire(`Profile:${add_user.id}` , 3600);
-        res.cookie('auth', token , {
+
+        res.cookie('Auth', token , {
             maxAge: 1800000, // 30 minutes   
-            httpOnly: true,
+            
         });
 
-        res.json("Not  exist")
+       res.redirect("http://localhost:5173/username")
+
     }else{
 
         const token = jwt.sign({_id : user?.id}, SECRET_KEY , {
@@ -73,12 +79,12 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
         await redis.expire(`Profile:${user?.id}` , 3600);
 
 
-        res.cookie('auth', token,{
+        res.cookie('Auth', token, {
                 maxAge: 1800000, // 30 minutes   
-                httpOnly: true,
+                
         });
 
-        res.json("Already exist")
+        res.redirect("http://localhost:5173/feed")
     }
 
     } catch (error: any) {
@@ -95,8 +101,10 @@ export const getUserProfile = async (req: Request | any  , res : Response ) => {
         });
         
         if (user !== null){
+
             await redis.set(`Profile:${_id}`, JSON.stringify(user));
             await redis.expire(`Profile:${_id}`, 3600);
+
             res.status(200).json({
                 message : "Get Profile Successfull",
                 user : user
@@ -110,7 +118,7 @@ export const getUserProfile = async (req: Request | any  , res : Response ) => {
         }
 
     } catch (error: any ) {
-        res.status(500).send(error.response.data);
+        res.status(500).json(error);
     }
 }
 
@@ -143,7 +151,7 @@ export const addUsername = async (req: Request | any  , res : Response ) => {
         });
 
     } catch (error: any ) {
-        res.status(500).send(error.response.data);
+        res.status(500).json(error);
     }
 }
 
@@ -155,7 +163,7 @@ export const logoutUser = async (req: Request | any , res : Response )=>{
 
     } catch (error : any ) {
         console.error(error); 
-        res.status(500).send(error.response.data)
+        res.status(500).json(error)
     }
 }
 
