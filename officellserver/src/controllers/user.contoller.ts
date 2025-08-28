@@ -3,6 +3,7 @@ import axios from 'axios';
 import jwt from 'jsonwebtoken';
 import { prisma } from "../index";
 import { redisConnection } from '../redis/connection';
+import geoip from 'geoip-lite';
 
 const REDIRECT_URI = 'http://localhost:3000/v1/auth/linkedin/callback';
 
@@ -95,11 +96,13 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
 export const getUserProfile = async (req: Request | any  , res : Response ) => {
     const { _id } = req.decoded;
     const redis = await redisConnection();
+    const ip = req.ip;
+    const location = geoip.lookup("207.97.227.239");
     try {
         const user = await prisma.user.findUnique({
             where:{id : _id}
         });
-        
+
         if (user !== null){
 
             await redis.set(`Profile:${_id}`, JSON.stringify(user));
@@ -107,7 +110,9 @@ export const getUserProfile = async (req: Request | any  , res : Response ) => {
 
             res.status(200).json({
                 message : "Get Profile Successfull",
-                user : user
+                user : user,
+                ip:ip,
+                location: location
             }); 
 
         }else{

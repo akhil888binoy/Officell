@@ -58,7 +58,7 @@ export const getVent = async (req: Request , res : Response )=> {
 }
 
 export const createVent = async (req: Request | any , res : Response )=> {
-            const redis = await redisConnection();
+    const redis = await redisConnection();
     const {_id} = req.decoded;
     const {company_id , no_pii , verified_employee, content , category, media_url, media_type} = req.body;
 

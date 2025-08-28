@@ -25,6 +25,7 @@ export const client = createClient({
         }
     });
 
+app.set('trust proxy', true);
 app.use(express.json());
 app.use(morgan('combined'));
 app.use(helmet());

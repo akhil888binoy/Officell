@@ -1,16 +1,21 @@
 import {Request , Response } from 'express';
 import { prisma } from "../index";
 import { redisConnection } from '../redis/connection';
+import geoip from 'geoip-lite';
 
 
 export const getAllCompanies = async (req: Request , res : Response )=>{
-    const {currentPage , pageSize , domain , company_name} = req.query;
 
+    const { domain , company_name, skip} = req.query;
+    const ip = req.ip;
+    const location = geoip.lookup("207.97.227.239");
+    const country = location?.country;
+    
     try {
 
     const companies = await prisma.company.findMany({
         where : { 
-                ...( company_name ? {
+            ...( company_name ? {
                     name: {
                         contains: String(company_name),
                         mode: 'insensitive'
@@ -18,19 +23,23 @@ export const getAllCompanies = async (req: Request , res : Response )=>{
                 }
             : domain ?  {
                 domain: String(domain)
-            } : {})
+            } : country ?  {
+                country: String(country)
+            }  :{})
         },
-            take :  Number(pageSize) ,
-            skip: Number(currentPage) * Number(pageSize),
-            orderBy: { createdAt : 'desc'}
+            orderBy: {
+                vents:{
+                    _count:'desc'
+                }
+            },
+            skip: Number(skip),
+            take: 5
         });
-
 
     res.status(200).json({
         message: "Get Companies Successfull",
         companies : companies
     });
-
     } catch (error :any ) {
         console.error(error);
         res.status(500).json(error)

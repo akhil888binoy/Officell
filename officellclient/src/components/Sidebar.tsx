@@ -6,7 +6,7 @@ import { FaFireAlt } from 'react-icons/fa';
 import { RiBuilding2Line } from 'react-icons/ri';
 import { BiMessageDetail } from 'react-icons/bi';
 import Cookies from 'js-cookie';
-import { redirect, useNavigate } from 'react-router-dom';
+import {  useNavigate } from 'react-router-dom';
 
 // Initialize drawer component
 const initDrawer = () => {
