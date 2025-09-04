@@ -6,7 +6,7 @@ import { FaFireAlt } from 'react-icons/fa';
 import { RiBuilding2Line } from 'react-icons/ri';
 import { BiMessageDetail } from 'react-icons/bi';
 import Cookies from 'js-cookie';
-import {  useNavigate } from 'react-router-dom';
+import {   useNavigate } from 'react-router-dom';
 
 // Initialize drawer component
 const initDrawer = () => {
@@ -44,8 +44,7 @@ const initDrawer = () => {
 
 export const Sidebar = () => {
   const navigate = useNavigate();
-
-    const handleLogout = async ()=>{
+  const handleLogout = async ()=>{
       Cookies.remove("Auth");
       navigate("/");
   }
@@ -61,7 +60,7 @@ export const Sidebar = () => {
         data-drawer-toggle="logo-sidebar" 
         aria-controls="logo-sidebar" 
         type="button" 
-        className="inline-flex items-center p-2 mt-2 ms-3 text-sm text-white rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 "
+        className="inline-flex items-center cursor-pointer p-2 mt-2 ms-3 text-sm text-white rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 "
       >
         <span className="sr-only">Open sidebar</span>
         <svg className="w-6 h-6" aria-hidden="true" fill="white" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">

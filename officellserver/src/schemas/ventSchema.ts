@@ -1,14 +1,10 @@
 import {z} from 'zod';
 
-export const createVentSchema = z.object({
-    company_id : z.int(),
-    no_pii : z.boolean(),
-    verified_employee : z.boolean(), 
-    content : z.string(),
-    category : z.string(),
-    media_url: z.string(),
-    media_type: z.string()
-});
+// export const createVentSchema = z.object({
+//     company_id : z.string(),
+//     content : z.string(),
+//     category : z.string(),
+// });
 
 
 export const reportVentSchema = z.object({

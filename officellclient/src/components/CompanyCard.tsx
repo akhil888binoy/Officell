@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 export const CompanyCard = ({company_id , city , country , company_name , industry}) => {
    
   return (
-     <Link to={`/companies/${company_id}`}>
+    <a href={`/companies/${company_id}`} >
     <div className="relative flex flex-col bg-gray-950  border-t border-b  border-gray-700 w-full overflow-hidden">
       
       {/* Header */}
@@ -31,6 +31,6 @@ export const CompanyCard = ({company_id , city , country , company_name , indust
         </div>
       </div>
     </div>
-    </Link>
+    </a>
   );
 };

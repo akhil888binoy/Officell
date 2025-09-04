@@ -6,34 +6,41 @@ import geoip from 'geoip-lite';
 
 export const getAllCompanies = async (req: Request , res : Response )=>{
 
-    const { domain , company_name, skip} = req.query;
-    const ip = req.ip;
+    const { industry , company_name, skip} = req.query;
+    const ip = req.ip; 
     const location = geoip.lookup("207.97.227.239");
-    const country = location?.country;
-    
+    const country = location?.country; 
+    console.log("County", country)
     try {
-
     const companies = await prisma.company.findMany({
         where : { 
             ...( company_name ? {
                     name: {
                         contains: String(company_name),
                         mode: 'insensitive'
+                    } 
+                } :{}),
+            ...( industry ?  { 
+                industry: String(industry)
+            } :{})
+    }, 
+
+        orderBy: [
+                {
+                    _relevance: {
+                        fields: ['country'],
+                        search: String(country),
+                        sort: 'desc',
+                    },
+                },
+                {
+                    vents: {
+                        _count: 'desc' 
                     }
-                }
-            : domain ?  {
-                domain: String(domain)
-            } : country ?  {
-                country: String(country)
-            }  :{})
-        },
-            orderBy: {
-                vents:{
-                    _count:'desc'
-                }
-            },
+                } 
+            ],
             skip: Number(skip),
-            take: 5
+            take: 10
         });
 
     res.status(200).json({

@@ -44,6 +44,7 @@ export const checkCacheProfile = async( req: Request | any , res: Response, next
 
     } catch (error: any ) {
         console.error(error);
+        
         res.status(500).json(error);
     }
 }
@@ -55,12 +56,12 @@ export const checkCacheVent = async (req: Request, res: Response , next: NextFun
         const redis =  await redisConnection();
 
         const {id} = req.params;
-        const cacheVentData = await redis.get(`Vent:${id}`);
+        const cacheVentData = await redis.get(`vent:${id}`);
 
         if(cacheVentData){
             res.json({
                 message:"Cached Vent",
-                companies : JSON.parse(cacheVentData)
+                vent : JSON.parse(cacheVentData)
             });
         }else{
             next()

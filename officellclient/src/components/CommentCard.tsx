@@ -2,19 +2,19 @@
 import { useState } from "react";
 import { FaTrash } from "react-icons/fa";
 
-export const CommentCard = ({ comment, onReply }) => {
+export const CommentCard = ({ comment }) => {
   
   const [showReplies, setShowReplies] = useState(false);
   const [replying, setReplying] = useState(false);
   const [replyText, setReplyText] = useState("");
 
-  const handleReply = () => {
-    if (replyText.trim() && onReply) {
-      onReply(comment.id, replyText);
-      setReplyText("");
-      setReplying(false);
-    }
-  };
+  // const handleReply = () => {
+  //   if (replyText.trim() && onReply) {
+  //     onReply(comment.id, replyText);
+  //     setReplyText("");
+  //     setReplying(false);
+  //   }
+  // };
 
   return (
 
@@ -22,7 +22,7 @@ export const CommentCard = ({ comment, onReply }) => {
        {/* Comment Content */}
             <div className="flex items-start justify-between">
         <p className="text-gray-200 text-sm sm:text-base leading-relaxed break-words flex-1">
-          {comment.text}
+          {comment.comment}
         </p>
         <button className="flex items-center gap-2 text-gray-400 hover:text-red-400 active:text-red-600 transition ml-2">
           <FaTrash />
@@ -31,7 +31,7 @@ export const CommentCard = ({ comment, onReply }) => {
       
       {/* Actions */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2 sm:mt-3 text-xs sm:text-sm text-gray-400 gap-2 sm:gap-0">
-        <span className="text-gray-400">{comment.author}</span>
+        <span className="text-gray-400">{comment.author.username}</span>
         <div className="flex gap-3">
           <button
             className="hover:text-gray-100 transition"
@@ -53,7 +53,7 @@ export const CommentCard = ({ comment, onReply }) => {
         </div>
       </div>
 
-      {/* Reply Input */}
+      {/* Reply Input
       {replying && (
         <div className="mt-3 flex flex-col sm:flex-row gap-2">
           <input
@@ -70,10 +70,10 @@ export const CommentCard = ({ comment, onReply }) => {
             Send
           </button>
         </div>
-      )}
+      )} */}
 
       {/* Replies */}
-{showReplies && (
+{/* {showReplies && (
   <div className="mt-3 pl-3 border-l border-gray-700">
     {comment.replies.map((reply) => (
       <div key={reply.id} className="mt-2">
@@ -82,7 +82,7 @@ export const CommentCard = ({ comment, onReply }) => {
       </div>
     ))}
   </div>
-)}
+)} */}
     </div>
   );
 };

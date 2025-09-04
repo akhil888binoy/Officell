@@ -1,15 +1,16 @@
 import express from 'express';
-import { addComment, createVent, deleteVent, downVote, getAllComment, getAllVents, getVent, reportVent, updateVent, upVote } from '../controllers/vent.controller';
+import { addComment, createVent, deleteVent, downVote, getAllComment, getAllTrendingVents, getAllVents, getVent, reportVent, updateVent, upVote } from '../controllers/vent.controller';
 import { auth } from '../middleware/auth';
 import { validateData } from '../middleware/validation';
-import { addCommentSchema, createVentSchema, reportVentSchema, updateVentSchema } from '../schemas/ventSchema';
+import { addCommentSchema,  reportVentSchema, updateVentSchema } from '../schemas/ventSchema';
 import { checkCacheVent } from '../middleware/cache/checkCache';
-
+import { upload } from '../config/multerconfig';
 export const ventRouter = express.Router();
 
 ventRouter.get("/vents", auth , getAllVents);
-ventRouter.get("/vents/:id", auth , checkCacheVent,getVent);
-ventRouter.post("/vents", auth , validateData(createVentSchema) , createVent);
+ventRouter.get("/vents/trending", auth , getAllTrendingVents);
+ventRouter.get("/vents/:id", auth , checkCacheVent, getVent);
+ventRouter.post("/vents", auth , upload.single('file'),  createVent);
 ventRouter.put("/vents/:id", auth , validateData(updateVentSchema), updateVent);
 ventRouter.delete("/vents/:id", auth , deleteVent);
 ventRouter.post("/vents/:id/upvote", auth , upVote);

@@ -47,24 +47,24 @@ export const CommentSection = () => {
     }
   };
 
-  // Handle replies
-  const handleReply = (commentId, replyText) => {
-    const addReply = (items) =>
-      items.map((item) => {
-        if (item.id === commentId) {
-          return {
-            ...item,
-            replies: [
-              ...item.replies,
-              { id: Date.now(), text: replyText, author: "You", replies: [] },
-            ],
-          };
-        }
-        return { ...item, replies: addReply(item.replies) };
-      });
+  // // Handle replies
+  // const handleReply = (commentId, replyText) => {
+  //   const addReply = (items) =>
+  //     items.map((item) => {
+  //       if (item.id === commentId) {
+  //         return {
+  //           ...item,
+  //           replies: [
+  //             ...item.replies,
+  //             { id: Date.now(), text: replyText, author: "You", replies: [] },
+  //           ],
+  //         };
+  //       }
+  //       return { ...item, replies: addReply(item.replies) };
+  //     });
 
-    setComments(addReply(comments));
-  };
+  //   setComments(addReply(comments));
+  // };
 
   return (
     <div  >
@@ -92,16 +92,7 @@ export const CommentSection = () => {
         </div>
       </div>
 
-      {/* Render Comments */}
-      <div >
-        {comments.map((comment) => (
-          <CommentCard
-            key={comment.id}
-            comment={comment}
-            onReply={handleReply}
-          />
-        ))}
-      </div>
+      
     </div>
   );
 };

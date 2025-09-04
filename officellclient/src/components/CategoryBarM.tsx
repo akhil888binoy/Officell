@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'flowbite';
 import { Drawer } from 'flowbite';
 import { FaUserTie, FaRegLaughBeam, FaBeer, FaUsers, FaBriefcase } from "react-icons/fa";
@@ -7,7 +7,7 @@ import { BiMoney } from "react-icons/bi";
 import { FiEye } from "react-icons/fi";
 
 const categories = [
-  { name: "Work Culture", icon: <FaBriefcase /> },
+  { name: "Culture", icon: <FaBriefcase /> },
   { name: "Colleague Drama", icon: <FaUsers /> },
   { name: "Boss Stories", icon: <FaUserTie /> },
   { name: "Overtime", icon: <MdOutlineWorkHistory /> },
@@ -51,9 +51,21 @@ const initDrawer = () => {
   }
 };
 
-export const CategoryBarM = () => {
+export const CategoryBarM = ({onSelect}) => {
+    const [category , setCategory] = useState("");
+    
+    const handleCategory =(e)=>{
+        if(category){
+          setCategory("");
+          onSelect("");
+        }else{
+          setCategory(e.target.value);
+          console.log(e.target.value);
+          onSelect(e.target.value);
+        }
+    }
+
   useEffect(() => {
-    // Initialize the drawer when component mounts
     initDrawer();
   }, []);
 
@@ -64,10 +76,13 @@ export const CategoryBarM = () => {
         data-drawer-toggle="filter-sidebar" 
         aria-controls="filter-sidebar" 
         type="button" 
-        className="inline-flex items-center p-2 mt-2 ms-3 text-sm text-white rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 "
-      >
+        className={` items-center justify-center ms-3 mt-2 p-2 
+                  hover:bg-gray-800 active:scale-95 transition text-sm sm:hidden
+                  focus:outline-none focus:ring-2 focus:ring-gray-200 
+                  ${category ? 'bg-gray-50 text-gray-950' : 'text-white'} `}
+              >
         <span className="sr-only">Open sidebar</span>
-        <MdOutlineCategory className='h-6 w-6' />
+        <MdOutlineCategory className='h-6 w-full' />
       </button>
 
         <aside 
@@ -91,12 +106,15 @@ export const CategoryBarM = () => {
         {categories.map((cat, index) => (
             <button
             key={index}
-            className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-4xl
+            onClick={handleCategory}
+            value={cat.name}
+            className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-4xl
                 border border-gray-700 bg-gray-800 text-gray-200
                 hover:bg-gray-700 hover:border-gray-500 hover:scale-[1.02] 
                 active:scale-95 active:bg-gray-600
-                focus:ring-2 focus:ring-white focus:outline-none
-                transition-all duration-200 ease-in-out shadow-sm">
+                focus:outline-none
+                transition-all duration-200 ease-in-out shadow-sm
+                ${category === cat.name?'border-2 border-white':''}`}>
             <span className="text-lg">{cat.icon}</span>
             {cat.name}
             </button>

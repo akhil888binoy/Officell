@@ -2,9 +2,10 @@ import { FaUserTie, FaRegLaughBeam, FaBeer, FaUsers, FaBriefcase } from "react-i
 import { MdOutlineWorkHistory, MdOutlineLaptopChromebook, MdOutlineDarkMode } from "react-icons/md";
 import { BiMoney } from "react-icons/bi";
 import { FiEye } from "react-icons/fi";
+import { useState } from "react";
 
 const categories = [
-  { name: "Work Culture", icon: <FaBriefcase /> },
+  { name: "Culture", icon: <FaBriefcase /> },
   { name: "Colleague Drama", icon: <FaUsers /> },
   { name: "Boss Stories", icon: <FaUserTie /> },
   { name: "Overtime", icon: <MdOutlineWorkHistory /> },
@@ -16,7 +17,20 @@ const categories = [
   { name: "Dark Secrets", icon: <MdOutlineDarkMode /> },
 ];
 
-export const CategoryBar = () => {
+export const CategoryBar = ({onSelect}) => {
+  const [category , setCategory] = useState("");
+  
+    const handleCategory =(e)=>{
+      if(category){
+        setCategory("");
+        onSelect("");
+      }else{
+        setCategory(e.target.value);
+        console.log(e.target.value);
+        onSelect(e.target.value);
+      }
+    }
+
   return (
     <div className="w-full  bg-gray-950 overflow-y-auto no-scrollbar mt-3">
       {/* Heading */}
@@ -27,12 +41,15 @@ export const CategoryBar = () => {
         {categories.map((cat, index) => (
           <button
             key={index}
-            className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-4xl
+            onClick={handleCategory}
+            value={cat.name}
+            className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-4xl
               border border-gray-700 bg-gray-800 text-gray-200
               hover:bg-gray-700 hover:border-gray-500 hover:scale-[1.02] 
               active:scale-95 active:bg-gray-600
-              focus:ring-2 focus:ring-white focus:outline-none
-              transition-all duration-200 ease-in-out shadow-sm">
+              focus:outline-none
+              transition-all duration-200 ease-in-out shadow-sm
+              ${category === cat.name?'border-2 border-white':''} `}>
             <span className="text-lg">{cat.icon}</span>
             {cat.name}
           </button>

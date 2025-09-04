@@ -22,15 +22,17 @@ export const CompaniesPage = () => {
   const [username, setUsername] = useState("");
   const [location, setLocation] = useState("");
   const [country , setCountry] = useState("");
+  const [category , setCategory] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
+  const [search , setSearch] = useState("")
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true);
+        
         const token = Cookies.get("Auth");
         const headers = {
           'Content-Type': 'application/json',
@@ -47,9 +49,7 @@ export const CompaniesPage = () => {
       } catch (error) {
         console.error(error);
         setError("Failed to fetch profile details");
-      } finally {
-        setLoading(false);
-      }
+      } 
     };
     fetchData();
   }, []);
@@ -67,6 +67,7 @@ export const CompaniesPage = () => {
   useEffect(() => {
     const fetchCompanies = async () => {
       try {
+        
         if (companies.length === 0) {
           setLoading(true);
         } else {
@@ -78,20 +79,20 @@ export const CompaniesPage = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         };
-        const { data: companiesJson } = await axios.get(`http://localhost:3000/v1/companies?skip=${skip}&country=${country}`, {
+        const { data: companiesJson } = await axios.get(`http://localhost:3000/v1/companies?skip=${skip}&company_name=${search}&industry=${category}`, {
           headers: headers
         });
         
-        console.log(companiesJson.companies);
+        console.log("Companies",companiesJson.companies);
         const newCompanies = companiesJson.companies;
         
         // Check if we've reached the end of the list
         if (newCompanies.length === 0) {
           setHasMore(false);
-        } else {
+        } 
+        else {
           setCompanies([...companies, ...newCompanies]);
         }
-        
         setError(null);
       } catch (error) {
         console.error(error);
@@ -102,10 +103,13 @@ export const CompaniesPage = () => {
       }
     };
     
-    if (hasMore || companies.length === 0) {
-      fetchCompanies();
+    if (hasMore || companies.length === 0 || search.length >0 || category.length > 0 ) {
+      const timer = setTimeout(()=>{
+        fetchCompanies();
+      },1000);
+      return () => clearTimeout(timer)
     }
-  }, [skip]);
+  }, [skip, search, category]);
 
   
 
@@ -114,14 +118,24 @@ export const CompaniesPage = () => {
       {/* Sidebar */}
       <div className="h-screen border-r-1 border-gray-700">
         <Sidebar />
-        <CompanyCategoryM />
+        <CompanyCategoryM onSelect={(q)=>{
+            setSkip(0);
+            setHasMore(true);
+            setCompanies([]);
+            setCategory(q)
+          }} />
       </div>
       
       {/* Main Content */}
       <div className="flex-1 flex flex-row transition-all duration-300 sm:ml-64">
         {/* Feeds */}
         <div className="flex-1 bg-gray-950 overflow-y-scroll" onScroll={handleScroll}>
-          <CompanySearchBar onSearch={(q) => console.log("Searching for:", q)} />
+          <CompanySearchBar onSearch={(q) => {
+            setSkip(0);
+            setHasMore(true);
+            setCompanies([]);
+            setSearch(q);
+          }} />
           
           {/* Initial loading indicator */}
           {loading && companies.length === 0 && <Loader />}
@@ -159,7 +173,12 @@ export const CompaniesPage = () => {
         {/* Filters & Categories (desktop only) */}
         <div className="bg-gray-950 w-80 h-screen hidden border-l border-gray-700 lg:block p-4">
           <UserCard username={username} location={location} />
-          <CompanyCategory />
+          <CompanyCategory onSelect={(q)=>{
+            setSkip(0);
+            setHasMore(true);
+            setCompanies([]);
+            setCategory(q)
+          }} />
         </div>
       </div>
     </div>

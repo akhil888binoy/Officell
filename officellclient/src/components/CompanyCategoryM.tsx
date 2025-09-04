@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'flowbite';
 import { Drawer } from 'flowbite';
 import { FaRocket, FaBuilding, FaUniversity, FaLaptopCode, FaBriefcase, FaIndustry, FaHospital, FaGraduationCap, FaFilm, FaBalanceScale, FaLeaf } from "react-icons/fa";
@@ -8,7 +8,7 @@ const categories = [
 { name: "Startups", icon: <FaRocket className="text-pink-500" /> },
   { name: "MNCs", icon: <FaBuilding className="text-blue-500" /> },
   { name: "Government Jobs", icon: <FaUniversity className="text-yellow-600" /> },
-  { name: "Software", icon: <FaLaptopCode className="text-indigo-500" /> },
+  { name: "Tech", icon: <FaLaptopCode className="text-indigo-500" /> },
   { name: "Finance", icon: <FaBriefcase className="text-gray-50" /> },
   { name: "Manufacturing ", icon: <FaIndustry className="text-orange-500" /> },
   { name: "Healthcare ", icon: <FaHospital className="text-red-500" /> },
@@ -50,7 +50,20 @@ const initDrawer = () => {
   }
 };
 
-export const CompanyCategoryM = () => {
+export const CompanyCategoryM = ({onSelect}) => {
+  const [category , setCategory] = useState("");
+  
+    const handleCategory =(e)=>{
+      if(category){
+        setCategory("");
+        onSelect("");
+      }else{
+        setCategory(e.target.value);
+        console.log(e.target.value);
+        onSelect(e.target.value);
+      }
+    }
+
   useEffect(() => {
     initDrawer();
   }, []);
@@ -63,10 +76,13 @@ export const CompanyCategoryM = () => {
         data-drawer-toggle="filter-sidebar" 
         aria-controls="filter-sidebar" 
         type="button" 
-        className="inline-flex items-center p-2 mt-2 ms-3 text-sm text-white rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 "
-      >
+        className={`inline-flex items-center justify-center  p-2 mt-2 ms-3
+                  hover:bg-gray-800 active:scale-95 transition text-sm sm:hidden
+                  focus:outline-none focus:ring-2 focus:ring-gray-200 
+                  ${category ? 'bg-gray-50 text-gray-950' : 'text-white'} `}
+              >
         <span className="sr-only">Open sidebar</span>
-        <MdOutlineCategory className='h-6 w-6' />
+        <MdOutlineCategory className='h-6 w-full' />
       </button>
 
         <aside 
@@ -89,16 +105,19 @@ export const CompanyCategoryM = () => {
         <div className="flex flex-col gap-4 p-4">
         {categories.map((cat, index) => (
             <button
+            onClick={handleCategory}
             key={index}
-            className="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-4xl
-                border border-gray-700 bg-gray-800 text-gray-200
-                hover:bg-gray-700 hover:border-gray-500 hover:scale-[1.02] 
-                active:scale-95 active:bg-gray-600
-                focus:ring-2 focus:ring-white focus:outline-none
-                transition-all duration-200 ease-in-out shadow-sm">
+            value={cat.name}
+            className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-4xl
+              border border-gray-700 bg-gray-800 text-gray-200
+              hover:bg-gray-700 hover:border-gray-500 hover:scale-[1.02] 
+              active:scale-95 active:bg-gray-600
+              focus:outline-none
+              transition-all duration-200 ease-in-out shadow-sm
+              ${category === cat.name?'border-2 border-white':''} `}>
             <span className="text-lg">{cat.icon}</span>
             {cat.name}
-            </button>
+          </button>
         ))}
         </div>
     </div>

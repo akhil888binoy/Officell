@@ -34,6 +34,7 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
     });
 
     const accessToken = tokenResponse?.data.access_token;
+
     console.log("Access Token", accessToken);
 
     const profileResponse: any  = await axios.get('https://api.linkedin.com/v2/userinfo', {
@@ -57,23 +58,23 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
             }
         });
         const token = jwt.sign({ _id: add_user.id }, SECRET_KEY, {
-                expiresIn: '2 days',
+                expiresIn: '1d',
         });
 
         await redis.set(`Profile:${add_user.id}`, JSON.stringify(add_user));
         await redis.expire(`Profile:${add_user.id}` , 3600);
 
         res.cookie('Auth', token , {
-            maxAge: 1800000, // 30 minutes   
+            maxAge: 24 * 60 * 60 * 1000, // 30 minutes   
             
         });
 
-       res.redirect("http://localhost:5173/username")
+        res.redirect("http://localhost:5173/username")
 
     }else{
 
         const token = jwt.sign({_id : user?.id}, SECRET_KEY , {
-            expiresIn: '2 days',
+            expiresIn: '1d',
         });
 
         await redis.set(`Profile:${user?.id}`, JSON.stringify(user));
@@ -81,7 +82,7 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
 
 
         res.cookie('Auth', token, {
-                maxAge: 1800000, // 30 minutes   
+                maxAge: 24 * 60 * 60 * 1000, // 30 minutes   
                 
         });
 
