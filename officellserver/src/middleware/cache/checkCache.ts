@@ -7,7 +7,7 @@ export const checkCacheCompany= async(req : Request , res: Response , next: Next
     try {
         const redis =  await redisConnection();
         const {id} = req.params;
-        const cacheCompanyData = await redis.get(`Company:${id}`);
+        const cacheCompanyData = await redis.get(`company:${id}`);
 
         if(cacheCompanyData){
             res.json({
@@ -35,14 +35,12 @@ export const checkCacheProfile = async( req: Request | any , res: Response, next
             res.json({
                 message: "Cached Profile",
                 user: JSON.parse(cacheProfile),
-                ip:ip,
-                location:location
-            });
+                location:location 
+            }); 
         }else{
             next()
         }
-
-    } catch (error: any ) {
+    } catch (error: any )  {  
         console.error(error);
         
         res.status(500).json(error);

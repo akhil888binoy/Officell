@@ -1,10 +1,13 @@
 import { FaMapMarkerAlt } from "react-icons/fa";
 import { BiMessageDetail } from "react-icons/bi";
 import { Link } from "react-router-dom";
+import {getName} from "country-list";
 
-export const CompanyCard = ({company_id , city , country , company_name , industry}) => {
+export const CompanyCard = ({company_id , city , country , company_name , industry , vents_count}) => {
    
   return (
+    <>
+    {company_id ? 
     <a href={`/companies/${company_id}`} >
     <div className="relative flex flex-col bg-gray-950  border-t border-b  border-gray-700 w-full overflow-hidden">
       
@@ -23,14 +26,16 @@ export const CompanyCard = ({company_id , city , country , company_name , indust
       <div className="px-4 pb-3 flex flex-col gap-2">
         <div className="flex items-center gap-2 text-gray-400 text-sm md:text-base">
           <FaMapMarkerAlt className="text-red-400" />
-          <span>{city}, {country}</span>
+          <span>{city}, {country ? getName(country):'No Country Specified'}</span>
         </div>
         <div className="flex items-center gap-2 text-gray-400 text-sm md:text-base">
           <BiMessageDetail className="text-blue-400" />
-          <span>245 Confessions</span>
+          <span>{vents_count}</span>
         </div>
       </div>
     </div>
-    </a>
+    </a> : ""}
+    </>
+    
   );
 };

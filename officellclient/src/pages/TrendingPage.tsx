@@ -1,5 +1,3 @@
-import {CategoryBar} from "../components/CategoryBar";
-import { CategoryBarM } from "../components/CategoryBarM";
 import PostCard from "../components/PostCard";
 import { Sidebar } from "../components/Sidebar";
 import { UserCard } from "../components/UserCard";
@@ -8,69 +6,28 @@ import { useEffect, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
 import { Loader } from "../components/Loader";
-
-interface Vent {
-    category: string;
-    company_id: string;
-    id: string;
-    verified_employee: boolean;
-    content: string;
-    upvote: string;
-    downvote: string;
-    company:{
-      name : string ,
-      country: string
-    };
-    _count :{
-      comments:string
-    };
-    author:{
-      username:string
-    };
-    createdAt: string;
-    author_id:string
-    Media:[];
-    votes:[];
-}
+import useUserStore from "../store/userStore";
+import useVentStore from "../store/ventStore";
 
 export const TrendingPage = () => {
-  const [username , setUsername ] = useState("");
-  const [location, setLocation] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
-  const [vents , setVents] = useState<Vent[]>([]);
   const [skip, setSkip] = useState(0);
-  const [user_id , setUser_id] = useState(null);
+  const location = useUserStore((state) => state.location)
+  const user = useUserStore((state) => state.user);
+  const vents = useVentStore((state) => state.vents);
+  const addVents = useVentStore((state) => state.addVents);
+  const reset = useVentStore((state)=>state.reset);
 
   useEffect(()=>{
-
-    const fetchData = async ()=>{
-      try {
-        const token =  Cookies.get("Auth");
-        const headers={
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-        const {data: response } = await axios.get("http://localhost:3000/v1/profile",{
-          headers: headers
-        });
-        console.log(response);
-        setUsername(response.user.username);
-        setLocation(response.location.city);
-        setUser_id(response.user.id);
-      } catch (error) {
-        console.error(error)
-      }
-    }
-
-    fetchData();
-
+    reset()
   },[]);
 
 useEffect(() => {
     const fetchVents = async () => {
+      
       try {
         if (vents.length === 0) {
           setLoading(true);
@@ -94,7 +51,7 @@ useEffect(() => {
         if (newVents.length === 0) {
           setHasMore(false);
         } else {
-          setVents([...vents, ...newVents]);
+          addVents(newVents);
         }
         setError(null);
       } catch (error) {
@@ -107,13 +64,16 @@ useEffect(() => {
     };
     
     if (hasMore || vents.length === 0) {
-      fetchVents();
+      const timer = setTimeout(()=>{
+        fetchVents();
+      },100) ;
+      return()=>clearTimeout(timer);
     }
   }, [skip]);
 
   const handleScroll = (e) => {
     const { offsetHeight, scrollTop, scrollHeight } = e.target;
-    const threshold = 100; 
+    const threshold = 1000; 
         if (scrollHeight - (offsetHeight + scrollTop) < threshold && 
         !loadingMore && 
         hasMore) {
@@ -141,24 +101,23 @@ useEffect(() => {
                       )}
                       
                       {/* Companies list */}
-                      {vents.map(vent => (
+                      {vents.map((vent ,index)=> (
                         <VentCard
-                          key={vent.id}
-                          id={vent.id}
-                          company_id={vent.id}
-                          category= {vent.category}
-                          content = {vent.content}
-                          upvote={vent.upvote}
-                          downvote={vent.downvote}
-                          company_country={vent.company.country}
-                          company_name={vent.company.name}
-                          author={vent.author.username}
-                          commentcount = {vent._count.comments}
-                          createdAt= {vent.createdAt}
-                          media = {vent.Media}
-                          votes= {vent.votes}
-                          user_id = {user_id}
-                          author_id = {vent.author_id}
+                          key={index}
+                          id={vent?.id}
+                          category= {vent?.category}
+                          content = {vent?.content}
+                          upvote={vent?.upvote}
+                          downvote={vent?.downvote}
+                          company_country={vent?.company?.country}
+                          company_name={vent?.company?.name}
+                          author={vent?.author?.username}
+                          author_id = {vent?.author_id}
+                          commentcount = {vent?._count?.comments}
+                          createdAt= {vent?.createdAt}
+                          media = {vent?.Media}
+                          votes={vent?.votes}
+                          user_id = {user.id}
                         />
                       ))}
                       
@@ -174,7 +133,7 @@ useEffect(() => {
         </div>
         {/* Filters & Categories (desktop only) */}
         <div className="bg-gray-950 w-80 h-screen hidden border-l border-gray-700 lg:block p-4 ">
-          <UserCard username={username} location={location} />
+          <UserCard username={user.username} location={location.city} />
         </div>
       </div>
     </div>

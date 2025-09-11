@@ -12,6 +12,7 @@ export const getAllCompanies = async (req: Request , res : Response )=>{
     const country = location?.country; 
     console.log("County", country)
     try {
+
     const companies = await prisma.company.findMany({
         where : { 
             ...( company_name ? {
@@ -23,8 +24,12 @@ export const getAllCompanies = async (req: Request , res : Response )=>{
             ...( industry ?  { 
                 industry: String(industry)
             } :{})
-    }, 
-
+        }, 
+        include:{
+            _count:{
+                select:{vents: true}
+            }
+        },
         orderBy: [
                 {
                     _relevance: {
@@ -60,16 +65,21 @@ export const getCompany = async (req: Request , res : Response )=>{
     
    try {
     const company = await prisma.company.findUnique({
-        where:{id : Number(id)}
+        where:{id : Number(id)},
+        include:{
+            _count:{
+                select:{vents: true}
+            }
+        },
     });
-    await redis.set(`Company:${id}`, JSON.stringify(company));
-    await redis.expire(`Company:${id}` , 3600);
+    await redis.set(`company:${id}`, JSON.stringify(company));
+    await redis.expire(`company:${id}` , 3600);
     res.status(200).json({
         message: "Get Company Successfull",
         company:company
     });
-   } catch (error : any ) {
-    console.error(error);
+   } catch (error : any ) { 
+    console.error(error); 
     res.status(500).json(error);
    }
 
@@ -78,49 +88,51 @@ export const getCompany = async (req: Request , res : Response )=>{
 export const createCompany = async (req: Request , res : Response )=>{
     const redis = await redisConnection();
     const { 
-        google_place_id , 
         name , 
-        domain , 
+        domain ,  
         industry ,
-        branch_name , 
-        formatted_address , 
         city , 
-        state,
         country,
-        lat,
-        lng,
     } = req.body;
     
     try {
 
-        const existing_company = await prisma.company.findUnique({
-            where: {google_place_id : google_place_id}
-        });
-
-        if (existing_company !==null){
-            res.status(401).json({message : "Company already exist"});
-        }   
-
+        const existing_company = await prisma.company.count({
+            where:{
+                name: name, 
+                city: city,
+                industry: industry,
+                country: country
+            }
+        });   
+        if(existing_company !=0 ){
+            res.status(409).json({  
+                message: "Company already exist"
+            })
+        }
         const add_company = await prisma.company.create({
             data:{
-                google_place_id,
                 name,
                 domain,
                 industry,
-                branch_name,
-                formatted_address,
                 city,
-                state,
                 country,
-                lat,
-                lng
             }
         });
-        await redis.set(`Company:${add_company.id}`, JSON.stringify(add_company));
-        await redis.expire(`Company:${add_company.id}` , 3600);
+
+        const company = await prisma.company.findUnique({
+            where:{id : Number(add_company.id)},
+            include:{
+                _count:{
+                    select:{vents: true}
+                }
+            },
+        });
+        await redis.set(`company:${company?.id}`, JSON.stringify(company));
+        await redis.expire(`company:${company?.id}` , 3600);
         res.status(201).json({
             message: "Add Company Successfull",
-            company : add_company
+            company : company
         })
     } catch (error : any ) {
         console.error(error);

@@ -13,19 +13,27 @@ import RegisterCompanyPage from './pages/RegisterCompanyPage';
 import AddUsernamePage from './pages/AddUsernamePage';
 import NotFoundPage from './pages/NotFoundPage';
 import { TrendingPage } from './pages/TrendingPage';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query'
+
+const queryClient = new QueryClient();
 
 function App() {
-
   return (
     <>
-     <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
       <Routes>
-       
         <Route path="/" element={<LandingPage></LandingPage>} ></Route>
         <Route path="/login" element={<LoginPage></LoginPage>} ></Route>
         <Route path="/username" element={<AddUsernamePage></AddUsernamePage>} ></Route>
         <Route path="/feed" element={<FeedPage></FeedPage>} ></Route>
-         <Route path="/trending" element={<TrendingPage></TrendingPage>} ></Route>
+        <Route path="/trending" element={<TrendingPage></TrendingPage>} ></Route>
         <Route path="/companies" element={<CompaniesPage></CompaniesPage>} ></Route>
         <Route path="/companies/:id" element={<CompanyDetailsPage></CompanyDetailsPage>} ></Route>
         <Route path="/companies/register" element={<RegisterCompanyPage></RegisterCompanyPage>} ></Route>
@@ -36,8 +44,9 @@ function App() {
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
+    </QueryClientProvider>
     </>
-   
+  
   );
 }
 

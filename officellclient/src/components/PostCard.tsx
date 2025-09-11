@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { MdOutlineAttachFile, MdOutlineCategory } from "react-icons/md"
 import { RiBuilding2Line } from "react-icons/ri"
-import InputEmoji from 'react-input-emoji';
 import Cookies from 'js-cookie';
 import axios from 'axios';
 import CompanySearchBar from "./CompanySearchBar";
-import { CompanyCard } from "./CompanyCard";
 import { Loader } from "../components/Loader";
 import { CompanySearchCard } from "./CompanySearchCard";
 import { FaUserTie, FaRegLaughBeam, FaBeer, FaUsers, FaBriefcase } from "react-icons/fa";
@@ -13,30 +11,41 @@ import { MdOutlineWorkHistory, MdOutlineLaptopChromebook, MdOutlineDarkMode } fr
 import { BiMoney } from "react-icons/bi";
 import { FiEye } from "react-icons/fi";
 import { ToastContainer, toast } from 'react-toastify';
-
-interface Company {
-  id: string;
-  name: string;
-  industry: string;
-  city: string;
-  country: string;
-}
+import AddCompany from "./AddCompany";
+import useCompanyStore from "../store/companyStore";
+import useVentStore from "../store/ventStore";
+import { Link, useLocation, useParams } from 'react-router-dom';
+import { initFlowbite } from "flowbite";
 
 const PostCard = () => {
 
-  const [post , setPost ] = useState("");
-  const [company_id , setCompany_id] = useState("");
-  const [category , setCategory] = useState("");
-  const [selectedImage, setSelectedImage] = useState(null);
+  const {id} = useParams();
+  const page = useLocation();
   const [skip, setSkip] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const [search , setSearch] = useState("")
-  const [companies, setCompanies] = useState<Company[]>([]);
+  const [search , setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [postloading, setPostLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [posterror, setPostError] = useState<string | null>(null);
+  const companies = useCompanyStore((state) => state.companies);
+  const post = useVentStore((state)=> state.post);
+  const category = useVentStore((state)=> state.category);
+  const company_id = useVentStore((state)=>state.company_id);
+  const selectedImage = useVentStore((state)=>state.selectedImage);
+  const addCompanies = useCompanyStore((state) => state.addCompanies);
+  const addVent = useVentStore((state) => state.addVent);
+  const addTrendingVent = useVentStore((state) => state.addTrendingVent);
+  const addPost = useVentStore((state)=>state.addPost);
+  const addCompanyId = useVentStore((state)=>state.addCompany_id);
+  const addCategory = useVentStore((state)=>state.addCategory);
+  const addSelectedImage = useVentStore((state)=>state.addSelectedImage);
+  const reset = useCompanyStore((state)=>state.reset);
+  const resetPost = useVentStore((state)=>state.resetPost);
+  const resetCategory = useVentStore((state)=>state.resetCategory);
+  const resetCompanyId = useVentStore((state)=>state.resetCompany_id);
+  const resetSelectedImage = useVentStore((state)=>state.resetSelectedImage);
+
 
  const categories = [
    { name: "Work Culture", icon: <FaBriefcase /> },
@@ -63,6 +72,7 @@ const PostCard = () => {
                 progress: undefined,
                 theme: "dark",
               });
+            return
       }else if (!category){
         toast.error('Choose a Category', {
                 position: "top-right",
@@ -74,6 +84,7 @@ const PostCard = () => {
                 progress: undefined,
                 theme: "dark",
             });
+            return
       }else if (!company_id){
         toast.error('Choose a Company', {
               position: "top-right",
@@ -85,6 +96,7 @@ const PostCard = () => {
               progress: undefined,
               theme: "dark",
             });
+            return
       }
     try {
       setPostLoading(true)
@@ -99,16 +111,20 @@ const PostCard = () => {
       formData.append('category', category);
       if (selectedImage)
       formData.append('file', selectedImage); 
-
-      const  response = await axios.post("http://localhost:3000/v1/vents", formData,{
+      const  {data: response} = await axios.post("http://localhost:3000/v1/vents", formData, {
           headers:headers,
       });
-      console.log(response)
+      console.log(response.vent);
       setPostLoading(false);
-      setPost("");
-      setCompany_id("");
-      setCategory("");
-      setSelectedImage(null);
+      if(page.pathname === '/feed' || (page.pathname === `/companies/${id}` && Number(company_id) === Number(id)) || page.pathname ==='/profile'){
+        addVent(response.vent);
+      } else if(page.pathname === '/trending'){
+        addTrendingVent(response.vent);
+      } 
+      resetPost();
+      resetCompanyId();
+      resetCategory();
+      resetSelectedImage();
         toast.success('Yay! you spilled it 🎉', {
           position: "top-right",
           autoClose: 5000,
@@ -121,7 +137,7 @@ const PostCard = () => {
         });
     } catch (error) {
       console.error(error);
-      toast.error('Oops Failed to Post! Dont worry its a mistake from our side ', {
+      toast.error('Oops Failed to Post!', {
               position: "top-right",
               autoClose: 5000,
               hideProgressBar: false,
@@ -136,14 +152,20 @@ const PostCard = () => {
   }
 
   const handleAddImage =(e)=>{
-    setSelectedImage(e.target.files[0]);
+    addSelectedImage(e.target.files[0]);
   }
 
   const handleAddCategory=(e)=>{
     const newCategory = e.currentTarget.value;
-    setCategory(newCategory);
+    addCategory(newCategory);
   }
 
+  useEffect(()=>{
+
+    reset();
+    console.log(page.pathname , id);
+
+  },[]);
 
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -163,29 +185,17 @@ const PostCard = () => {
           headers: headers
         });
         
-        console.log(companiesJson.companies);
         const newCompanies = companiesJson.companies;
-        
-        // Check if we've reached the end of the list
         if (newCompanies.length === 0) {
           setHasMore(false);
         } else {
-          setCompanies([...companies, ...newCompanies]);
+          addCompanies(newCompanies);
         }
         
         setError(null);
       } catch (error) {
         console.error(error);
-        toast.error('Failed fetch companies', {
-              position: "top-right",
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: false,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "dark",
-            });
+        
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -195,7 +205,7 @@ const PostCard = () => {
     if (hasMore || companies.length === 0 || search.length > 0) {
       const timer = setTimeout(()=>{
         fetchCompanies();
-      },1000);
+      },500);
       return () => clearTimeout(timer)
     }
   }, [skip, search]);
@@ -210,7 +220,7 @@ const PostCard = () => {
       <div className="px-3 sm:px-6 lg:px-10 pt-4 sm:pt-5 pb-2 ">
             <input
               value={post}
-              onChange={e=>setPost(e.target.value)}
+              onChange={e=>addPost(e.target.value)}
               placeholder="Spill the tea..."
               className="w-full resize-none overflow-hidden rounded-lg bg-gray-950 text-white placeholder-gray-400 focus:outline-none text-sm sm:text-base"
             />
@@ -279,13 +289,13 @@ const PostCard = () => {
                       />
                       <br /> <br />
                       {/* Button to remove the selected image */}
-                      <button className="ml-auto rounded-full border border-gray-500 px-4 sm:px-5 py-1.5 sm:py-2 font-semibold uppercase tracking-wide text-sm text-white hover:bg-white hover:text-black active:scale-95 transition" onClick={() => setSelectedImage(null)}>Remove</button>
+                      <button className="ml-auto rounded-full border border-gray-500 px-4 sm:px-5 py-1.5 sm:py-2 font-semibold uppercase tracking-wide text-sm text-white hover:bg-white hover:text-black active:scale-95 transition" onClick={() => resetSelectedImage()}>Remove</button>
                     </div>
               </div>
               )}
               <div className="flex items-center justify-between p-4 md:p-5  border-gray-200 rounded-b border dark:border-gray-600">
                   <button data-modal-hide="image-modal" type="button" className="text-black bg-gray-50 hover:bg-gray-950 hover:text-gray-50 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center ">Choose</button>
-                  <button type="button" onClick={() => setSelectedImage(null)} className="border border-red-500 bg-red-500 text-white rounded-md px-4 py-2 m-2 transition duration-500 ease select-none hover:bg-red-600 focus:outline-none focus:shadow-outline" data-modal-hide="image-modal">
+                  <button type="button" onClick={() => resetSelectedImage()} className="border border-red-500 bg-red-500 text-white rounded-md px-4 py-2 m-2 transition duration-500 ease select-none hover:bg-red-600 focus:outline-none focus:shadow-outline" data-modal-hide="image-modal">
                       Cancel
                   </button>
               </div>
@@ -324,7 +334,7 @@ const PostCard = () => {
           
               <div className="flex items-center justify-between p-4 md:p-5  border-gray-200 rounded-b border dark:border-gray-600">
               <button data-modal-hide="category-modal" type="button" className="text-black bg-gray-50 hover:bg-gray-950 hover:text-gray-50 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center ">Choose</button>
-              <button type="button" onClick={() => setCategory("")} 		className="border border-red-500 bg-red-500 text-white rounded-md px-4 py-2 m-2 transition duration-500 ease select-none hover:bg-red-600 focus:outline-none focus:shadow-outline" data-modal-hide="category-modal">
+              <button type="button" onClick={() => resetCategory()} 		className="border border-red-500 bg-red-500 text-white rounded-md px-4 py-2 m-2 transition duration-500 ease select-none hover:bg-red-600 focus:outline-none focus:shadow-outline" data-modal-hide="category-modal">
                       Cancel
                 </button>
               </div>
@@ -343,7 +353,7 @@ const PostCard = () => {
                   onSearch={(q) => {
                             setSkip(0);
                             setHasMore(true);
-                            setCompanies([]);
+                            reset();
                             setSearch(q);
                     }} />
             </div>
@@ -357,13 +367,13 @@ const PostCard = () => {
                             {error}
                           </div>
                         )}
-                  {companies.map(company => (
+                  {companies.map((company, index )=> (
                         <div  
                             className={`${company_id === company.id? 'border  border-gray-100':''}`} 
-                            key={company.id} 
+                            key={index} 
                             onClick={() => {
-                                setCompany_id(company.id)
-                                console.log("Company Id", company.id)
+                                addCompanyId(company.id)
+                                console.log("Company Id", company_id)
                               }}
                           >
                         <CompanySearchCard
@@ -377,7 +387,9 @@ const PostCard = () => {
                 
                   ))}
                     {loadingMore && <Loader />}
-                    
+                  
+                    <AddCompany></AddCompany>
+                
                     {/* End of results message */}
                     {!hasMore && companies.length > 0 && (
                       <div className="text-center text-gray-400 py-6">
@@ -388,7 +400,7 @@ const PostCard = () => {
           
             <div className="flex items-center justify-between p-4 md:p-5  border-gray-200 rounded-b border dark:border-gray-600">
                 <button data-modal-hide="default-modal" type="button" className="text-black bg-gray-50 hover:bg-gray-950 hover:text-gray-50 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center ">Choose</button>
-                    <button type="button" onClick={() => setCompany_id("")} 		className="border border-red-500 bg-red-500 text-white rounded-md px-4 py-2 m-2 transition duration-500 ease select-none hover:bg-red-600 focus:outline-none focus:shadow-outline" data-modal-hide="default-modal">
+                    <button type="button" onClick={() => resetCompanyId()} 		className="border border-red-500 bg-red-500 text-white rounded-md px-4 py-2 m-2 transition duration-500 ease select-none hover:bg-red-600 focus:outline-none focus:shadow-outline" data-modal-hide="default-modal">
                       Cancel
                 </button>
             </div>

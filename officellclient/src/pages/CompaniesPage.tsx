@@ -8,64 +8,37 @@ import { useEffect, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
 import { Loader } from "../components/Loader";
-interface Company {
-  id: string;
-  name: string;
-  industry: string;
-  city: string;
-  country: string;
-}
+import AddCompany from "../components/AddCompany";
+import useUserStore from "../store/userStore";
+import useCompanyStore from "../store/companyStore";
 
 export const CompaniesPage = () => {
-  const [companies, setCompanies] = useState<Company[]>([]);
   const [skip, setSkip] = useState(0);
-  const [username, setUsername] = useState("");
-  const [location, setLocation] = useState("");
-  const [country , setCountry] = useState("");
   const [category , setCategory] = useState("");
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
-  const [search , setSearch] = useState("")
+  const [search , setSearch] = useState("");
+  const companies = useCompanyStore((state) => state.companies);
+  const addCompanies = useCompanyStore((state) => state.addCompanies);
+  const reset = useCompanyStore((state)=>state.reset);
+  const location = useUserStore((state) => state.location)
+  const user = useUserStore((state) => state.user);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        
-        const token = Cookies.get("Auth");
-        const headers = {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        };
-        const { data: response } = await axios.get("http://localhost:3000/v1/profile", {
-          headers: headers
-        });
-        console.log(response);
-        setUsername(response.user.username);
-        setLocation(response.location.city);
-        setCountry(response.location.country);
-        setError(null);
-      } catch (error) {
-        console.error(error);
-        setError("Failed to fetch profile details");
-      } 
-    };
-    fetchData();
-  }, []);
 
   const handleScroll = (e) => {
     const { offsetHeight, scrollTop, scrollHeight } = e.target;
-    const threshold = 100; 
+    const threshold = 1000; 
         if (scrollHeight - (offsetHeight + scrollTop) < threshold && 
-        !loadingMore && 
-        hasMore) {
-              setSkip(companies.length);
+        !loadingMore && hasMore) {
+        setSkip(companies.length);
     }
   }
 
   useEffect(() => {
     const fetchCompanies = async () => {
+
       try {
         
         if (companies.length === 0) {
@@ -91,7 +64,8 @@ export const CompaniesPage = () => {
           setHasMore(false);
         } 
         else {
-          setCompanies([...companies, ...newCompanies]);
+          addCompanies(newCompanies);
+          console.log("companies",companies)
         }
         setError(null);
       } catch (error) {
@@ -103,7 +77,7 @@ export const CompaniesPage = () => {
       }
     };
     
-    if (hasMore || companies.length === 0 || search.length >0 || category.length > 0 ) {
+    if (hasMore || companies?.length === 0 || search.length > 0 || category.length > 0 ) {
       const timer = setTimeout(()=>{
         fetchCompanies();
       },1000);
@@ -111,7 +85,9 @@ export const CompaniesPage = () => {
     }
   }, [skip, search, category]);
 
-  
+  useEffect(()=>{
+    reset();
+  },[]);
 
   return (
     <div className="w-screen h-screen flex bg-gray-950">
@@ -121,7 +97,7 @@ export const CompaniesPage = () => {
         <CompanyCategoryM onSelect={(q)=>{
             setSkip(0);
             setHasMore(true);
-            setCompanies([]);
+            reset();
             setCategory(q)
           }} />
       </div>
@@ -133,12 +109,12 @@ export const CompaniesPage = () => {
           <CompanySearchBar onSearch={(q) => {
             setSkip(0);
             setHasMore(true);
-            setCompanies([]);
+            reset();
             setSearch(q);
           }} />
           
           {/* Initial loading indicator */}
-          {loading && companies.length === 0 && <Loader />}
+          {loading && companies?.length === 0 && <Loader />}
           
           {/* Error message */}
           {error && (
@@ -148,20 +124,21 @@ export const CompaniesPage = () => {
           )}
           
           {/* Companies list */}
-          {companies.map(company => (
+          {companies?.map((company, index) => (
             <CompanyCard
-              key={company.id}
+              key={index}
               company_id={company.id}
               company_name={company.name}
               industry={company.industry}
               city={company.city}
               country={company.country}
+              vents_count={company._count?.vents}
             />
           ))}
           
           {/* Loading more indicator */}
           {loadingMore && <Loader />}
-          
+          <AddCompany></AddCompany>
           {/* End of results message */}
           {!hasMore && companies.length > 0 && (
             <div className="text-center text-gray-400 py-6">
@@ -172,11 +149,11 @@ export const CompaniesPage = () => {
         
         {/* Filters & Categories (desktop only) */}
         <div className="bg-gray-950 w-80 h-screen hidden border-l border-gray-700 lg:block p-4">
-          <UserCard username={username} location={location} />
+          <UserCard username={user.username} location={location.city} />
           <CompanyCategory onSelect={(q)=>{
             setSkip(0);
             setHasMore(true);
-            setCompanies([]);
+            reset();
             setCategory(q)
           }} />
         </div>

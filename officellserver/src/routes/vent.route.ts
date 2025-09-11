@@ -18,4 +18,3 @@ ventRouter.post("/vents/:id/downvote",auth ,  downVote);
 ventRouter.post("/vents/:id/report", auth , validateData(reportVentSchema) , reportVent);
 ventRouter.post("/vents/:id/comments", auth , validateData(addCommentSchema), addComment );
 ventRouter.get("/vents/:id/comments", auth , getAllComment);
-

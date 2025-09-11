@@ -1,97 +1,96 @@
 // src/components/CommentSection.jsx
 import { useState, useRef } from "react";
 import { CommentCard } from "./CommentCard";
+import Cookies from 'js-cookie';
+import axios from "axios";
+import { ToastContainer, toast } from 'react-toastify';
+import useVentStore from "../store/ventStore";
+import useCommentStore from "../store/commentStore";
+import { Loader } from "./Loader";
 
-export const CommentSection = () => {
-  const [comments, setComments] = useState([
-    { id: 1, text: "This is the first comment!", author: "Alice", replies: [] },
-    { id: 2, text: "Great post!", author: "Bob", replies: [] },
-    { id: 2, text: "Great post!", author: "Bob", replies: [] },
-    { id: 2, text: "Great post!", author: "Bob", replies: [] },
-    { id: 2, text: "Great post!", author: "Bob", replies: [] },
-    { id: 2, text: "Great post!", author: "Bob", replies: [] },
-    { id: 2, text: "Great post!", author: "Bob", replies: [] },
-    { id: 2, text: "Great post!", author: "Bob", replies: [] },
-    { id: 2, text: "Great post!", author: "Bob", replies: [] },
-    { id: 2, text: "Great post!", author: "Bob", replies: [] },
-    { id: 2, text: "Great post!", author: "Bob", replies: [] },
-    { id: 2, text: "Great post!", author: "Bob", replies: [] },
-
-  ]);
-
+export const CommentSection = ({vent_id}) => {
     const [newComment, setNewComment] = useState("");
-    const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+    const [loading , setLoading]= useState(false);
+    const addComment = useCommentStore((state)=> state.addComment);
 
-  // Auto-expand textarea
-  const handleInput = () => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = "auto";
-      textarea.style.height = textarea.scrollHeight + "px";
+    const handleComment = async ()=>{
+    if(!newComment){
+      toast.error('Type some comment !', {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: false,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "dark",
+              });
+      return;
     }
-  };
-
-  // Add new top-level comment
-  const handleAddComment = () => {
-    if (!newComment.trim()) return;
-    const newEntry = {
-      id: Date.now(),
-      text: newComment,
-      author: "You",
-      replies: [],
-    };
-    setComments([...comments, newEntry]);
-    setNewComment("");
-    if (textareaRef.current) {
-      textareaRef.current.style.height = "auto"; // reset height
+      try {
+        setLoading(true);
+        const token = Cookies.get("Auth");
+        const headers={
+          'Authorization': `Bearer ${token}`
+        }
+        const  {data:response} = await axios.post(`http://localhost:3000/v1/vents/${vent_id}/comments`, {
+          comment: newComment
+        },{
+          headers:headers,
+      });
+      setLoading(false);
+      console.log(response.comment);
+      addComment(response.comment);
+      setNewComment("");
+      } catch (error) {
+        console.error(error);
+        toast.error('Oops Failed to Post!', {
+                      position: "top-right",
+                      autoClose: 5000,
+                      hideProgressBar: false,
+                      closeOnClick: false,
+                      pauseOnHover: true,
+                      draggable: true,
+                      progress: undefined,
+                      theme: "dark",
+                });
+          setLoading(false);
+        
+      }
     }
-  };
-
-  // // Handle replies
-  // const handleReply = (commentId, replyText) => {
-  //   const addReply = (items) =>
-  //     items.map((item) => {
-  //       if (item.id === commentId) {
-  //         return {
-  //           ...item,
-  //           replies: [
-  //             ...item.replies,
-  //             { id: Date.now(), text: replyText, author: "You", replies: [] },
-  //           ],
-  //         };
-  //       }
-  //       return { ...item, replies: addReply(item.replies) };
-  //     });
-
-  //   setComments(addReply(comments));
-  // };
 
   return (
     <div  >
+      <ToastContainer></ToastContainer>
+      {loading ?  <Loader /> : 
+      <>
       {/* Comment Input Styled like PostCard */}
       <div className="w-full  bg-gray-950  border-b-1 border-gray-700">
         <div className="px-3 sm:px-4 pt-3 sm:pt-4 pb-2 ">
-          <textarea
-            ref={textareaRef}
+          <input
             placeholder="Write a comment..."
-            rows={1}
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            onInput={handleInput}
             className="w-full resize-none overflow-hidden rounded-lg bg-gray-950 text-white placeholder-gray-400 focus:outline-none text-sm sm:text-base"
           />
         </div>
 
-        <div className="flex justify-end px-3 sm:px-4 pb-3 pt-2 ">
+        <div className="flex justify-end px-2 sm:px-4 pb-2 pt-2">
           <button
-            onClick={handleAddComment}
-            className="ml-auto rounded-full border border-gray-500 px-4 sm:px-5 py-1.5 sm:py-2 font-semibold uppercase tracking-wide text-sm text-white hover:bg-white hover:text-black active:scale-95 transition"
+            onClick={handleComment}
+            className="ml-auto rounded-full border border-gray-500 
+                      px-3 py-2 text-xs 
+                      sm:px-5 sm:py-2 sm:text-sm 
+                      font-semibold uppercase tracking-wide text-white 
+                      hover:bg-white hover:text-black active:scale-95 transition"
           >
-            Post
+            comment
           </button>
         </div>
-      </div>
 
+      </div>
+      </>
+      }
       
     </div>
   );

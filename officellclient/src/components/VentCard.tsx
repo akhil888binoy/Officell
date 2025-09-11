@@ -6,27 +6,33 @@ import { useEffect, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
+import { getName } from "country-list";
+import useVentStore from "../store/ventStore";
+import { useLocation } from "react-router-dom";
 
 
-
-export const VentCard = ({ id , company_id , category , content , upvote , downvote , company_name , company_country, author, author_id, commentcount , createdAt, media, votes, user_id }) => {
+export const VentCard = ({ id , category , content , upvote , downvote , company_name , company_country, author, author_id, commentcount , createdAt, media, votes, user_id }) => {
 
   const [time, setTime] = useState("");
   const [isupvote , setIsUpVote] = useState(false);
   const [isdownvote , setIsDownVote] = useState(false);
   const [disableSubmitBtn, setDisableSubmitBtn] = useState(false);
+  const upVote = useVentStore((state)=> state.upVote);
+  const downVote = useVentStore((state)=> state.downVote);
+  const deleteVent = useVentStore((state)=>state.deleteVent);
+  const page = useLocation();
 
   useEffect(()=>{
-    for (const vote of votes){
-      if(vote.user_id == user_id && vote.vote=='UPVOTE'){
-        setIsUpVote(true)
-      } else if (vote.user_id == user_id && vote.vote=='DOWNVOTE'){
-        setIsDownVote(true)
+    if (votes?.length > 0 ){
+      for (const vote of votes){
+        if(vote.user_id == user_id && vote.vote=='UPVOTE'){
+          setIsUpVote(true)
+        } else if (vote.user_id == user_id && vote.vote=='DOWNVOTE'){
+          setIsDownVote(true)
+        }
       }
     }
-    console.log("Author",author );
-    console.log("User_id", user_id);
-  },[downvote, upvote]);
+  },[]);
 
 const handleDownvote=async ()=>{
   try {
@@ -35,9 +41,28 @@ const handleDownvote=async ()=>{
       const headers={
         'Authorization': `Bearer ${token}`
       };
+      let voteenum;
+      const vote = votes.find((vote)=> vote.user_id === user_id);
+        if(vote){
+          if(vote.vote === 'NOVOTE' || vote.vote === 'UPVOTE'){
+            voteenum = 'DOWNVOTE';
+            setIsDownVote(true);
+            setIsUpVote(false);
+          }else if (vote.vote ==='DOWNVOTE'){
+            voteenum = 'NOVOTE';
+            setIsDownVote(false);
+            setIsUpVote(false);
+          }
+        }else{
+          voteenum = 'DOWNVOTE';
+          setIsDownVote(true);
+          setIsUpVote(false);
+        }
+        downVote(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
       const {data: response }= await axios.post(`http://localhost:3000/v1/vents/${id}/downvote`,"",{
           headers:headers,
       });
+
     console.log(response.author_id);
     setDisableSubmitBtn(false)
   } catch (error) {
@@ -57,34 +82,54 @@ const handleDownvote=async ()=>{
 
 }
 
-const handleUpvote=async ()=>{
-  try {
-      setDisableSubmitBtn(true);
-      const token =  Cookies.get("Auth");
-      const headers={
-        'Authorization': `Bearer ${token}`
-      };
-      const response = await axios.post(`http://localhost:3000/v1/vents/${id}/upvote`,"",{
-          headers:headers,
-      });
-    console.log(response);
-    setDisableSubmitBtn(false)
-  } catch (error) {
-    console.error(error);
-    setDisableSubmitBtn(false);
-    toast.error('Oops Failed to Up Vote! Dont worry its a mistake from our side ', {
-              position: "top-right",
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: false,
-              pauseOnHover: true,
-              draggable: true,
-              progress: undefined,
-              theme: "dark",
-        });
-  }
+  const handleUpvote=async ()=>{
+    try {
 
-}
+        setDisableSubmitBtn(true);
+        const token =  Cookies.get("Auth");
+        const headers={
+          'Authorization': `Bearer ${token}`
+        };
+        let voteenum;
+
+        const vote = votes.find((vote)=> vote.user_id === user_id);
+        if(vote){
+          if(vote.vote === 'NOVOTE' || vote.vote === 'DOWNVOTE'){
+            voteenum = 'UPVOTE';
+            setIsUpVote(true)
+            setIsDownVote(false)
+          }else if (vote.vote ==='UPVOTE'){
+            voteenum = 'NOVOTE';
+            setIsUpVote(false)
+            setIsDownVote(false)
+          }
+        }else{
+          voteenum = 'UPVOTE';
+          setIsUpVote(true);
+          setIsDownVote(false);
+        }
+        upVote(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
+        const {data: response} = await axios.post(`http://localhost:3000/v1/vents/${id}/upvote`,"",{
+            headers:headers,
+        });
+        console.log(response.vote);
+        setDisableSubmitBtn(false);
+    } catch (error) {
+      console.error(error);
+      setDisableSubmitBtn(false);
+      toast.error('Oops Failed to Up Vote! Dont worry its a mistake from our side ', {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: false,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+                theme: "dark",
+          });
+    }
+
+  }
 
 const handleDeleteVent =async()=>{
   try {
@@ -97,6 +142,7 @@ const handleDeleteVent =async()=>{
           headers:headers,
       });
     console.log(response);
+    deleteVent(id);
     setDisableSubmitBtn(false);
     toast.success('Deleted Successfully 💀', {
           position: "top-right",
@@ -125,12 +171,16 @@ const handleDeleteVent =async()=>{
 }
 
 useEffect(() => {
+
   if (createdAt) {
     setTime(moment.utc(createdAt).local().startOf("seconds").fromNow());
   }
+
 }, [createdAt]);
 
   return (
+    <>
+    {id ? 
     <div className="relative flex flex-col bg-gray-950 border-t border-b border-gray-700 w-full overflow-hidden">
       <a href={`/vent/${id}`} >
         {/* Header */}
@@ -152,11 +202,11 @@ useEffect(() => {
               <span className="text-right break-words max-w-[140px] md:max-w-[180px]">
                 {company_name}
               </span>
-                    <RiBuilding2Line className="text-gray-400 flex-shrink-0" />
+                    <RiBuilding2Line className="text-blue-400 flex-shrink-0" />
             </div>
-            <div className="flex items-center gap-1">
-              <MdLocationOn className="text-gray-400 flex-shrink-0" />
-              <span>{company_country}</span>
+            <div className="flex items-center gap-1 flex-wrap justify-end">
+              <span className="text-right break-words max-w-[140px] md:max-w-[180px]">{company_country? getName(company_country):''}</span>
+              <MdLocationOn className="text-red-400 flex-shrink-0" />
             </div>
           </div>
 
@@ -178,7 +228,7 @@ useEffect(() => {
 
 
   <div className="mt-3 flex flex-wrap justify-center items-center gap-3">
-    {media.map((image) => (
+    {media?.map((image) => (
       <div key={image.id} className="relative group">
         <img
           src={image.url}
@@ -208,20 +258,27 @@ useEffect(() => {
             <span className="text-sm md:text-base">{downvote}</span>
           </button>
         {/* Comment */}
-          <button 
-            className="flex items-center gap-2 text-gray-400 hover:text-blue-400 active:text-blue-400 transition"
-          > <a href={`/vent/${id}`} >
-            <FaRegComment />
-            </a>
-            <span className="text-sm md:text-base">{commentcount}</span>
-          </button>
+        {page.pathname != `/vent/${id}` && 
+            <button 
+                className="flex items-center gap-2 text-gray-400 hover:text-blue-400 active:text-blue-400 transition"
+              > <a href={`/vent/${id}`} >
+                <FaRegComment />
+                </a>
+                <span className="text-sm md:text-base">{commentcount}</span>
+              </button>
+          }
+          
         </div>
-      { author === user_id && 
+      { author_id === user_id && page.pathname != `/vent/${id}` &&
         <button disabled={disableSubmitBtn} onClick={handleDeleteVent} className="flex items-center gap-2 text-gray-400 hover:text-red-400 active:text-red-600 transition">
           <FaTrash />
         </button>
       }
+
       </div>
-    </div>
+    </div> : ''}
+     
+    </>
+   
   );
 };

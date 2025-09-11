@@ -2,13 +2,15 @@ import { FaMapMarkerAlt } from "react-icons/fa";
 import { BiMessageDetail } from "react-icons/bi";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import {getName} from "country-list";
 
 export const CompanySearchCard = ({company_id , city , country , company_name , industry}) => {
-   
 
   return (
-  
-    <div className="relative flex flex-col bg-gray-950   w-full overflow-hidden ">
+     <>
+    {company_id?
+     
+      <div className="relative flex flex-col bg-gray-950   w-full overflow-hidden ">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3">
         <h3 className="text-white font-semibold text-lg md:text-xl lg:text-2xl">
@@ -24,9 +26,11 @@ export const CompanySearchCard = ({company_id , city , country , company_name , 
       <div className="px-4 pb-3 flex flex-col gap-2">
         <div className="flex items-center gap-2 text-gray-400 text-sm md:text-base">
           <FaMapMarkerAlt className="text-red-400" />
-          <span>{city}, {country}</span>
+                    <span>{city}, {country?getName(country):''}</span>
         </div>
       </div>
-    </div>
+    </div>:''
+     }
+    </>
   );
 };

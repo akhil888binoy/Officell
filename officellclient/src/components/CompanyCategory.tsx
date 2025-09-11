@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { FaRocket, FaBuilding, FaUniversity, FaLaptopCode, FaBriefcase, FaIndustry, FaHospital, FaGraduationCap, FaFilm, FaBalanceScale, FaLeaf } from "react-icons/fa";
 
-const categories = [
+export const categories = [
   { name: "Startups", icon: <FaRocket className="text-pink-500" /> },
   { name: "MNCs", icon: <FaBuilding className="text-blue-500" /> },
   { name: "Government Jobs", icon: <FaUniversity className="text-yellow-600" /> },
@@ -14,8 +14,8 @@ const categories = [
   { name: "Law", icon: <FaBalanceScale className="text-yellow-700" /> },
   { name: "NGOs ", icon: <FaLeaf className="text-green-500" /> },
 ];
-
 export const CompanyCategory = ({ onSelect }) => {
+
   const [category , setCategory] = useState("");
 
   const handleCategory =(e)=>{
@@ -28,6 +28,7 @@ export const CompanyCategory = ({ onSelect }) => {
       onSelect(e.target.value);
     }
   }
+
   return (
     <div className="w-full bg-gray-950 overflow-y-auto no-scrollbar mt-3">
       {/* Heading */}

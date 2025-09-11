@@ -9,96 +9,31 @@ import axios from "axios";
 import { Loader } from "../components/Loader";
 import { CommentCard } from "../components/CommentCard";
 import { UserCard } from "../components/UserCard";
+import type { Vent } from "../interfaces/VentInterface";
+import type { Comment } from "../interfaces/CommentInterface";
+import useUserStore from "../store/userStore";
+import useVentStore from "../store/ventStore";
+import useCommentStore from "../store/commentStore";
 
-interface Vent {
-    category: string;
-    company_id: string;
-    id: string;
-    verified_employee: boolean;
-    content: string;
-    upvote: string;
-    downvote: string;
-    company:{
-      name : string ,
-      country: string
-    };
-    _count :{
-      comments:string
-    };
-    comments:[]
-    author:{
-      username:string
-    };
-    createdAt: string;
-    author_id:string;
-    Media:[],
-    votes:[]
-}
 
-interface Comment{
-  id : string,
-  comment: string
-}
+
+
 export const VentDetailsPage = () => {
   const {id} = useParams();
-  const [vent, setVent] = useState<Vent | null>(null);
-  const [comments , setComments] = useState<Comment[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [skip, setSkip] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [username , setUsername ] = useState("");
-  const [location, setLocation] = useState("");
-  const [user_id , setUser_id] = useState(null);
-
-
-  useEffect(()=>{
-
-    const fetchData = async ()=>{
-      try {
-        const token =  Cookies.get("Auth");
-        const headers={
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-        const {data: response } = await axios.get("http://localhost:3000/v1/profile",{
-          headers: headers
-        });
-        console.log(response);
-        setUsername(response.user.username);
-        setLocation(response.location.city);
-        setUser_id(response.user.id);
-      } catch (error) {
-        console.error(error)
-      }
-    }
-
-    fetchData();
-
-  },[]);
+  const location = useUserStore((state) => state.location);
+  const user = useUserStore((state) => state.user);
+  const addComments = useCommentStore((state)=>state.addComments);
+  const vent = useVentStore((state)=>state.getVent(id));
+  const comments = useCommentStore((state)=>state.comments);
+  const resetComments = useCommentStore((state)=>state.resetComments);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = Cookies.get("Auth");
-        const headers = {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        };
-        const { data: response } = await axios.get(`http://localhost:3000/v1/vents/${id}`, {
-          headers: headers
-        });
-        console.log(response);
-        setVent(response.vent);
-        setError(null);
-      } catch (error) {
-        console.error(error);
-        setError("Failed to fetch company details");
-      } 
-    };
-    
-    fetchData();
+    resetComments();
   }, [id]); 
 
   useEffect(() => {
@@ -115,18 +50,18 @@ export const VentDetailsPage = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         };
-        const { data: commentsJson } = await axios.get(`http://localhost:3000/v1/vents/${id}/comments`, {
+        const { data: commentsJson } = await axios.get(`http://localhost:3000/v1/vents/${id}/comments?skip=${skip}`, {
           headers: headers
         });
         
-        console.log(commentsJson.comments);
+        console.log("Comments",commentsJson.comments);
         const newComments = commentsJson.comments;
         
         // Check if we've reached the end of the list
         if (newComments.length === 0) {
           setHasMore(false);
         } else {
-          setComments([...comments, ...newComments]);
+          addComments(newComments);
         }
         setError(null);
       } catch (error) {
@@ -138,28 +73,22 @@ export const VentDetailsPage = () => {
       }
     };
     if (hasMore || comments.length === 0) {
-      fetchComments();
+      const timer = setTimeout(()=>{
+        fetchComments();
+      },100) ;
+      return()=>clearTimeout(timer);
     }
   }, [skip, id]);
 
-   const handleScroll = (e) => {
+    const handleScroll = (e) => {
     const { offsetHeight, scrollTop, scrollHeight } = e.target;
-    const threshold = 100; 
+    const threshold = 1000; 
         if (scrollHeight - (offsetHeight + scrollTop) < threshold && 
         !loadingMore && 
         hasMore) {
               setSkip(comments.length);
     }
   }
-
-  // if (!vent) {
-  //   return (
-  //     <div className="w-screen h-screen bg-gray-950 ">
-  //         <Loader />
-  //     </div>
-  //   );
-  // }
-
 
   return (
     <div className="w-screen h-screen flex bg-gray-950">
@@ -173,23 +102,21 @@ export const VentDetailsPage = () => {
         <div className="flex-1 bg-gray-950 overflow-y-scroll " onScroll={handleScroll} >
 
         { vent &&
-                  <VentCard
-                          key={vent.id}
+                    <VentCard
                           id={vent.id}
-                          company_id={vent.id}
                           category= {vent.category}
                           content = {vent.content}
                           upvote={vent.upvote}
                           downvote={vent.downvote}
-                          company_country={vent.company.country}
-                          company_name={vent.company.name}
-                          author={vent.author.username}
-                           author_id = {vent.author_id}
-                          commentcount = {vent._count.comments}
+                          company_country={vent.company?.country}
+                          company_name={vent.company?.name}
+                          author={vent.author?.username}
+                          author_id = {vent.author_id}
+                          commentcount = {vent._count?.comments}
                           createdAt= {vent.createdAt}
                           media = {vent.Media}
-                          votes= {vent.votes}
-                          user_id = {user_id}
+                          votes={vent.votes}
+                          user_id = {user.id}
                         />
         }
           
@@ -197,7 +124,7 @@ export const VentDetailsPage = () => {
                               
 
           <div className="space-y-4 ">
-          {vent &&  <CommentSection></CommentSection>}
+          {vent &&  <CommentSection vent_id ={vent.id}></CommentSection> }
               {loading && !vent && <Loader />}
               {!loading && comments.length === 0 && vent && (
                 <div className="text-center text-gray-500 py-6">
@@ -210,12 +137,13 @@ export const VentDetailsPage = () => {
                                 {error}
                             </div>
                           )}
+
             {/* Render Comments */}
-          {comments.map(comment => (
+          {comments.map((comment, index )=> (
             <CommentCard
-              key={comment.id}
+              key={index}
               comment={comment}
-              // onReply={handleReply}
+              user_id = {user.id}
             />
           ))}
 
@@ -233,7 +161,7 @@ export const VentDetailsPage = () => {
         </div>
 
         <div className="bg-gray-950 w-80 h-screen hidden border-l border-gray-700 lg:block p-4 ">
-              <UserCard username={username} location={location} />
+              <UserCard username={user.username} location={location.city} />
         </div>
       </div>
     </div>

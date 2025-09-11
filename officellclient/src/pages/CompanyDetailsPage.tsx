@@ -10,80 +10,27 @@ import { useEffect, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
 import { Loader } from "../components/Loader";
+import type { Company } from "../interfaces/CompanyInterafce";
+import type { Vent } from "../interfaces/VentInterface";
+import useUserStore from "../store/userStore";
+import useCompanyStore from "../store/companyStore";
+import useVentStore from "../store/ventStore";
 
 
-interface Company {
-  id: string;
-  name: string;
-  industry: string;
-  city: string;
-  country: string;
-}
-interface Vent {
-    category: string;
-    company_id: string;
-    id: string;
-    verified_employee: boolean;
-    content: string;
-    upvote: string;
-    downvote: string;
-    company:{
-      name : string ,
-      country: string
-    };
-    _count :{
-      comments:string
-    };
-    author:{
-      username:string
-    };
-    createdAt: string;
-    author_id:string;
-    Media:[],
-    votes:[]
-}
 export const CompanyDetailsPage = () => {
   const {id} = useParams();
-  const [username, setUsername] = useState("");
-  const [location, setLocation] = useState("");
-  const [company, setCompany] = useState<Company | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [vents , setVents] = useState<Vent[]>([]);
   const [hasMore, setHasMore] = useState(true);
   const [skip, setSkip] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [user_id , setUser_id] = useState(null);
   const [category, setCategory] = useState("");
-
-useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const token = Cookies.get("Auth");
-        const headers = {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        };
-        const [profileResponse, companyResponse] = await Promise.all([
-          axios.get("http://localhost:3000/v1/profile", { headers }),
-          axios.get(`http://localhost:3000/v1/companies/${id}`, { headers })
-        ]);
-        console.log(profileResponse.data);
-       
-        console.log(companyResponse.data.companies);
-        setCompany(companyResponse.data.companies);
-        setUsername(profileResponse.data.user.username);
-        setLocation(profileResponse.data.location.city);
-         setUser_id(profileResponse.data.user.id);
-        setError(null);
-      } catch (error) {
-        console.error(error);
-        setError("Failed to fetch company details");
-      } 
-    };
-    
-    fetchData();
-  }, [id]); 
+  const location = useUserStore((state) => state.location);
+  const user = useUserStore((state) => state.user);
+  const company = useCompanyStore((state)=>state.getCompany(id));
+  const reset = useVentStore((state)=>state.reset);
+  const addVents = useVentStore((state) => state.addVents);
+  const vents = useVentStore((state) => state.vents);
 
 useEffect(() => {
     const fetchVents = async () => {
@@ -106,12 +53,10 @@ useEffect(() => {
         
         console.log(ventsJson.vents);
         const newVents = ventsJson.vents;
-        
-        // Check if we've reached the end of the list
         if (newVents.length === 0) {
           setHasMore(false);
         } else {
-          setVents([...vents, ...newVents]);
+          addVents(newVents)
         }
         setError(null);
       } catch (error) {
@@ -123,13 +68,20 @@ useEffect(() => {
       }
     };
     if (hasMore || vents.length === 0|| category.length > 0) {
-      fetchVents();
+      const timer = setTimeout(()=>{
+        fetchVents();
+      },100) ;
+      return()=>clearTimeout(timer);
     }
-  }, [skip, id,category]);
+  }, [skip, id, category]);
+
+  useEffect(()=>{
+    reset()
+  },[id]);
 
   const handleScroll = (e) => {
     const { offsetHeight, scrollTop, scrollHeight } = e.target;
-    const threshold = 100; 
+    const threshold = 1000; 
     if (scrollHeight - (offsetHeight + scrollTop) < threshold && !loadingMore && hasMore) {
             setSkip(vents.length);
     }
@@ -146,7 +98,7 @@ useEffect(() => {
         onSelect={(q)=>{
             setSkip(0);
             setHasMore(true);
-            setVents([]);
+            reset();
             setCategory(q)
           }}  
           />
@@ -165,10 +117,9 @@ useEffect(() => {
             industry={company.industry} 
             city={company.city} 
             country={company.country}
+            vents_count={company._count.vents}
           />
           }
-          
-            {loading &&  <Loader />}
               {!loading && vents.length === 0 && (
                 <div className="text-center text-gray-500 py-6">
                   Be the first to bitch
@@ -182,25 +133,24 @@ useEffect(() => {
                                     )}
                                     
                                      {/* Companies list */}
-                                    {vents.map(vent => (
-                                      <VentCard
-                                          key={vent.id}
-                                          id={vent.id}
-                                          company_id={vent.id}
-                                          category= {vent.category}
-                                          content = {vent.content}
-                                          upvote={vent.upvote}
-                                          downvote={vent.downvote}
-                                          company_country={vent.company.country}
-                                          company_name={vent.company.name}
-                                          author={vent.author.username}
-                                          author_id = {vent.author_id}
-                                          commentcount = {vent._count.comments}
-                                          createdAt= {vent.createdAt}
-                                          media = {vent.Media}
-                                          votes= {vent.votes}
-                                          user_id = {user_id}
-                                      />
+                                    {vents.map((vent,index) => (
+                                        <VentCard
+                                          key={index}
+                                          id={vent?.id}
+                                          category= {vent?.category}
+                                          content = {vent?.content}
+                                          upvote={vent?.upvote}
+                                          downvote={vent?.downvote}
+                                          company_country={vent?.company?.country}
+                                          company_name={vent?.company?.name}
+                                          author={vent?.author?.username}
+                                          author_id = {vent?.author_id}
+                                          commentcount = {vent?._count?.comments}
+                                          createdAt= {vent?.createdAt}
+                                          media = {vent?.Media}
+                                          votes={vent?.votes}
+                                          user_id = {user.id}
+                                        />
                                     ))}
                                     
                                      {/* Loading more indicator */}
@@ -216,12 +166,12 @@ useEffect(() => {
         
         {/* Filters & Categories (desktop only) */}
         <div className="bg-gray-950 w-80 h-screen hidden border-l border-gray-700 lg:block p-4">
-          <UserCard username={username} location={location} />
+          <UserCard username={user.username} location={location.city} />
           <CategoryBar 
             onSelect={(q)=>{
             setSkip(0);
             setHasMore(true);
-            setVents([]);
+            reset();
             setCategory(q)
           }}  
           />

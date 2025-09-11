@@ -112,7 +112,6 @@ export const getUserProfile = async (req: Request | any  , res : Response ) => {
             res.status(200).json({
                 message : "Get Profile Successfull",
                 user : user,
-                ip:ip,
                 location: location
             }); 
 

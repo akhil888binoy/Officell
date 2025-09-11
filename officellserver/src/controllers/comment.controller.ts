@@ -1,5 +1,6 @@
 import {Request , Response } from 'express';
 import { prisma } from "../index";
+import { redisConnection } from '../redis/connection';
 
 
 export const addSubcomment = async (req: Request | any , res: Response)=>{
@@ -14,9 +15,23 @@ export const addSubcomment = async (req: Request | any , res: Response)=>{
                 subcomment: subcomment,
             }
         });
+
+        const current_subcomment = await prisma.subComment.findUnique(({
+            where:{id: add_subcomment.id},
+            include:{
+                author:{
+                    select:{ 
+                        id:true,
+                        username:true
+                        
+                    }
+                }
+            }
+        }))
+
         res.status(201).json({
             message: "SubComment created",
-            subcomment: add_subcomment
+            subcomment: current_subcomment
         });
 
     } catch (error: any ) {
@@ -82,7 +97,6 @@ export const deleteSubcomment= async ( req: Request | any , res: Response)=>{
     }
 }
 
-
 export const updateComment = async(req: Request | any , res: Response)=>{
     const {id} = req.params;
     const {_id} = req.decoded;
@@ -103,14 +117,41 @@ export const updateComment = async(req: Request | any , res: Response)=>{
         res.status(500).json(error);
     }
 }
-export const deleteComment = async (req:Request | any , res: Response)=>{
+
+export const deleteComment = async (req: Request | any , res: Response)=>{
     const{ id } = req.params;
     const{_id} = req.decoded;
+    const {vent_id} = req.query;
+    const redis = await redisConnection();
 
     try {
         const delete_comment = await prisma.comment.delete({
             where:{id : Number(id), author_id: Number(_id)}
         });
+        const vent = await prisma.vent.findUnique({
+            where: {id : Number(vent_id)},
+            include:{
+            votes:true,
+            _count: {
+                select: { comments: true },
+            },
+            company: {
+                select: {
+                    name: true,
+                    country: true,
+                },
+            }, 
+            author:{
+                select:{
+                    username: true
+                }
+            },
+                
+                Media:true
+            }
+        });
+        await redis.set(`vent:${vent?.id}`, JSON.stringify(vent));
+        await redis.expire(`vent:${vent?.id}`, 3600);
         res.status(200).json({
             message: "Deleted Comment Successfully",
             deleted_comment: delete_comment
