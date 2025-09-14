@@ -6,6 +6,14 @@ import {getName} from "country-list";
 
 export const CompanySearchCard = ({company_id , city , country , company_name , industry}) => {
 
+const cleanCountryName = (name) => {
+  if (!name) return '';
+  return name
+    .replace(/^(?:the\s|The\s)/i, '') 
+    .replace(/\s*\(the\)$/i, '') 
+    .trim(); 
+};
+
   return (
      <>
     {company_id?
@@ -26,7 +34,7 @@ export const CompanySearchCard = ({company_id , city , country , company_name , 
       <div className="px-4 pb-3 flex flex-col gap-2">
         <div className="flex items-center gap-2 text-gray-400 text-sm md:text-base">
           <FaMapMarkerAlt className="text-red-400" />
-                    <span>{city}, {country?getName(country):''}</span>
+              <span>{city}, {cleanCountryName(getName(country))}</span>
         </div>
       </div>
     </div>:''

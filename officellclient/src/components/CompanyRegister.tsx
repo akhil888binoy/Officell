@@ -148,7 +148,7 @@ if(!domain){
     <ToastContainer></ToastContainer>
   <div className=" mx-auto  lg:p-20 p-10">
   <h2 className="text-4xl sm:text-4xl md:text-6xl lg:text-[40px] mt-4 mb-10 font-arimo text-white font-bold tracking-[-0.02em]">
-        Add Company on Hitlist
+        Add Company on the Hitlist
   </h2>
         {/* Company Name */}
   <div className="relative z-0 w-full mb-5 group">

@@ -21,6 +21,14 @@ export const VentCard = ({ id , category , content , upvote , downvote , company
   const downVote = useVentStore((state)=> state.downVote);
   const deleteVent = useVentStore((state)=>state.deleteVent);
   const page = useLocation();
+  
+const cleanCountryName = (name) => {
+  if (!name) return '';
+  return name
+    .replace(/^(?:the\s|The\s)/i, '') 
+    .replace(/\s*\(the\)$/i, '') 
+    .trim(); 
+};
 
   useEffect(()=>{
     if (votes?.length > 0 ){
@@ -180,7 +188,7 @@ useEffect(() => {
 
   return (
     <>
-    {id ? 
+    {id &&
     <div className="relative flex flex-col bg-gray-950 border-t border-b border-gray-700 w-full overflow-hidden">
       <a href={`/vent/${id}`} >
         {/* Header */}
@@ -205,7 +213,9 @@ useEffect(() => {
                     <RiBuilding2Line className="text-blue-400 flex-shrink-0" />
             </div>
             <div className="flex items-center gap-1 flex-wrap justify-end">
-              <span className="text-right break-words max-w-[140px] md:max-w-[180px]">{company_country? getName(company_country):''}</span>
+              <span className="text-right break-words max-w-[140px] md:max-w-[180px]">
+                {cleanCountryName(getName(company_country))}
+              </span>
               <MdLocationOn className="text-red-400 flex-shrink-0" />
             </div>
           </div>
@@ -270,15 +280,40 @@ useEffect(() => {
           
         </div>
       { author_id === user_id && page.pathname != `/vent/${id}` &&
-        <button disabled={disableSubmitBtn} onClick={handleDeleteVent} className="flex items-center gap-2 text-gray-400 hover:text-red-400 active:text-red-600 transition">
+        <button 
+        data-modal-target="category-modal"
+                data-modal-toggle="category-modal"
+                disabled={disableSubmitBtn}  className="flex items-center gap-2 text-gray-400 hover:text-red-400 active:text-red-600 transition">
           <FaTrash />
         </button>
       }
+      <div id="category-modal" ria-hidden="true" className="hidden  fixed top-0 right-0 left-0 z-50 justify-center items-center w-[10px] md:inset-0 h-[calc(90%-1rem)] max-h-full">
+      <div className="relative p-4 w-full max-w-md  max-h-full">
+        
+          <div className="relative rounded-lg shadow-sm bg-gray-950 ">
+            
+              <div className="flex  items-center justify-between md:p-5  rounded-t border-r border-l border-t border-gray-700">
+                      <h2 className="px-4 pt-4 pb-4 text-lg font-light text-white tracking-widest">Choose Category</h2>
+              </div>
+              <div className="p-4  md:p-5 justify-center items-center flex-1 overflow-y-scroll max-h-[60vh] border-l border-r border-t border-gray-700">
+                  <div className="flex flex-col gap-4 p-4">
+                        
+                  </div>
+              </div>
+          
+              <div className="flex items-center justify-between p-4 md:p-5  border-gray-200 rounded-b border dark:border-gray-600">
+              <button data-modal-hide="category-modal" type="button" className="text-black bg-gray-50 hover:bg-gray-950 hover:text-gray-50 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center ">Choose</button>
+              <button type="button" 		className="border border-red-500 bg-red-500 text-white rounded-md px-4 py-2 m-2 transition duration-500 ease select-none hover:bg-red-600 focus:outline-none focus:shadow-outline" data-modal-hide="category-modal">
+                      Cancel
+                </button>
+              </div>
+          </div>
+      </div>
+  </div>
 
       </div>
-    </div> : ''}
-     
+    </div> 
+    }
     </>
-   
   );
 };

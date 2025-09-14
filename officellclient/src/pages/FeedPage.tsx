@@ -7,9 +7,9 @@ import { VentCard } from "../components/VentCard";
 import { useEffect, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
-import { Loader } from "../components/Loader";
 import useUserStore from "../store/userStore";
 import useVentStore from "../store/ventStore";
+import Shuffle from "../styles/Shuffle";
 
 
 export const FeedPage = () => {
@@ -121,7 +121,19 @@ useEffect(() => {
 
         <div className="flex-1 bg-gray-950 overflow-y-scroll " onScroll={handleScroll}>
             <PostCard />
-            {loading && vents.length === 0 && <Loader />}
+            {loading && vents.length === 0 &&  <Shuffle
+                          text="⟢ OFFICELL"
+                          className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] lg:ml-80"
+                          shuffleDirection="right"
+                          duration={0.35}
+                          animationMode="evenodd"
+                          shuffleTimes={1}
+                          ease="power3.out"
+                          stagger={0.03}
+                          threshold={0.1}
+                          loop={true}
+                          respectReducedMotion={true}
+            />}
              {/* Error message */}
                       {error && (
                         <div className="text-red-500 text-center p-4">
@@ -151,7 +163,19 @@ useEffect(() => {
                       ))}
                       
                       {/* Loading more indicator */}
-                      {loadingMore && <Loader />}
+                      {loadingMore && <Shuffle
+                          text="⟢ OFFICELL"
+                          className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] lg:ml-80"
+                          shuffleDirection="right"
+                          duration={0.35}
+                          animationMode="evenodd"
+                          shuffleTimes={1}
+                          ease="power3.out"
+                          stagger={0.03}
+                          threshold={0.1}
+                          loop={true}
+                          respectReducedMotion={true}
+                    />}
                       
                       {/* End of results message */}
                       {!hasMore && vents.length > 0 && (

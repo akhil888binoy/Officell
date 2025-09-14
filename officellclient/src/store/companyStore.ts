@@ -9,6 +9,7 @@ const companyStore=(set,get)=>({
         industry:"",
         city:"",
         country:"",
+        domain:"",
         _count:{vents:0}
     }],
 

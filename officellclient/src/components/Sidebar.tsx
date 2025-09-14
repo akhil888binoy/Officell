@@ -6,7 +6,7 @@ import { FaFireAlt } from 'react-icons/fa';
 import { RiBuilding2Line } from 'react-icons/ri';
 import { BiMessageDetail } from 'react-icons/bi';
 import Cookies from 'js-cookie';
-import {   useNavigate } from 'react-router-dom';
+import {   useLocation, useNavigate } from 'react-router-dom';
 
 // Initialize drawer component
 const initDrawer = () => {
@@ -43,7 +43,10 @@ const initDrawer = () => {
 
 
 export const Sidebar = () => {
+
   const navigate = useNavigate();
+  const page = useLocation();
+
   const handleLogout = async ()=>{
       Cookies.remove("Auth");
       navigate("/");
@@ -83,28 +86,51 @@ export const Sidebar = () => {
             <ul className="space-y-2 font-medium mt-10">
               {/* Profile */}
               <li>
-                <a href="/profile" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                <a href="/profile" className={`flex 
+                    items-center p-2 
+                    rounded-lg
+                  hover:bg-gray-700 
+                    group
+                  ${page.pathname === '/profile'? 'text-gray-950  bg-gray-50 ':' text-white'}
+                  `}>
                   <span className="text-[20px] lg:text-[25px]"><VscAccount /></span> 
                   <span className="ms-3 text-[20px] lg:text-[25px] tracking-widest font-light">Profile</span>
                 </a>
               </li>
               {/* Feed */}
               <li>
-                <a href="/feed" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                <a href="/feed" className={`flex 
+                    items-center p-2 
+                    rounded-lg
+                  hover:bg-gray-700 
+                    group
+                  ${page.pathname === '/feed'? 'text-gray-950  bg-gray-50 ':' text-white'}`}>
                   <span className="text-[20px] lg:text-[25px]"><BiMessageDetail /></span> 
                   <span className="ms-3 text-[20px] lg:text-[25px] tracking-widest font-light">Feed</span>
                 </a>
               </li>
               {/* Trending */}
               <li>
-                <a href="/trending" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                <a href="/trending" className={`flex 
+                    items-center p-2 
+                    rounded-lg
+                  hover:bg-gray-700 
+                    group
+                  ${page.pathname === '/trending'? 'text-gray-950  bg-gray-50 ':' text-white'}
+                  `}>
                   <span className="text-[20px] lg:text-[25px]"><FaFireAlt /></span> 
                   <span className="ms-3 text-[20px] lg:text-[25px] tracking-widest font-light">Trending</span>
                 </a>
               </li>
               {/* Companies */}
               <li>
-                <a href="/companies" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group">
+                <a href="/companies" className={`flex 
+                    items-center p-2 
+                    rounded-lg
+                  hover:bg-gray-700 
+                    group
+                  ${page.pathname === '/companies'? 'text-gray-950  bg-gray-50 ':' text-white'}
+                  `}>
                   <span className="text-[20px] lg:text-[25px]"><RiBuilding2Line /></span> 
                   <span className="ms-3 text-[20px] lg:text-[25px] tracking-widest font-light">Companies</span>
                 </a>

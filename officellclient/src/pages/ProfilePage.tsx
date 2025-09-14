@@ -7,9 +7,9 @@ import { VentCard } from "../components/VentCard";
 import { useEffect, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
-import { Loader } from "../components/Loader";
 import useUserStore from "../store/userStore";
 import useVentStore from "../store/ventStore";
+import Shuffle from "../styles/Shuffle";
 
 export const ProfilePage = () => {
   const [loading, setLoading] = useState(true);
@@ -110,7 +110,21 @@ export const ProfilePage = () => {
                 <h3 className="text-1xl sm:text-3xl md:text-6xl  lg:text-[20px]   font-arimo font-bold text-gray-100  lg:pt-3 lg:px-3 lg:pb-3 pt-2 px-2 pb-2">
                     Confessions
                 </h3>
-              {loading && vents.length === 0 && <Loader />}
+              {loading && vents.length === 0 && 
+                <Shuffle
+                                                text="⟢ OFFICELL"
+                                                className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] lg:ml-80"
+                                                shuffleDirection="right"
+                                                duration={0.35}
+                                                animationMode="evenodd"
+                                                shuffleTimes={1}
+                                                ease="power3.out"
+                                                stagger={0.03}
+                                                threshold={0.1}
+                                                loop={true}
+                                                respectReducedMotion={true}
+                                  />
+                        }
               {!loading && vents.length === 0 && (
                 <div className="text-center text-gray-500 py-6">
                   Come on! spill something
@@ -143,7 +157,21 @@ export const ProfilePage = () => {
                                         />
                                       ))}
                                      {/* Loading more indicator */}
-                                     {loadingMore && <Loader />}
+                                     {loadingMore && 
+                                      <Shuffle
+                                                text="⟢ OFFICELL"
+                                                className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] lg:ml-80"
+                                                shuffleDirection="right"
+                                                duration={0.35}
+                                                animationMode="evenodd"
+                                                shuffleTimes={1}
+                                                ease="power3.out"
+                                                stagger={0.03}
+                                                threshold={0.1}
+                                                loop={true}
+                                                respectReducedMotion={true}
+                                  />
+                                  }
                                      
                                      {/* End of results message */}
                                      {!hasMore && vents.length > 0 && (

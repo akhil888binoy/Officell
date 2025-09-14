@@ -74,7 +74,7 @@ export const getAllTrendingVents = async(req:Request , res: Response)=>{
                 },
             },
             _count: {
-                select: { comments: true },
+                select: {  comments: true },
             },
             author:{
                 select:{

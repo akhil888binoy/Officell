@@ -6,7 +6,6 @@ import { VentCard } from "../components/VentCard";
 import { useEffect, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
-import { Loader } from "../components/Loader";
 import { CommentCard } from "../components/CommentCard";
 import { UserCard } from "../components/UserCard";
 import type { Vent } from "../interfaces/VentInterface";
@@ -14,6 +13,7 @@ import type { Comment } from "../interfaces/CommentInterface";
 import useUserStore from "../store/userStore";
 import useVentStore from "../store/ventStore";
 import useCommentStore from "../store/commentStore";
+import Shuffle from "../styles/Shuffle";
 
 
 
@@ -125,7 +125,21 @@ export const VentDetailsPage = () => {
 
           <div className="space-y-4 ">
           {vent &&  <CommentSection vent_id ={vent.id}></CommentSection> }
-              {loading && !vent && <Loader />}
+              {loading && !vent && 
+               <Shuffle
+                          text="⟢ OFFICELL"
+                          className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] lg:ml-80"
+                          shuffleDirection="right"
+                          duration={0.35}
+                          animationMode="evenodd"
+                          shuffleTimes={1}
+                          ease="power3.out"
+                          stagger={0.03}
+                          threshold={0.1}
+                          loop={true}
+                          respectReducedMotion={true}
+            />
+            }
               {!loading && comments.length === 0 && vent && (
                 <div className="text-center text-gray-500 py-6">
                   Be the first to comment
@@ -148,7 +162,19 @@ export const VentDetailsPage = () => {
           ))}
 
                                      {/* Loading more indicator */}
-                                     {loadingMore && <Loader />}
+                  {loadingMore &&  <Shuffle
+                          text="⟢ OFFICELL"
+                          className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] lg:ml-80"
+                          shuffleDirection="right"
+                          duration={0.35}
+                          animationMode="evenodd"
+                          shuffleTimes={1}
+                          ease="power3.out"
+                          stagger={0.03}
+                          threshold={0.1}
+                          loop={true}
+                          respectReducedMotion={true}
+            />}
                                      
                                      {/* End of results message */}
                                      {!hasMore && comments.length > 0 && (

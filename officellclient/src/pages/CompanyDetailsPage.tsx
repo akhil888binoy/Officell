@@ -9,15 +9,14 @@ import { VentCard } from "../components/VentCard";
 import { useEffect, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
-import { Loader } from "../components/Loader";
-import type { Company } from "../interfaces/CompanyInterafce";
-import type { Vent } from "../interfaces/VentInterface";
 import useUserStore from "../store/userStore";
 import useCompanyStore from "../store/companyStore";
 import useVentStore from "../store/ventStore";
+import Shuffle from "../styles/Shuffle";
 
 
 export const CompanyDetailsPage = () => {
+
   const {id} = useParams();
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -87,8 +86,6 @@ useEffect(() => {
     }
   }
 
-
-
   return (
     <div className="w-screen h-screen flex bg-gray-950">
       {/* Sidebar */}
@@ -118,6 +115,7 @@ useEffect(() => {
             city={company.city} 
             country={company.country}
             vents_count={company._count.vents}
+            domain={company.domain}
           />
           }
               {!loading && vents.length === 0 && (
@@ -134,6 +132,7 @@ useEffect(() => {
                                     
                                      {/* Companies list */}
                                     {vents.map((vent,index) => (
+
                                         <VentCard
                                           key={index}
                                           id={vent?.id}
@@ -151,10 +150,25 @@ useEffect(() => {
                                           votes={vent?.votes}
                                           user_id = {user.id}
                                         />
+                                      
                                     ))}
                                     
                                      {/* Loading more indicator */}
-                                    {loadingMore && <Loader />}
+                                    {loadingMore && 
+                                              <Shuffle
+                                                text="⟢ OFFICELL"
+                                                className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] lg:ml-80"
+                                                shuffleDirection="right"
+                                                duration={0.35}
+                                                animationMode="evenodd"
+                                                shuffleTimes={1}
+                                                ease="power3.out"
+                                                stagger={0.03}
+                                                threshold={0.1}
+                                                loop={true}
+                                                respectReducedMotion={true}
+                                  />
+                                  }
                                     
                                      {/* End of results message */}
                                     {!hasMore && vents.length > 0 && (

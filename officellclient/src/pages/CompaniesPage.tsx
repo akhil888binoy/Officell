@@ -11,6 +11,7 @@ import { Loader } from "../components/Loader";
 import AddCompany from "../components/AddCompany";
 import useUserStore from "../store/userStore";
 import useCompanyStore from "../store/companyStore";
+import Shuffle from "../styles/Shuffle";
 
 export const CompaniesPage = () => {
   const [skip, setSkip] = useState(0);
@@ -114,7 +115,21 @@ export const CompaniesPage = () => {
           }} />
           
           {/* Initial loading indicator */}
-          {loading && companies?.length === 0 && <Loader />}
+          {loading && companies?.length === 0 && 
+                    <Shuffle
+                          text="⟢ OFFICELL"
+                          className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] lg:ml-80"
+                          shuffleDirection="right"
+                          duration={0.35}
+                          animationMode="evenodd"
+                          shuffleTimes={1}
+                          ease="power3.out"
+                          stagger={0.03}
+                          threshold={0.1}
+                          loop={true}
+                          respectReducedMotion={true}
+                        />
+            }
           
           {/* Error message */}
           {error && (
@@ -133,11 +148,25 @@ export const CompaniesPage = () => {
               city={company.city}
               country={company.country}
               vents_count={company._count?.vents}
+              domain={company.domain}
             />
           ))}
           
           {/* Loading more indicator */}
-          {loadingMore && <Loader />}
+          {loadingMore &&  <Shuffle
+                          text="⟢ OFFICELL"
+                          className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] lg:ml-80"
+                          shuffleDirection="right"
+                          duration={0.35}
+                          animationMode="evenodd"
+                          shuffleTimes={1}
+                          ease="power3.out"
+                          stagger={0.03}
+                          threshold={0.1}
+                          loop={true}
+                          respectReducedMotion={true}
+                        />
+                  }
           <AddCompany></AddCompany>
           {/* End of results message */}
           {!hasMore && companies.length > 0 && (

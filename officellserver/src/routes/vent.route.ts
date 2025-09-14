@@ -7,6 +7,7 @@ import { checkCacheVent } from '../middleware/cache/checkCache';
 import { upload } from '../config/multerconfig';
 export const ventRouter = express.Router();
 
+
 ventRouter.get("/vents", auth , getAllVents);
 ventRouter.get("/vents/trending", auth , getAllTrendingVents);
 ventRouter.get("/vents/:id", auth , checkCacheVent, getVent);
