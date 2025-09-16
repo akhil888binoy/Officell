@@ -19,6 +19,7 @@ import Shuffle from "../styles/Shuffle";
 
 
 export const VentDetailsPage = () => {
+
   const {id} = useParams();
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -35,6 +36,7 @@ export const VentDetailsPage = () => {
   useEffect(() => {
     resetComments();
   }, [id]); 
+
 
   useEffect(() => {
     const fetchComments = async () => {
@@ -126,7 +128,7 @@ export const VentDetailsPage = () => {
           <div className="space-y-4 ">
           {vent &&  <CommentSection vent_id ={vent.id}></CommentSection> }
               {loading && !vent && 
-               <Shuffle
+              <Shuffle
                           text="⟢ OFFICELL"
                           className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] lg:ml-80"
                           shuffleDirection="right"
@@ -161,7 +163,7 @@ export const VentDetailsPage = () => {
             />
           ))}
 
-                                     {/* Loading more indicator */}
+              {/* Loading more indicator */}
                   {loadingMore &&  <Shuffle
                           text="⟢ OFFICELL"
                           className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] lg:ml-80"
@@ -175,17 +177,14 @@ export const VentDetailsPage = () => {
                           loop={true}
                           respectReducedMotion={true}
             />}
-                                     
                                      {/* End of results message */}
-                                     {!hasMore && comments.length > 0 && (
-                                       <div className="text-center text-gray-400 py-6">
-                                         You've reached the end of the list
-                                       </div>
+                                    {!hasMore && comments.length > 0 && (
+                                      <div className="text-center text-gray-400 py-6">
+                                        You've reached the end of the list
+                                      </div>
                               )}
           </div>
-
         </div>
-
         <div className="bg-gray-950 w-80 h-screen hidden border-l border-gray-700 lg:block p-4 ">
               <UserCard username={user.username} location={location.city} />
         </div>

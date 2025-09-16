@@ -8,7 +8,9 @@ import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
 import { getName } from "country-list";
 import useVentStore from "../store/ventStore";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 
 export const VentCard = ({ id , category , content , upvote , downvote , company_name , company_country, author, author_id, commentcount , createdAt, media, votes, user_id }) => {
@@ -20,8 +22,10 @@ export const VentCard = ({ id , category , content , upvote , downvote , company
   const upVote = useVentStore((state)=> state.upVote);
   const downVote = useVentStore((state)=> state.downVote);
   const deleteVent = useVentStore((state)=>state.deleteVent);
+  const [open , setOpen] = useState(false);
   const page = useLocation();
-  
+  const [deletingComment, setDeletingComment] = useState(false);
+
 const cleanCountryName = (name) => {
   if (!name) return '';
   return name
@@ -90,9 +94,8 @@ const handleDownvote=async ()=>{
 
 }
 
-  const handleUpvote=async ()=>{
+  const handleUpvote= async ()=>{
     try {
-
         setDisableSubmitBtn(true);
         const token =  Cookies.get("Auth");
         const headers={
@@ -142,6 +145,7 @@ const handleDownvote=async ()=>{
 const handleDeleteVent =async()=>{
   try {
       setDisableSubmitBtn(true);
+      setDeletingComment(true);
       const token =  Cookies.get("Auth");
       const headers={
         'Authorization': `Bearer ${token}`
@@ -152,6 +156,7 @@ const handleDeleteVent =async()=>{
     console.log(response);
     deleteVent(id);
     setDisableSubmitBtn(false);
+    setOpen(false);
     toast.success('Deleted Successfully 💀', {
           position: "top-right",
           autoClose: 5000,
@@ -162,6 +167,7 @@ const handleDeleteVent =async()=>{
           progress: undefined,
           theme: "dark",
         });
+    
   } catch (error) {
     console.error(error);
     setDisableSubmitBtn(false);
@@ -175,15 +181,15 @@ const handleDeleteVent =async()=>{
               progress: undefined,
               theme: "dark",
         });
+    }finally{
+      setDeletingComment(false);
     }
 }
 
 useEffect(() => {
-
   if (createdAt) {
     setTime(moment.utc(createdAt).local().startOf("seconds").fromNow());
   }
-
 }, [createdAt]);
 
   return (
@@ -235,13 +241,12 @@ useEffect(() => {
   <p className="text-gray-200 leading-relaxed text-sm md:text-base lg:text-lg">
     {content}
   </p>
-
-
   <div className="mt-3 flex flex-wrap justify-center items-center gap-3">
-    {media?.map((image) => (
-      <div key={image.id} className="relative group">
+  {media?.map((item) => (
+    <div key={item.id} className="relative group">
+      {item.type === "IMAGE" && (
         <img
-          src={image.url}
+          src={item.url}
           alt="Post content"
           className="max-w-full h-auto rounded-lg shadow-md transition-transform duration-300 hover:shadow-lg"
           style={{
@@ -249,9 +254,24 @@ useEffect(() => {
             minHeight: '160px'
           }}
         />
-      </div>
-    ))}
-  </div>
+      )}
+      {item.type === "VIDEO" && (
+        <video
+          controls
+          className="max-w-full rounded-lg shadow-md transition-transform duration-300 hover:shadow-lg"
+          style={{
+            maxHeight: media.length === 1 ? '480px' : '320px',
+            minHeight: '160px'
+          }}
+        >
+          <source src={item.url} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      )}
+    </div>
+  ))}
+</div>
+
 </div>
 
       {/* Footer (Upvote / Downvote / Comments / Delete) */}
@@ -279,37 +299,68 @@ useEffect(() => {
           }
           
         </div>
-      { author_id === user_id && page.pathname != `/vent/${id}` &&
+      { author_id === user_id && page.pathname != `/vent/${id}`&&
         <button 
-        data-modal-target="category-modal"
-                data-modal-toggle="category-modal"
+                onClick={() => setOpen(true)}
                 disabled={disableSubmitBtn}  className="flex items-center gap-2 text-gray-400 hover:text-red-400 active:text-red-600 transition">
           <FaTrash />
         </button>
       }
-      <div id="category-modal" ria-hidden="true" className="hidden  fixed top-0 right-0 left-0 z-50 justify-center items-center w-[10px] md:inset-0 h-[calc(90%-1rem)] max-h-full">
-      <div className="relative p-4 w-full max-w-md  max-h-full">
-        
-          <div className="relative rounded-lg shadow-sm bg-gray-950 ">
-            
-              <div className="flex  items-center justify-between md:p-5  rounded-t border-r border-l border-t border-gray-700">
-                      <h2 className="px-4 pt-4 pb-4 text-lg font-light text-white tracking-widest">Choose Category</h2>
-              </div>
-              <div className="p-4  md:p-5 justify-center items-center flex-1 overflow-y-scroll max-h-[60vh] border-l border-r border-t border-gray-700">
-                  <div className="flex flex-col gap-4 p-4">
-                        
+      
+    <Dialog open={open} onClose={setOpen} className="relative z-10">
+        <DialogBackdrop
+          transition
+          className="fixed inset-0 bg-gray-900/50 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
+        />
+
+        <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <DialogPanel
+              transition
+              className="relative transform overflow-hidden rounded-lg bg-gray-800 text-left shadow-xl outline -outline-offset-1 outline-white/10 transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 sm:w-full sm:max-w-lg data-closed:sm:translate-y-0 data-closed:sm:scale-95"
+            >
+              <div className="bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-500/10 sm:mx-0 sm:size-10">
+                    <ExclamationTriangleIcon aria-hidden="true" className="size-6 text-red-400" />
                   </div>
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <DialogTitle as="h3" className="text-base font-semibold text-white">
+                      Delete this Confession
+                    </DialogTitle>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-400">
+                        Are you sure you want to delete this confession ?
+                        This action cannot be undone.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
-          
-              <div className="flex items-center justify-between p-4 md:p-5  border-gray-200 rounded-b border dark:border-gray-600">
-              <button data-modal-hide="category-modal" type="button" className="text-black bg-gray-50 hover:bg-gray-950 hover:text-gray-50 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center ">Choose</button>
-              <button type="button" 		className="border border-red-500 bg-red-500 text-white rounded-md px-4 py-2 m-2 transition duration-500 ease select-none hover:bg-red-600 focus:outline-none focus:shadow-outline" data-modal-hide="category-modal">
-                      Cancel
+              <div className="bg-gray-700/25 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+
+                <button
+                  type="button"
+                  onClick={handleDeleteVent}
+                  className="inline-flex w-full justify-center rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white hover:bg-red-400 sm:ml-3 sm:w-auto"
+                >
+                {deletingComment ? "Deleting..." : "Delete"}
+                </button>
+                
+                <button
+                  type="button"
+                  data-autofocus
+                  onClick={() => setOpen(false)}
+                  className="mt-3 inline-flex w-full justify-center rounded-md bg-white/10 px-3 py-2 text-sm font-semibold text-white inset-ring inset-ring-white/5 hover:bg-white/20 sm:mt-0 sm:w-auto"
+                >
+                  Cancel
                 </button>
               </div>
+            </DialogPanel>
           </div>
-      </div>
-  </div>
+        </div>
+      </Dialog>
+
 
       </div>
     </div> 

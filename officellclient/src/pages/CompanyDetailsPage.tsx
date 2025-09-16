@@ -32,6 +32,8 @@ export const CompanyDetailsPage = () => {
   const vents = useVentStore((state) => state.vents);
 
 useEffect(() => {
+    const controller = new AbortController();
+
     const fetchVents = async () => {
       try {
         if (!id) return ;
@@ -47,7 +49,7 @@ useEffect(() => {
           'Authorization': `Bearer ${token}`
         };
         const { data: ventsJson } = await axios.get(`http://localhost:3000/v1/vents?skip=${skip}&company_id=${id}&category=${category}`, {
-          headers: headers
+          headers, signal: controller.signal 
         });
         
         console.log(ventsJson.vents);
@@ -59,8 +61,12 @@ useEffect(() => {
         }
         setError(null);
       } catch (error) {
+        if (axios.isCancel(error)) {
+        console.log("Request canceled:", error.message);
+      } else {
         console.error(error);
-        setError("Failed to fetch companies");
+        setError("Failed to fetch vents");
+      }
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -70,7 +76,10 @@ useEffect(() => {
       const timer = setTimeout(()=>{
         fetchVents();
       },100) ;
-      return()=>clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+        controller.abort(); 
+    };
     }
   }, [skip, id, category]);
 

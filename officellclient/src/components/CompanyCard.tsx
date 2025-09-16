@@ -2,34 +2,13 @@ import { FaGlobe, FaMapMarkerAlt } from "react-icons/fa";
 import { BiMessageDetail } from "react-icons/bi";
 import { Link } from "react-router-dom";
 import {getName} from "country-list";
+import { cleanCountryName, cleanDomain } from "../utils/cleanerText";
 
 export const CompanyCard = ({company_id , city , country , company_name , industry , vents_count, domain}) => {
-  
-  const cleanDomain = (url) => {
-  if (!url) return '';
-  try {
-    // Remove protocol (http://, https://) and www.
-    return url
-      .replace(/^https?:\/\//, '') // Remove http:// or https://
-      .replace(/^www\./, '') // Remove www.
-      .replace(/\/$/, ''); // Remove trailing slash
-  } catch {
-    return url; // Fallback to original URL if parsing fails
-  }
-};
-
-const cleanCountryName = (name) => {
-  if (!name) return '';
-  return name
-    .replace(/^(?:the\s|The\s)/i, '') 
-    .replace(/\s*\(the\)$/i, '') 
-    .trim(); 
-};
 
   return (
-   <>
+  <>
   {company_id ? 
-   
       <div className="relative flex flex-col bg-gray-950 border-t border-b border-gray-700 w-full overflow-hidden">
         {/* Header */}
         <a href={`/companies/${company_id}`} data-testid="company-link" >
@@ -71,7 +50,7 @@ const cleanCountryName = (name) => {
                     {cleanDomain(domain)}
                   </a>
                 </div>
-              )}
+            )}
         </div>
       </div>
   : ""}

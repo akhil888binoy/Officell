@@ -20,7 +20,7 @@ const categories = [
 export const CategoryBar = ({onSelect}) => {
   const [category , setCategory] = useState("");
   
-    const handleCategory =(e)=>{
+  const handleCategory =(e)=>{
       if(category){
         setCategory("");
         onSelect("");
@@ -29,7 +29,7 @@ export const CategoryBar = ({onSelect}) => {
         console.log(e.target.value);
         onSelect(e.target.value);
       }
-    }
+  }
 
   return (
     <div className="w-full  bg-gray-950 overflow-y-auto no-scrollbar mt-3">

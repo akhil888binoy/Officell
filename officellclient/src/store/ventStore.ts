@@ -5,7 +5,8 @@ const ventStore=(set,get)=>({
     post:"",
     company_id:"",
     category:"",
-    selectedImage: null,
+    selectedMedia: null,
+    mediaType: "",
     vents:[{
         id:"",
         category:"",
@@ -56,12 +57,16 @@ const ventStore=(set,get)=>({
             company_id: data
         });
     },
-    addSelectedImage:(data)=>{
+    addSelectedMedia:(data)=>{
         set({
-            selectedImage:data
+            selectedMedia:data
         });
     },
-
+    addMediaType:(data)=>{
+        set({
+            mediaType: data
+        })
+    },
     upVote: (id, user_id, votedata) => {
         const vents = get().vents;
         console.log("votedata",votedata)
@@ -180,9 +185,14 @@ downVote: (id, user_id, votedata) => {
             vents:[{}]
         })
     },
-    resetSelectedImage:()=>{
+    resetSelectedMedia:()=>{
         set({
-            selectedImage: null
+            selectedMedia: null
+        })
+    },
+    restMediaType:()=>{
+        set({
+            mediaType: ""
         })
     },
     resetCompany_id:()=>{

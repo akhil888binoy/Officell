@@ -106,7 +106,7 @@ export const getAllTrendingVents = async(req:Request , res: Response)=>{
 export const getVent = async (req: Request , res : Response )=> {
     const redis = await redisConnection();
     const {id } = req.params;
-   
+
     try {
         const vent = await prisma.vent.findUnique({
             where: {id : Number(id)},
@@ -145,13 +145,13 @@ export const getVent = async (req: Request , res : Response )=> {
         res.status(500).json(error);
     }
     
-}
+} 
 
 
 export const createVent = async (req: Request | any , res : Response )=> {
-    const redis = await redisConnection();
-    const {_id} = req.decoded;
-    const {company_id, content, category} = req.body;
+    const redis = await redisConnection();  
+    const {_id} = req.decoded; 
+    const {company_id, content, category, type} = req.body;
 
     try {
         
@@ -175,10 +175,11 @@ export const createVent = async (req: Request | any , res : Response )=> {
                 const cloud = await cloudinary.uploader.upload(dataURI, {
                             resource_type: "auto",
                 });
-            const media = await prisma.media.create({
+
+                const media = await prisma.media.create({
                     data:{
                         vent_id: create_vent.id,
-                        type: 'IMAGE',
+                        type: type,
                         url: cloud.url
                     }
                 });

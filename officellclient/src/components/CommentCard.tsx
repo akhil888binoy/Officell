@@ -5,6 +5,10 @@ import Cookies from 'js-cookie';
 import axios from "axios";
 import { ToastContainer, toast } from 'react-toastify';
 import useCommentStore from "../store/commentStore";
+import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { Loader } from "lucide-react";
+import Shuffle from "../styles/Shuffle";
 
 export const CommentCard = ({ comment , user_id}) => {
 
@@ -16,6 +20,10 @@ export const CommentCard = ({ comment , user_id}) => {
   const addSubComment = useCommentStore((state)=>state.addSubComment);
   const deleteComment = useCommentStore((state)=>state.deleteComment);
   const deleteSubComment = useCommentStore((state)=>state.deleteSubComment);
+  const [open, setOpen] = useState(false);
+  const [openDeleteComment , setOpenDeleteComment] = useState(false);
+  const [deletingComment, setDeletingComment] = useState(false);
+
 
   const handleReply = async ()=>{
     if(!replyText){
@@ -55,6 +63,7 @@ export const CommentCard = ({ comment , user_id}) => {
   const handleDelete = async()=>{
     try {
       setDisableSubmitBtn(true);
+          setDeletingComment(true);
         const token =  Cookies.get("Auth");
         const headers={
           'Authorization': `Bearer ${token}`
@@ -62,8 +71,10 @@ export const CommentCard = ({ comment , user_id}) => {
       const response = await axios.delete(`http://localhost:3000/v1/comments/${comment.id}?vent_id=${comment.vent_id}`,{
         headers: headers
       });
+
       deleteComment(comment.id);
       setDisableSubmitBtn(false);
+      setOpenDeleteComment(false);
       toast.success('Deleted Successfully 💀', {
                 position: "top-right",
                 autoClose: 5000,
@@ -77,7 +88,7 @@ export const CommentCard = ({ comment , user_id}) => {
     } catch (error) {
       console.error(error);
           setDisableSubmitBtn(false);
-       toast.error('Oops Failed to Delete! Dont worry its a mistake from our side ', {
+          toast.error('Oops Failed to Delete! Dont worry its a mistake from our side ', {
                     position: "top-right",
                     autoClose: 5000,
                     hideProgressBar: false,
@@ -87,13 +98,16 @@ export const CommentCard = ({ comment , user_id}) => {
                     progress: undefined,
                     theme: "dark",
               });
+    }finally {
+    setDeletingComment(false);
     }
   }
 
 
   const handleDeleteSubComment = async (subcommentId)=>{
     try {
-      console.log("Handle delete sub comment");
+        console.log("Handle delete sub comment");
+        setDeletingComment(true);
         setDisableSubmitBtn(true);
         const token =  Cookies.get("Auth");
         const headers={
@@ -105,28 +119,84 @@ export const CommentCard = ({ comment , user_id}) => {
       });
       deleteSubComment( subcommentId, comment.id);
       setDisableSubmitBtn(false);
+      setOpen(false);
     } catch (error) {
       console.error(error);
             setDisableSubmitBtn(false);
+    }finally{
+      setDeletingComment(false)
     }
   }
 
   return (
     <>
     {comment.id &&  <div className="bg-gray-950 p-3 sm:p-4 ">
+
        {/* Comment Content */}
         <div className="flex items-start justify-between">
         <p className="text-gray-200 text-sm sm:text-base leading-relaxed break-words flex-1">
           {comment.comment}
         </p>
+
         {comment.author_id === user_id && 
-            <button disabled={disableSubmitBtn} onClick={handleDelete} className="flex items-center gap-2 text-gray-400 hover:text-red-400 active:text-red-600 transition ml-2">
+            <button disabled={disableSubmitBtn}  onClick={() => setOpenDeleteComment(true)} className="flex items-center gap-2 text-gray-400 hover:text-red-400 active:text-red-600 transition ml-2">
               <FaTrash />
             </button>
         }
-        
+
       </div>
-      
+        <Dialog open={openDeleteComment} onClose={setOpenDeleteComment} className="relative z-10">
+        <DialogBackdrop
+          transition
+          className="fixed inset-0 bg-gray-900/50 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
+        />
+
+        <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <DialogPanel
+              transition
+              className="relative transform overflow-hidden rounded-lg bg-gray-800 text-left shadow-xl outline -outline-offset-1 outline-white/10 transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 sm:w-full sm:max-w-lg data-closed:sm:translate-y-0 data-closed:sm:scale-95"
+            >
+              <div className="bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-500/10 sm:mx-0 sm:size-10">
+                    <ExclamationTriangleIcon aria-hidden="true" className="size-6 text-red-400" />
+                  </div>
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <DialogTitle as="h3" className="text-base font-semibold text-white">
+                      Delete this Comment
+                    </DialogTitle>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-400">
+                        Are you sure you want to delete this comment ?
+                        This action cannot be undone.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-700/25 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="inline-flex w-full justify-center rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white hover:bg-red-400 sm:ml-3 sm:w-auto"
+                >
+                    {deletingComment ? "Deleting..." : "Delete"}
+                </button>
+                <button
+                  type="button"
+                  data-autofocus
+                  onClick={() => setOpenDeleteComment(false)}
+                  className="mt-3 inline-flex w-full justify-center rounded-md bg-white/10 px-3 py-2 text-sm font-semibold text-white inset-ring inset-ring-white/5 hover:bg-white/20 sm:mt-0 sm:w-auto"
+                >
+                  Cancel
+                </button>
+              </div>
+            </DialogPanel>
+          </div>
+        </div>
+      </Dialog>
+
       {/* Actions */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-2 sm:mt-3 text-xs sm:text-sm text-gray-400 gap-2 sm:gap-0">
         <span className="text-gray-400">{comment.author?.username}</span>
@@ -167,8 +237,12 @@ export const CommentCard = ({ comment , user_id}) => {
           </button>
         </div>
       )}
+
+
       {showReplies && (
+
         <div className="mt-3 pl-3 border-l border-gray-700">
+
           {comment.subcomments.map((reply,index) => (
             <div key={index}>
             {reply &&
@@ -177,25 +251,89 @@ export const CommentCard = ({ comment , user_id}) => {
                     <p className="text-sm text-gray-300">{reply.subcomment}</p>
                     <span className="text-xs text-gray-400">{reply.author?.username}</span>
                 </div>
-                { reply.author.id === user_id &&
+
+                {reply.author.id === user_id &&
                     <button 
+                        onClick={() => setOpen(true)}
                         disabled={disableSubmitBtn} 
-                        onClick={()=>handleDeleteSubComment(reply.id)} 
                         className="text-gray-400 hover:text-red-400 active:text-red-600 transition ml-2"
                     >
                         <FaTrash />
                     </button>
                 }
-            
+
+                {/* Subcomment popup */}
+        <Dialog open={open} onClose={setOpen} className="relative z-10">
+        <DialogBackdrop
+          transition
+          className="fixed inset-0 bg-gray-900/50 transition-opacity data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in"
+        />
+
+        <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+          <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <DialogPanel
+              transition
+              className="relative transform overflow-hidden rounded-lg bg-gray-800 text-left shadow-xl outline -outline-offset-1 outline-white/10 transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 sm:w-full sm:max-w-lg data-closed:sm:translate-y-0 data-closed:sm:scale-95"
+            >
+              <div className="bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div className="sm:flex sm:items-start">
+                  <div className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-500/10 sm:mx-0 sm:size-10">
+                    <ExclamationTriangleIcon aria-hidden="true" className="size-6 text-red-400" />
+                  </div>
+                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                    <DialogTitle as="h3" className="text-base font-semibold text-white">
+                      Delete this Reply
+                    </DialogTitle>
+                    <div className="mt-2">
+                      <p className="text-sm text-gray-400">
+                        Are you sure you want to delete this reply ?
+                        This action cannot be undone.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-700/25 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleDeleteSubComment(reply.id)
+                  }}
+                  className="inline-flex w-full justify-center rounded-md bg-red-500 px-3 py-2 text-sm font-semibold text-white hover:bg-red-400 sm:ml-3 sm:w-auto"
+                >
+                {deletingComment ? "Deleting..." : "Delete"}
+                </button>
+                <button
+                  type="button"
+                  data-autofocus
+                  onClick={() => setOpen(false)}
+                  className="mt-3 inline-flex w-full justify-center rounded-md bg-white/10 px-3 py-2 text-sm font-semibold text-white inset-ring inset-ring-white/5 hover:bg-white/20 sm:mt-0 sm:w-auto"
+                >
+                  Cancel
+                </button>
+              </div>
+            </DialogPanel>
+          </div>
+        </div>
+      </Dialog>
+
+
             </div>
             }
             </div>
             
           ))}
         </div>
+
+
       )}
+
+
+
+
+
+
     </div> }
     </>
-   
   );
 };

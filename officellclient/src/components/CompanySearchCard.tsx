@@ -1,23 +1,16 @@
-import { FaMapMarkerAlt } from "react-icons/fa";
+import { FaGlobe, FaMapMarkerAlt } from "react-icons/fa";
 import { BiMessageDetail } from "react-icons/bi";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import {getName} from "country-list";
+import { cleanCountryName, cleanDomain } from "../utils/cleanerText";
 
-export const CompanySearchCard = ({company_id , city , country , company_name , industry}) => {
+export const CompanySearchCard = ({company_id , city , country , company_name , industry, domain}) => {
 
-const cleanCountryName = (name) => {
-  if (!name) return '';
-  return name
-    .replace(/^(?:the\s|The\s)/i, '') 
-    .replace(/\s*\(the\)$/i, '') 
-    .trim(); 
-};
 
   return (
      <>
-    {company_id?
-     
+    {company_id &&
       <div className="relative flex flex-col bg-gray-950   w-full overflow-hidden ">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3">
@@ -36,9 +29,24 @@ const cleanCountryName = (name) => {
           <FaMapMarkerAlt className="text-red-400" />
               <span>{city}, {cleanCountryName(getName(country))}</span>
         </div>
+        {domain && (
+                        <div className="flex items-center gap-2 text-gray-400 text-sm md:text-base">
+                          <FaGlobe className="text-green-400" />
+                          <a
+                            data-testid="website-link"
+                            onClick={(e) => e.stopPropagation()}
+                            href={domain}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-green-300 transition-colors"
+                          >
+                            {cleanDomain(domain)}
+                          </a>
+                        </div>
+            )}
       </div>
-    </div>:''
-     }
+
+    </div>}
     </>
   );
 };

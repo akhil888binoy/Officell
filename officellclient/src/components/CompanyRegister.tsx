@@ -5,6 +5,7 @@ import { categories } from './CompanyCategory';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { ToastContainer, toast } from 'react-toastify';
+import * as Yup from "yup";
 
 const customRender = (props) => {
   const {
@@ -37,6 +38,22 @@ type ReactSelectOption = {
 };
 
 
+const domainSchema = Yup.string()
+  .url("Please enter a valid URL")
+  .required("Website/LinkedIn URL is required");
+
+const companySchema = Yup.object().shape({
+  companyName: Yup.string()
+    .trim()
+    .required("Company name is required")
+    .max(100, "Company name must be at most 100 characters")
+    .matches(
+      /^[a-zA-Z0-9&.,'’\-\s]+$/,
+      "Company name can only contain letters, numbers, spaces, and basic punctuation"
+    ),
+});
+
+
 const CompanyRegister = () => {
     const [companyName, setCompanyName] = useState("");
     const [domain , setDomain] = useState("");
@@ -44,8 +61,32 @@ const CompanyRegister = () => {
     const [country, setCountry] = useState<ReactSelectOption | undefined>();
     const [region, setRegion] = useState<ReactSelectOption | undefined>();
     const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
+    const [inputNameError , setInputNameError] = useState("")
 
-  const handleSubmit=async()=>{
+const validateCompany = async () => {
+  try {
+    await companySchema.validate({ companyName });
+    setInputNameError(""); // clear error if valid
+  } catch (err: any) {
+    setInputNameError(err.message); // show error message
+  }
+};
+
+
+const handleDomainChange = async (e) => {
+  const value = e.target.value;
+  setDomain(value);
+
+  try {
+    await domainSchema.validate(value);
+    setError(""); // valid input
+  } catch (err: any) {
+    setError(err.message); // show Yup error
+  }
+};
+
+const handleSubmit=async()=>{
     
 if(!domain){
             toast.error('Please Provide Company Website/Linkedin', {
@@ -152,7 +193,21 @@ if(!domain){
   </h2>
         {/* Company Name */}
   <div className="relative z-0 w-full mb-5 group">
-      <input value={companyName} onChange={(e)=>setCompanyName(e.target.value)} name="floating_name" id="floating_name" className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
+    <input
+  value={companyName}
+  onChange={(e)=>setCompanyName(e.target.value)}
+  onBlur={validateCompany}
+  name="floating_name"
+  id="floating_name"
+  maxLength={100}
+  required
+  className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent 
+             border-0 border-b-2 border-gray-300 appearance-none 
+             dark:text-white dark:border-gray-600 dark:focus:border-blue-500 
+             focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+  placeholder=" "
+/>
+{inputNameError && <p className="text-red-500 text-sm mt-1">{inputNameError}</p>}
       <label htmlFor="floating_name" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Company Name</label>
   </div>
   <div className="grid md:grid-cols-2 md:gap-6">
@@ -212,11 +267,30 @@ if(!domain){
         </div>
       </div>
     </div>
+     <div className="relative z-0 w-full mb-5 group mt-5 lg:mt-0">
+  <input
+    value={domain}
+    onChange={handleDomainChange}
+    type="text"
+    name="floating_website"
+    id="floating_website"
+    className={`block py-2.5 px-0 w-full text-sm 
+      ${error ? "border-red-500 focus:border-red-600" : "border-gray-300 focus:border-blue-600"} 
+      text-gray-900 bg-transparent border-0 border-b-2 appearance-none 
+      dark:text-white dark:border-gray-600 dark:focus:border-blue-500 
+      focus:outline-none focus:ring-0 peer`}
+    placeholder=" "
+    required
+  />
+  <label
+    htmlFor="floating_website"
+    className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+  >
+    Company Website / Linkedin
+  </label>
+  {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+</div>
 
-      <div className="relative z-0 w-full mb-5 group mt-5 lg:mt-0">
-        <input value={domain} onChange={(e)=> setDomain(e.target.value)} type="text"  name="floating_website" id="floating_website" className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required />
-        <label htmlFor="floating_website" className="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Company Website / Linkedin</label>
-    </div>
   </div>
   <button onClick={handleSubmit} className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
   </div>

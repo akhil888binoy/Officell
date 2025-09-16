@@ -38,6 +38,7 @@ export const CompaniesPage = () => {
   }
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchCompanies = async () => {
 
       try {
@@ -54,7 +55,7 @@ export const CompaniesPage = () => {
           'Authorization': `Bearer ${token}`
         };
         const { data: companiesJson } = await axios.get(`http://localhost:3000/v1/companies?skip=${skip}&company_name=${search}&industry=${category}`, {
-          headers: headers
+          headers, signal: controller.signal 
         });
         
         console.log("Companies",companiesJson.companies);
@@ -70,8 +71,12 @@ export const CompaniesPage = () => {
         }
         setError(null);
       } catch (error) {
-        console.error(error);
-        setError("Failed to fetch companies");
+          if (axios.isCancel(error)) {
+            console.log("Request canceled:", error.message);
+          } else {
+            console.error(error);
+            setError("Failed to fetch companies");
+          }
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -82,7 +87,11 @@ export const CompaniesPage = () => {
       const timer = setTimeout(()=>{
         fetchCompanies();
       },1000);
-      return () => clearTimeout(timer)
+
+      return () => {
+        clearTimeout(timer);
+        controller.abort(); 
+      };
     }
   }, [skip, search, category]);
 

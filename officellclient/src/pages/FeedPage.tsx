@@ -36,7 +36,9 @@ export const FeedPage = () => {
         const {data: response } = await axios.get("http://localhost:3000/v1/profile",{
           headers: headers
         });
-      addUser(response);
+
+        addUser(response);
+
       } catch (error) {
         console.error(error)
       }
@@ -48,72 +50,84 @@ export const FeedPage = () => {
   },[]);
 
 useEffect(() => {
-    const fetchVents = async () => {
-      console.log("fetchvents called")
-      try {
-        if (vents.length === 0) {
-          setLoading(true);
-        } else {
-          setLoadingMore(true);
-        }
-        
-        const token = Cookies.get("Auth");
-        const headers = {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        };
-        const { data: ventsJson } = await axios.get(`http://localhost:3000/v1/vents?skip=${skip}&category=${category}`, {
-          headers: headers
-        });
-        
-        const newVents = ventsJson.vents;
-        
-        // Check if we've reached the end of the list
-        if (newVents.length === 0) {
-          setHasMore(false);
-        } else {
-          addVents(newVents);
-          console.log("Vents Zustand", vents);
-        }
-        setError(null);
-      } catch (error) {
-        console.error(error);
-        setError("Failed to fetch companies");
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
+
+  const controller = new AbortController();
+  
+  const fetchVents = async () => {
+    try {
+      if (vents.length === 0) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
       }
-    };
-    
-    if (hasMore || vents?.length === 0|| category.length > 0) {
-      const timer = setTimeout(()=>{
-        fetchVents();
-      },100) ;
-      return()=>clearTimeout(timer);
+
+      const token = Cookies.get("Auth");
+      const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      };
+
+      const { data: ventsJson } = await axios.get(
+        `http://localhost:3000/v1/vents?skip=${skip}&category=${category}`,
+        { headers, signal: controller.signal } 
+      );
+
+      if (ventsJson.vents.length === 0) {
+        setHasMore(false);
+      } else {
+        addVents(ventsJson.vents);
+      }
+      setError(null);
+    } catch (error) {
+      if (axios.isCancel(error)) {
+        console.log("Request canceled:", error.message);
+      } else {
+        console.error(error);
+        setError("Failed to fetch vents");
+      }
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
     }
-  }, [skip, category]);
+  };
+
+  if (hasMore || vents?.length === 0 || category.length > 0) {
+    const timer = setTimeout(() => {
+      fetchVents();
+    }, 100);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort(); 
+    };
+  }
+}, [skip, category]);
+
 
   const handleScroll = (e) => {
     const { offsetHeight, scrollTop, scrollHeight } = e.target;
     const threshold = 1000; 
-        if (scrollHeight - (offsetHeight + scrollTop) < threshold && !loadingMore && hasMore) {
-        setSkip(vents.length);
+    if (scrollHeight - (offsetHeight + scrollTop) < threshold && !loadingMore && hasMore) {
+      setSkip(vents.length);
     }
   }
 
   return (
     <div className="w-screen h-screen flex bg-gray-950">
       {/* Sidebar */}
-      <div className="h-screen border-r-1 border-gray-700  " >
+      <div className="h-screen border-r-1 border-gray-700" >
+
       <Sidebar/>
+
       <CategoryBarM
-      onSelect={(q)=>{
-            setSkip(0);
-            setHasMore(true);
-            reset();
-            setCategory(q)
-          }} 
+          onSelect={(q)=>{
+              setSkip(0);
+              setHasMore(true);
+              reset();
+              setCategory(q)
+            }} 
       ></CategoryBarM>
+
       </div>
       {/* Main Content */}
       <div className="flex-1 flex flex-row transition-all duration-300 sm:ml-64">
@@ -186,16 +200,14 @@ useEffect(() => {
         </div>
         {/* Filters & Categories (desktop only) */}
         <div className="bg-gray-950 w-80 h-screen hidden border-l border-gray-700 lg:block p-4 ">
-
           <UserCard username={user.username} location={location.city} />
-
           <CategoryBar
-          onSelect={(q)=>{
-            setSkip(0);
-            setHasMore(true);
-            reset();
-            setCategory(q)
-          }}  
+                onSelect={(q)=>{
+                  setSkip(0);
+                  setHasMore(true);
+                  reset();
+                  setCategory(q)
+                }}  
           ></CategoryBar>
         </div>
       </div>

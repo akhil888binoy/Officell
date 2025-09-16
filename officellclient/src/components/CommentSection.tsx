@@ -7,6 +7,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import useVentStore from "../store/ventStore";
 import useCommentStore from "../store/commentStore";
 import { Loader } from "./Loader";
+import Shuffle from "../styles/Shuffle";
 
 export const CommentSection = ({vent_id}) => {
     const [newComment, setNewComment] = useState("");
@@ -62,7 +63,23 @@ export const CommentSection = ({vent_id}) => {
   return (
     <div  >
       <ToastContainer></ToastContainer>
-      {loading ?  <Loader /> : 
+
+      {loading ?   
+              <div className="px-3 sm:px-4 pt-3 sm:pt-4 pb-2 ">
+                      <Shuffle
+                          text="Thanks for the support"
+                          className="font-arimo text-white font-bold tracking-[-0.001em] text-3xl lg:text-[40px] lg:ml-65"
+                          shuffleDirection="right"
+                          duration={0.35}
+                          animationMode="evenodd"
+                          shuffleTimes={1}
+                          ease="power3.out"
+                          stagger={0.03}
+                          threshold={0.1}
+                          loop={true}
+                          respectReducedMotion={true}
+            />
+          </div>: 
       <>
       {/* Comment Input Styled like PostCard */}
       <div className="w-full  bg-gray-950  border-b-1 border-gray-700">

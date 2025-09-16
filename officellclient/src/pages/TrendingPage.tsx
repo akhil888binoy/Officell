@@ -5,12 +5,12 @@ import { VentCard } from "../components/VentCard";
 import { useEffect, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
-import { Loader } from "../components/Loader";
 import useUserStore from "../store/userStore";
 import useVentStore from "../store/ventStore";
 import Shuffle from "../styles/Shuffle";
 
 export const TrendingPage = () => {
+  
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
