@@ -107,6 +107,9 @@ const PostCard = () => {
     try {
       setPostLoading(true)
       const token =  Cookies.get("Auth");
+      if(!token){
+          await axios.post("http://localhost:3000/v1/auth/refreshtoken", {}, { withCredentials: true });
+      }
       console.log(token);
       const headers={
         'Authorization': `Bearer ${token}`

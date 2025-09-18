@@ -1,15 +1,19 @@
 import {Request , Response } from 'express';
 import axios from 'axios';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { prisma } from "../index";
 import { redisConnection } from '../redis/connection';
 import geoip from 'geoip-lite';
+import crypto from "crypto";
 
 const REDIRECT_URI = 'http://localhost:3000/v1/auth/linkedin/callback';
 
 
 export const SECRET_KEY : jwt.Secret = 'SECRETKEYJSON';
 
+export interface MyPayload extends JwtPayload {
+    _id: number; 
+}
 
 export const authLinkedin = (req: Request , res : Response )=>{
     const linkedinAuthUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.CLIENT_ID}&redirect_uri=${REDIRECT_URI}&state=123456&scope=profile%20email%20openid`;
@@ -50,49 +54,79 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
     });
 
     if (user == null){
-
+        const hashedEmail = crypto.createHash("sha256").update(data.email).digest("hex");
         const add_user = await prisma.user.create({
             data : {
                 linkedin_id: data.sub,
-                email: data.email,
+                email: hashedEmail,
             }
         });
         const token = jwt.sign({ _id: add_user.id }, SECRET_KEY, {
-                expiresIn: '1d',
+                expiresIn: '1h',
+        });
+        const refreshToken = jwt.sign({ _id: add_user.id }, SECRET_KEY , {
+            expiresIn :'1d'
         });
 
         await redis.set(`Profile:${add_user.id}`, JSON.stringify(add_user));
         await redis.expire(`Profile:${add_user.id}` , 3600);
 
         res.cookie('Auth', token , {
-            maxAge: 24 * 60 * 60 * 1000, // 30 minutes   
-            
+            maxAge: 1 * 60 * 60 * 1000, // 60 minutes   
         });
-
-        res.redirect("http://localhost:5173/username")
+        res.cookie('refreshToken', refreshToken , {
+            sameSite: 'strict',
+            httpOnly:true,
+            maxAge: 24 * 60 * 60 * 1000 // 24 hour
+        });
+        res.redirect("http://localhost:5173/username"); 
 
     }else{
-
         const token = jwt.sign({_id : user?.id}, SECRET_KEY , {
-            expiresIn: '1d',
+            expiresIn: '1h',
         });
-
+        const refreshToken = jwt.sign({ _id: user?.id }, SECRET_KEY , {
+            expiresIn :'1d'
+        });
         await redis.set(`Profile:${user?.id}`, JSON.stringify(user));
         await redis.expire(`Profile:${user?.id}` , 3600);
-
-
         res.cookie('Auth', token, {
-                maxAge: 24 * 60 * 60 * 1000, // 30 minutes   
-                
+                maxAge: 1 * 60 * 60 * 1000, // 60 minutes   
         });
-
-        res.redirect("http://localhost:5173/feed")
+        res.cookie('refreshToken', refreshToken , {
+            sameSite: 'strict',
+            httpOnly:true,
+            maxAge: 24 * 60 * 60 * 1000 // 24 hour
+        });
+        res.redirect("http://localhost:5173/feed");
     }
-
     } catch (error: any) {
         res.status(500).json({error: error});
     }
 }
+
+export const RefreshToken = async( req: Request , res: Response)=>{
+    const refreshToken = req.cookies['refreshToken'];
+    if (!refreshToken) {
+        return res.status(401).send('Access Denied. No refresh token provided.');
+    }
+    try {
+
+    const decoded  = jwt.verify(refreshToken, SECRET_KEY) as MyPayload;
+    
+    const token = jwt.sign({_id : decoded._id}, SECRET_KEY , {
+        expiresIn: '1h',
+    });
+
+    res.cookie('Auth', token, {
+        maxAge: 1 * 60 * 60 * 1000, // 60 minutes   
+    });
+        return res.status(200).send("Token refreshed");
+    } catch (error) {
+        return res.status(400).send('Invalid refresh token.');
+    }
+}
+
 
 export const getUserProfile = async (req: Request | any  , res : Response ) => {
     const { _id } = req.decoded;
@@ -162,7 +196,7 @@ export const addUsername = async (req: Request | any  , res : Response ) => {
 
 export const logoutUser = async (req: Request | any , res : Response )=>{
     try {
-        res.clearCookie('auth');
+        res.clearCookie('Auth');
         res.redirect("/");
         res.status(200).json({message : "User Logged out Successfull"});
 

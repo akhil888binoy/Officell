@@ -50,6 +50,9 @@ const handleDownvote=async ()=>{
   try {
       setDisableSubmitBtn(true)
       const token =  Cookies.get("Auth");
+      if(!token){
+          await axios.post("http://localhost:3000/v1/auth/refreshtoken", {}, { withCredentials: true });
+      }
       const headers={
         'Authorization': `Bearer ${token}`
       };
@@ -98,6 +101,9 @@ const handleDownvote=async ()=>{
     try {
         setDisableSubmitBtn(true);
         const token =  Cookies.get("Auth");
+        if(!token){
+          await axios.post("http://localhost:3000/v1/auth/refreshtoken", {}, { withCredentials: true });
+      }
         const headers={
           'Authorization': `Bearer ${token}`
         };
@@ -147,6 +153,9 @@ const handleDeleteVent =async()=>{
       setDisableSubmitBtn(true);
       setDeletingComment(true);
       const token =  Cookies.get("Auth");
+      if(!token){
+          await axios.post("http://localhost:3000/v1/auth/refreshtoken", {}, { withCredentials: true });
+      }
       const headers={
         'Authorization': `Bearer ${token}`
       };
@@ -194,7 +203,8 @@ useEffect(() => {
 
   return (
     <>
-    {id &&
+    { id &&
+
     <div className="relative flex flex-col bg-gray-950 border-t border-b border-gray-700 w-full overflow-hidden">
       <a href={`/vent/${id}`} >
         {/* Header */}
@@ -278,15 +288,46 @@ useEffect(() => {
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-6">
           {/* UpVote Button */}
-          <button disabled={disableSubmitBtn} onClick={handleUpvote} className={`flex items-center gap-2  hover:text-green-400 active:text-green-400 transition ${isupvote? 'text-green-400':'text-gray-400'}`}>
-            <FaArrowUp />
-            <span className="text-sm md:text-base">{upvote}</span>
-          </button>
+            <button
+              onClick={() => {
+                if (disableSubmitBtn) {
+                  toast.warning('Please wait… Dont spam the button', {
+                    position: "top-right",
+                    autoClose: 3000,
+                    theme: "dark",
+                  });
+                  return;
+                }
+                handleUpvote();
+              }}
+              className={`flex items-center gap-2 transition 
+                ${disableSubmitBtn ? 'cursor-not-allowed opacity-50' : 'hover:text-green-400 active:text-green-400'} 
+                ${isupvote ? 'text-green-400' : 'text-gray-400'}`}
+            >
+              <FaArrowUp />
+              <span className="text-sm md:text-base">{upvote}</span>
+            </button>
+
           {/* Down Vote */}
-          <button disabled={disableSubmitBtn} onClick={handleDownvote} className={`flex items-center gap-2 text-gray-400 hover:text-red-400 active:text-red-400 transition ${isdownvote? 'text-red-400':'text-gray-400'}`}>
-            <FaArrowDown />
-            <span className="text-sm md:text-base">{downvote}</span>
-          </button>
+              <button
+                onClick={() => {
+                  if (disableSubmitBtn) {
+                    toast.warning("Please wait… Dont spam the button", {
+                      position: "top-right",
+                      autoClose: 3000,
+                      theme: "dark",
+                    });
+                    return;
+                  }
+                  handleDownvote();
+                }}
+                className={`flex items-center gap-2 transition 
+                  ${disableSubmitBtn ? "cursor-not-allowed opacity-50" : "hover:text-red-400 active:text-red-400"} 
+                  ${isdownvote ? "text-red-400" : "text-gray-400"}`}
+              >
+                <FaArrowDown />
+                <span className="text-sm md:text-base">{downvote}</span>
+              </button>
         {/* Comment */}
         {page.pathname != `/vent/${id}` && 
             <button 

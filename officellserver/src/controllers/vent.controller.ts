@@ -181,7 +181,7 @@ export const createVent = async (req: Request | any , res : Response )=> {
                         vent_id: create_vent.id,
                         type: type,
                         url: cloud.url
-                    }
+                    } 
                 });
         }
         const vent = await prisma.vent.findUnique({
@@ -504,7 +504,7 @@ export const downVote = async (req: Request | any , res : Response )=>{
             author:{
                 select:{
                     username: true
-                }
+                } 
             },
                 
                 Media:true

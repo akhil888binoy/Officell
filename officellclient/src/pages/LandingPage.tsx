@@ -45,9 +45,8 @@ export const LandingPage=()=>{
                         </span>
                         </div>
                 </Link>
-          
 
-            <div className="flex flex-col leading-[0.9]">
+            <div  className="relative inline-block min-w-[20ch]">
                 <ScrambledText
                     className="lg:text-[160px] text-[80px]  font-arimo font-medium dark:text-white tracking-[-0.09em] lg:mr-[100px]"
                     radius={100}

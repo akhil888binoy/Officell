@@ -29,6 +29,9 @@ export const FeedPage = () => {
   const fetchData = async ()=>{
       try {
         const token =  Cookies.get("Auth");
+        if(!token){
+          await axios.post("http://localhost:3000/v1/auth/refreshtoken", {}, { withCredentials: true });
+      }
         const headers={
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
@@ -36,9 +39,7 @@ export const FeedPage = () => {
         const {data: response } = await axios.get("http://localhost:3000/v1/profile",{
           headers: headers
         });
-
         addUser(response);
-
       } catch (error) {
         console.error(error)
       }
@@ -50,7 +51,6 @@ export const FeedPage = () => {
   },[]);
 
 useEffect(() => {
-
   const controller = new AbortController();
   
   const fetchVents = async () => {

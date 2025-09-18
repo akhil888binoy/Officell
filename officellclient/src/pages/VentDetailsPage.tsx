@@ -8,8 +8,6 @@ import Cookies from 'js-cookie';
 import axios from "axios";
 import { CommentCard } from "../components/CommentCard";
 import { UserCard } from "../components/UserCard";
-import type { Vent } from "../interfaces/VentInterface";
-import type { Comment } from "../interfaces/CommentInterface";
 import useUserStore from "../store/userStore";
 import useVentStore from "../store/ventStore";
 import useCommentStore from "../store/commentStore";
@@ -85,9 +83,7 @@ export const VentDetailsPage = () => {
     const handleScroll = (e) => {
     const { offsetHeight, scrollTop, scrollHeight } = e.target;
     const threshold = 1000; 
-        if (scrollHeight - (offsetHeight + scrollTop) < threshold && 
-        !loadingMore && 
-        hasMore) {
+        if (scrollHeight - (offsetHeight + scrollTop) < threshold && !loadingMore && hasMore) {
               setSkip(comments.length);
     }
   }
@@ -100,9 +96,7 @@ export const VentDetailsPage = () => {
       </div>
       {/* Main Content */}
         <div className="flex-1 flex flex-row transition-all duration-300 sm:ml-64">
-
         <div className="flex-1 bg-gray-950 overflow-y-scroll " onScroll={handleScroll} >
-
         { vent &&
                     <VentCard
                           id={vent.id}
@@ -121,10 +115,6 @@ export const VentDetailsPage = () => {
                           user_id = {user.id}
                         />
         }
-          
-                  
-                              
-
           <div className="space-y-4 ">
           {vent &&  <CommentSection vent_id ={vent.id}></CommentSection> }
               {loading && !vent && 

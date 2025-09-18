@@ -12,6 +12,7 @@ import useVentStore from "../store/ventStore";
 import Shuffle from "../styles/Shuffle";
 
 export const ProfilePage = () => {
+  
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +30,7 @@ export const ProfilePage = () => {
   },[]);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchVents = async () => {
       try {
 
@@ -45,9 +47,9 @@ export const ProfilePage = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         };
-        const { data: ventsJson } = await axios.get(`http://localhost:3000/v1/vents?skip=${skip}&author_id=${user.id}&category=${category}`, {
-          headers: headers
-        });
+        const { data: ventsJson } = await axios.get(`http://localhost:3000/v1/vents?skip=${skip}&author_id=${user.id}&category=${category}`,
+          { headers, signal: controller.signal } 
+        );
         
         console.log(ventsJson.vents);
         const newVents = ventsJson.vents;
@@ -59,8 +61,12 @@ export const ProfilePage = () => {
         }
         setError(null);
       } catch (error) {
-        console.error(error);
-        setError("Failed to fetch companies");
+          if (axios.isCancel(error)) {
+            console.log("Request canceled:", error.message);
+          } else {
+            console.error(error);
+            setError("Failed to fetch vents");
+          }
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -71,7 +77,10 @@ export const ProfilePage = () => {
       const timer = setTimeout(()=>{
         fetchVents();
       },100) ;
-      return()=>clearTimeout(timer);
+      return () => {
+          clearTimeout(timer);
+          controller.abort(); 
+      };
     }
   }, [skip, category]);
 

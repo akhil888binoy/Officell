@@ -7,6 +7,9 @@ import { RiBuilding2Line } from 'react-icons/ri';
 import { BiMessageDetail } from 'react-icons/bi';
 import Cookies from 'js-cookie';
 import {   useLocation, useNavigate } from 'react-router-dom';
+import useVentStore from '../store/ventStore';
+import useCompanyStore from '../store/companyStore';
+import useUserStore from '../store/userStore';
 
 // Initialize drawer component
 const initDrawer = () => {
@@ -46,9 +49,17 @@ export const Sidebar = () => {
 
   const navigate = useNavigate();
   const page = useLocation();
+  const resetVent = useVentStore((state)=> state.reset);
+  const resetCompanies = useCompanyStore((state)=>state.reset);
+  const resetUser = useUserStore((state)=> state.reset);
+
 
   const handleLogout = async ()=>{
       Cookies.remove("Auth");
+      Cookies.remove("refreshToken");
+      resetVent();
+      resetCompanies();
+      resetUser();
       navigate("/");
   }
 
