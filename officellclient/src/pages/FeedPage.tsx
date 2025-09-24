@@ -3,28 +3,45 @@ import { CategoryBarM } from "../components/CategoryBarM";
 import PostCard from "../components/PostCard";
 import { Sidebar } from "../components/Sidebar";
 import { UserCard } from "../components/UserCard";
-import { VentCard } from "../components/VentCard";
-import { useEffect, useState } from "react";
+import {VentCard}  from "../components/VentCard";
+import { useEffect, useRef, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
 import useUserStore from "../store/userStore";
 import useVentStore from "../store/ventStore";
 import Shuffle from "../styles/Shuffle";
+import { FaSkullCrossbones } from "react-icons/fa";
+
 
 
 export const FeedPage = () => {
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+
+  const scrollToRef = useRef<null | HTMLElement>(null);
+  const scrollToCard= useVentStore((state)=> state.scrollToItem) ;
   const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [skip, setSkip] = useState(0);
-  const [category, setCategory] = useState("");
+  const skip = useVentStore((state)=> state.scrollSkip);
+  const loadingMore = useVentStore((state)=> state.scrollLoadinMore);
+  const loading = useVentStore((state)=> state.scrollLoading);
+  const category = useVentStore((state)=> state.scrollCategory);
+  const hasMore = useVentStore((state)=> state.scrollHasMore);
   const addUser = useUserStore((state)=>state.addUser);
   const location = useUserStore((state) => state.location)
   const user = useUserStore((state) => state.user);
   const vents = useVentStore((state) => state.vents);
   const addVents = useVentStore((state) => state.addVents);
+  const addScrollSkip = useVentStore((state)=> state.addScrollSkip);
+  const addloading = useVentStore((state)=> state.addScrollLoading);
+  const addloadingMore = useVentStore((state)=> state.addScrollLoadingMore);
+  const addcategory = useVentStore((state)=> state.addScrollCategory);
+  const addHasMore = useVentStore((state)=> state.addHasMore);
+  const addScrollToItem = useVentStore((state)=> state.addScrollToItem);
   const reset = useVentStore((state)=>state.reset);
+
+  // const resetCategory = useVentStore((state)=>state.resetScrollCategory);
+  // const resetScrollLoading = useVentStore((state)=>state.resetScrollLoading);
+  // const resetScrollLoadingMore = useVentStore((state)=>state.resetScrollLoadingMore);
+  // const resetScrollSkip = useVentStore((state)=>state.resetScrollSkip);
+  // const resetScrollHasMore = useVentStore((state)=> state.resetHasMore);
 
   const fetchData = async ()=>{
       try {
@@ -47,7 +64,9 @@ export const FeedPage = () => {
 
   useEffect(()=>{
     fetchData();
-    reset();
+    if( scrollToRef.current ) {
+            scrollToRef.current.scrollIntoView();
+        }
   },[]);
 
 useEffect(() => {
@@ -56,9 +75,9 @@ useEffect(() => {
   const fetchVents = async () => {
     try {
       if (vents.length === 0) {
-        setLoading(true);
+        addloading(true);
       } else {
-        setLoadingMore(true);
+        addloadingMore(true);
       }
 
       const token = Cookies.get("Auth");
@@ -73,7 +92,7 @@ useEffect(() => {
       );
 
       if (ventsJson.vents.length === 0) {
-        setHasMore(false);
+        addHasMore(false);
       } else {
         addVents(ventsJson.vents);
       }
@@ -86,8 +105,8 @@ useEffect(() => {
         setError("Failed to fetch vents");
       }
     } finally {
-      setLoading(false);
-      setLoadingMore(false);
+      addloading(false);
+      addloadingMore(false);
     }
   };
 
@@ -106,9 +125,9 @@ useEffect(() => {
 
   const handleScroll = (e) => {
     const { offsetHeight, scrollTop, scrollHeight } = e.target;
-    const threshold = 1000; 
+    const threshold = 1000;
     if (scrollHeight - (offsetHeight + scrollTop) < threshold && !loadingMore && hasMore) {
-      setSkip(vents.length);
+      addScrollSkip(vents.length);
     }
   }
 
@@ -116,15 +135,13 @@ useEffect(() => {
     <div className="w-screen h-screen flex bg-gray-950">
       {/* Sidebar */}
       <div className="h-screen border-r-1 border-gray-700" >
-
       <Sidebar/>
-
       <CategoryBarM
           onSelect={(q)=>{
-              setSkip(0);
-              setHasMore(true);
+              addScrollSkip(0);
+              addHasMore(true);
               reset();
-              setCategory(q)
+              addcategory(q)
             }} 
       ></CategoryBarM>
 
@@ -132,50 +149,54 @@ useEffect(() => {
       {/* Main Content */}
       <div className="flex-1 flex flex-row transition-all duration-300 sm:ml-64">
         {/* Feeds */}
-
         <div className="flex-1 bg-gray-950 overflow-y-scroll " onScroll={handleScroll}>
             <PostCard />
             {loading && vents.length === 0 &&  <Shuffle
-                          text="⟢ OFFICELL"
-                          className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] lg:ml-80"
-                          shuffleDirection="right"
-                          duration={0.35}
-                          animationMode="evenodd"
-                          shuffleTimes={1}
-                          ease="power3.out"
-                          stagger={0.03}
-                          threshold={0.1}
-                          loop={true}
-                          respectReducedMotion={true}
-            />}
-             {/* Error message */}
+                                      text="⟢ OFFICELL"
+                                      className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] md:ml-4 lg:ml-20"
+                                      shuffleDirection="right"
+                                      duration={0.35}
+                                      animationMode="evenodd"
+                                      shuffleTimes={1}
+                                      ease="power3.out"
+                                      stagger={0.03}
+                                      threshold={0.1}
+                                      loop={true}
+                                      respectReducedMotion={true}
+                              />}
+                    {/* Error message */}
                       {error && (
                         <div className="text-red-500 text-center p-4">
                           {error}
                         </div>
                       )}
                       
+
                       {/* Companies list */}
                       {vents.map((vent,index) => (
-                        <VentCard
-                          key={index}
-                          id={vent.id}
-                          category= {vent.category}
-                          content = {vent.content}
-                          upvote={vent.upvote}
-                          downvote={vent.downvote}
-                          company_country={vent.company?.country}
-                          company_name={vent.company?.name}
-                          author={vent.author?.username}
-                          author_id = {vent.author_id}
-                          commentcount = {vent._count?.comments}
-                          createdAt= {vent.createdAt}
-                          media = {vent.Media}
-                          votes={vent.votes}
-                          user_id = {user.id}
-                        />
+                        <span key={index} onClick={()=> addScrollToItem(index) }>
+                          <VentCard
+                            id={vent.id}
+                            category= {vent.category}
+                            content = {vent.content}
+                            upvote={vent.upvote}
+                            downvote={vent.downvote}
+                            company_country={vent.company?.country}
+                            company_name={vent.company?.name}
+                            author={vent.author?.username}
+                            author_id = {vent.author_id}
+                            commentcount = {vent._count?.comments}
+                            createdAt= {vent.createdAt}
+                            media = {vent.Media}
+                            votes={vent.votes}
+                            user_id = {user.id}
+                            ref={index === scrollToCard ?  scrollToRef : null}
+                        />     
+                      </span>
+
                       ))}
                       
+
                       {/* Loading more indicator */}
                       {loadingMore && <Shuffle
                           text="⟢ OFFICELL"
@@ -193,8 +214,9 @@ useEffect(() => {
                       
                       {/* End of results message */}
                       {!hasMore && vents.length > 0 && (
-                        <div className="text-center text-gray-400 py-6">
-                          You've reached the end of the list
+                        <div className="text-center text-gray-400 py-6 flex justify-center items-center space-x-2">
+                          <FaSkullCrossbones />
+                          <span>THE END</span>
                         </div>
                       )}
         </div>
@@ -203,10 +225,10 @@ useEffect(() => {
           <UserCard username={user.username} location={location.city} />
           <CategoryBar
                 onSelect={(q)=>{
-                  setSkip(0);
-                  setHasMore(true);
+                  addScrollSkip(0);
+                  addHasMore(true);
                   reset();
-                  setCategory(q)
+                  addcategory(q)
                 }}  
           ></CategoryBar>
         </div>

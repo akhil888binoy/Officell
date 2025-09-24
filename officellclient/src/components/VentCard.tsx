@@ -2,7 +2,7 @@ import { FaArrowUp, FaArrowDown, FaRegComment, FaTrash } from "react-icons/fa";
 import { RiBuilding2Line } from "react-icons/ri";
 import { MdLocationOn } from "react-icons/md";
 import moment from 'moment';
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from 'axios';
 import { ToastContainer, toast } from 'react-toastify';
@@ -13,7 +13,7 @@ import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/re
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 
 
-export const VentCard = ({ id , category , content , upvote , downvote , company_name , company_country, author, author_id, commentcount , createdAt, media, votes, user_id }) => {
+export const VentCard = forwardRef(({ id , category , content , upvote , downvote , company_name , company_country, author, author_id, commentcount , createdAt, media, votes, user_id }, ref) => {
 
   const [time, setTime] = useState("");
   const [isupvote , setIsUpVote] = useState(false);
@@ -205,7 +205,7 @@ useEffect(() => {
     <>
     { id &&
 
-    <div className="relative flex flex-col bg-gray-950 border-t border-b border-gray-700 w-full overflow-hidden">
+    <div className="relative flex flex-col bg-gray-950 border-t border-b border-gray-700 w-full overflow-hidden" ref={ref}>
       <a href={`/vent/${id}`} >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3">
@@ -408,4 +408,4 @@ useEffect(() => {
     }
     </>
   );
-};
+});

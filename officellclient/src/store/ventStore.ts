@@ -1,3 +1,4 @@
+import { data } from 'react-router-dom';
 import {create} from 'zustand';
 import { persist, createJSONStorage } from "zustand/middleware";
 
@@ -7,6 +8,12 @@ const ventStore=(set,get)=>({
     category:"",
     selectedMedia: null,
     mediaType: "",
+    scrollSkip:0,
+    scrollLoading : true,
+    scrollLoadinMore: false,
+    scrollCategory: "",
+    scrollHasMore : true,
+    scrollToItem: 0,
     vents:[{
         id:"",
         category:"",
@@ -27,6 +34,36 @@ const ventStore=(set,get)=>({
         _count:{comments:0},
         company_id:""
     }],
+    addScrollSkip : (data)=>{
+        set((state)=>({
+            scrollSkip: data
+        }))
+    },
+    addScrollLoading : (data)=>{
+        set((state)=>({
+            scrollLoading: data
+        }))
+    },
+    addScrollLoadingMore:(data)=>{
+        set((state)=>({
+            scrollLoadinMore: data
+        }))
+    },
+    addScrollCategory:(data)=>{
+        set((state)=>({
+            scrollCategory: data
+        }))
+    },
+    addHasMore: (data)=>{
+        set((state)=>({
+            scrollHasMore : data,
+        }))
+    },
+    addScrollToItem: (data)=>{
+        set((state)=>({
+            scrollToItem : data,
+        }))
+    },
     addVents:(data)=>{
         set((state)=>({
                 vents:[...state.vents, ...data]
@@ -115,8 +152,7 @@ const ventStore=(set,get)=>({
                 }
                 return vent;
             });
-                
-            set({ vents: updatedVents });
+                set({ vents: updatedVents });
             },
 downVote: (id, user_id, votedata) => {
         const vents = get().vents;
@@ -180,6 +216,31 @@ downVote: (id, user_id, votedata) => {
             vents: updatedVents
         })
     },
+    resetScrollLoading:()=>{
+        set({
+            scrollLoading : true,
+        })
+    },
+    resetScrollLoadingMore:()=>{
+        set({
+            scrollLoadinMore: false,
+        })
+    },
+    resetScrollCategory:()=>{
+        set({
+            scrollCategory: "",
+        })
+    },
+    resetScrollSkip:()=>{
+        set({
+            scrollSkip : 0,
+        })
+    },
+    resetHasMore:()=>{
+        set({
+            scrollHasMore: true
+        })
+    },
     reset:()=>{
         set({
             vents:[{}]
@@ -205,6 +266,7 @@ downVote: (id, user_id, votedata) => {
             post: ""
         })
     },
+
     resetCategory:()=>{
         set({
             category: ""

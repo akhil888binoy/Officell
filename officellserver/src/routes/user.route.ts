@@ -13,6 +13,3 @@ userRouter.post("/auth/refreshtoken", RefreshToken);
 userRouter.post("/logout", auth , logoutUser );
 userRouter.get("/profile", auth, checkCacheProfile,  getUserProfile);
 userRouter.post("/add-username", auth , validateData(addUsernameSchema) , addUsername);
-
-
-  

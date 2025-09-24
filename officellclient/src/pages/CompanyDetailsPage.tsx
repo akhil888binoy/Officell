@@ -5,18 +5,20 @@ import { CompanyCard } from "../components/CompanyCard";
 import PostCard from "../components/PostCard";
 import { Sidebar } from "../components/Sidebar";
 import { UserCard } from "../components/UserCard";
-import { VentCard } from "../components/VentCard";
-import { useEffect, useState } from "react";
+import  {VentCard } from "../components/VentCard";
+import { useEffect, useRef, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
 import useUserStore from "../store/userStore";
 import useCompanyStore from "../store/companyStore";
 import useVentStore from "../store/ventStore";
 import Shuffle from "../styles/Shuffle";
+import { FaSkullCrossbones } from "react-icons/fa";
 
 
 export const CompanyDetailsPage = () => {
-
+  const scrollToRef = useRef<null | HTMLElement>(null);
+  const scrollToCard= 0 ;
   const {id} = useParams();
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -158,6 +160,7 @@ useEffect(() => {
                                           media = {vent?.Media}
                                           votes={vent?.votes}
                                           user_id = {user.id}
+                                          ref={index === scrollToCard ?  scrollToRef : null}
                                         />
                                       
                                     ))}
@@ -181,9 +184,10 @@ useEffect(() => {
                                     
                                      {/* End of results message */}
                                     {!hasMore && vents.length > 0 && (
-                                      <div className="text-center text-gray-400 py-6">
-                                        You've reached the end of the list
-                                      </div>
+                                       <div className="text-center text-gray-400 py-6 flex justify-center items-center space-x-2">
+                                                                <FaSkullCrossbones />
+                                                                <span>THE END</span>
+                                        </div>
                               )}
         </div>
         

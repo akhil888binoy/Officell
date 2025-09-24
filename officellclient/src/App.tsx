@@ -1,5 +1,5 @@
 
-import { BrowserRouter, Routes, Route, useNavigate, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { FeedPage } from './pages/FeedPage';
 import { CompaniesPage } from './pages/CompaniesPage';
 import { CompanyDetailsPage } from './pages/CompanyDetailsPage';

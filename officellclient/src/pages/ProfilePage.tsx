@@ -10,6 +10,7 @@ import axios from "axios";
 import useUserStore from "../store/userStore";
 import useVentStore from "../store/ventStore";
 import Shuffle from "../styles/Shuffle";
+import { FaSkullCrossbones } from "react-icons/fa";
 
 export const ProfilePage = () => {
   
@@ -184,9 +185,10 @@ export const ProfilePage = () => {
                                      
                                      {/* End of results message */}
                                      {!hasMore && vents.length > 0 && (
-                                       <div className="text-center text-gray-400 py-6">
-                                         You've reached the end of the list
-                                       </div>
+                                      <div className="text-center text-gray-400 py-6 flex justify-center items-center space-x-2">
+                                                                <FaSkullCrossbones />
+                                                                <span>THE END</span>
+                                        </div>
                                      )}
         </div>
         {/* Filters & Categories (desktop only) */}
