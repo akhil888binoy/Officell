@@ -4,28 +4,40 @@ import { UserCard } from "../components/UserCard";
 import { CompanyCategoryM } from "../components/CompanyCategoryM";
 import CompanySearchBar from "../components/CompanySearchBar";
 import { CompanyCard } from "../components/CompanyCard";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
-import { Loader } from "../components/Loader";
 import AddCompany from "../components/AddCompany";
 import useUserStore from "../store/userStore";
 import useCompanyStore from "../store/companyStore";
 import Shuffle from "../styles/Shuffle";
+import { PAGE_SIZE } from "../utils/pagesize";
+import useCompanyVentStore from "../store/companyventStore";
+
 
 export const CompaniesPage = () => {
-  const [skip, setSkip] = useState(0);
-  const [category , setCategory] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+
+  const scrollToRef = useRef<null | HTMLElement>(null);
+  const scrollToCard= useCompanyStore((state)=> state.scrollToItem) ;
   const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
   const [search , setSearch] = useState("");
+  const skip = useCompanyStore((state)=> state.scrollSkip);
+  const loadingMore = useCompanyStore((state)=> state.scrollLoadinMore);
+  const loading = useCompanyStore((state)=> state.scrollLoading);
+  const category = useCompanyStore((state)=> state.scrollCategory);
+  const hasMore = useCompanyStore((state)=> state.scrollHasMore);
   const companies = useCompanyStore((state) => state.companies);
   const addCompanies = useCompanyStore((state) => state.addCompanies);
-  const reset = useCompanyStore((state)=>state.reset);
   const location = useUserStore((state) => state.location)
   const user = useUserStore((state) => state.user);
+  const addScrollSkip = useCompanyStore((state)=> state.addScrollSkip);
+  const addloading = useCompanyStore((state)=> state.addScrollLoading);
+  const addloadingMore = useCompanyStore((state)=> state.addScrollLoadingMore);
+  const addcategory = useCompanyStore((state)=> state.addScrollCategory);
+  const addHasMore = useCompanyStore((state)=> state.addHasMore);
+  const addScrollToItem = useCompanyStore((state)=> state.addScrollToItem);
+  const logout = useCompanyStore((state)=> state.logout);
+  const logoutCompanyVent = useCompanyVentStore((state)=>state.logout);
 
 
   const handleScroll = (e) => {
@@ -33,9 +45,10 @@ export const CompaniesPage = () => {
     const threshold = 1000; 
         if (scrollHeight - (offsetHeight + scrollTop) < threshold && 
         !loadingMore && hasMore) {
-        setSkip(companies.length);
+        addScrollSkip(companies.length);
     }
   }
+
 
   useEffect(() => {
     const controller = new AbortController();
@@ -44,9 +57,9 @@ export const CompaniesPage = () => {
       try {
         
         if (companies.length === 0) {
-          setLoading(true);
+          addloading(true);
         } else {
-          setLoadingMore(true);
+          addloadingMore(true);
         }
         
         const token = Cookies.get("Auth");
@@ -55,20 +68,19 @@ export const CompaniesPage = () => {
           'Authorization': `Bearer ${token}`
         };
         const { data: companiesJson } = await axios.get(`http://localhost:3000/v1/companies?skip=${skip}&company_name=${search}&industry=${category}`, {
-          headers, signal: controller.signal 
+          headers, signal: controller.signal , withCredentials: true
         });
         
         console.log("Companies",companiesJson.companies);
         const newCompanies = companiesJson.companies;
         
         // Check if we've reached the end of the list
-        if (newCompanies.length === 0) {
-          setHasMore(false);
-        } 
-        else {
-          addCompanies(newCompanies);
-          console.log("companies",companies)
-        }
+        if (newCompanies.length < PAGE_SIZE) {
+              addHasMore(false);  
+            }
+        if (newCompanies.length > 0) {
+              addCompanies(newCompanies);
+          }
         setError(null);
       } catch (error) {
           if (axios.isCancel(error)) {
@@ -78,8 +90,8 @@ export const CompaniesPage = () => {
             setError("Failed to fetch companies");
           }
       } finally {
-        setLoading(false);
-        setLoadingMore(false);
+        addloading(false);
+        addloadingMore(false);
       }
     };
     
@@ -96,7 +108,10 @@ export const CompaniesPage = () => {
   }, [skip, search, category]);
 
   useEffect(()=>{
-    reset();
+    logoutCompanyVent();
+    if( scrollToRef.current ) {
+        scrollToRef.current.scrollIntoView();
+      }
   },[]);
 
   return (
@@ -105,10 +120,8 @@ export const CompaniesPage = () => {
       <div className="h-screen border-r-1 border-gray-700">
         <Sidebar />
         <CompanyCategoryM onSelect={(q)=>{
-            setSkip(0);
-            setHasMore(true);
-            reset();
-            setCategory(q)
+            logout()
+            addcategory(q)
           }} />
       </div>
       
@@ -117,9 +130,7 @@ export const CompaniesPage = () => {
         {/* Feeds */}
         <div className="flex-1 bg-gray-950 overflow-y-scroll" onScroll={handleScroll}>
           <CompanySearchBar onSearch={(q) => {
-            setSkip(0);
-            setHasMore(true);
-            reset();
+            logout();
             setSearch(q);
           }} />
           
@@ -149,8 +160,8 @@ export const CompaniesPage = () => {
           
           {/* Companies list */}
           {companies?.map((company, index) => (
+          <span key={index} onClick={()=> addScrollToItem(index) }>
             <CompanyCard
-              key={index}
               company_id={company.id}
               company_name={company.name}
               industry={company.industry}
@@ -158,7 +169,9 @@ export const CompaniesPage = () => {
               country={company.country}
               vents_count={company._count?.vents}
               domain={company.domain}
+              ref={index === scrollToCard ?  scrollToRef : null}
             />
+          </span>
           ))}
           
           {/* Loading more indicator */}
@@ -189,10 +202,8 @@ export const CompaniesPage = () => {
         <div className="bg-gray-950 w-80 h-screen hidden border-l border-gray-700 lg:block p-4">
           <UserCard username={user.username} location={location.city} />
           <CompanyCategory onSelect={(q)=>{
-            setSkip(0);
-            setHasMore(true);
-            reset();
-            setCategory(q)
+            logout()
+            addcategory(q)
           }} />
         </div>
       </div>

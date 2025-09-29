@@ -4,30 +4,41 @@ import PostCard from "../components/PostCard";
 import { Sidebar } from "../components/Sidebar";
 import { UserCard } from "../components/UserCard";
 import { VentCard } from "../components/VentCard";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
 import useUserStore from "../store/userStore";
-import useVentStore from "../store/ventStore";
 import Shuffle from "../styles/Shuffle";
 import { FaSkullCrossbones } from "react-icons/fa";
+import useProfileVentStore from "../store/profileventStore";
+import { PAGE_SIZE } from "../utils/pagesize";
 
 export const ProfilePage = () => {
-  
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+
+  const scrollToRef = useRef<null | HTMLElement>(null);
+  const scrollToCard= useProfileVentStore((state)=> state.scrollToItem) ;
   const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [skip, setSkip] = useState(0);
-  const [category, setCategory] = useState("");
+  const skip = useProfileVentStore((state)=> state.scrollSkip);
+  const loadingMore = useProfileVentStore((state)=> state.scrollLoadinMore);
+  const loading = useProfileVentStore((state)=> state.scrollLoading);
+  const category = useProfileVentStore((state)=> state.scrollCategory);
+  const hasMore = useProfileVentStore((state)=> state.scrollHasMore);
   const location = useUserStore((state) => state.location)
   const user = useUserStore((state) => state.user);
-  const addVents = useVentStore((state) => state.addVents);
-  const reset = useVentStore((state)=>state.reset);
-  const vents = useVentStore((state) => state.vents);
+  const addVents = useProfileVentStore((state) => state.addVents);
+  const reset = useProfileVentStore((state)=>state.reset);
+  const vents = useProfileVentStore((state) => state.profilevents);
+  const addScrollSkip = useProfileVentStore((state)=> state.addScrollSkip);
+  const addloading = useProfileVentStore((state)=> state.addScrollLoading);
+  const addloadingMore = useProfileVentStore((state)=> state.addScrollLoadingMore);
+  const addcategory = useProfileVentStore((state)=> state.addScrollCategory);
+  const addHasMore = useProfileVentStore((state)=> state.addHasMore);
+  const addScrollToItem = useProfileVentStore((state)=> state.addScrollToItem);
 
   useEffect(()=>{
-    reset()
+    if( scrollToRef.current ) {
+          scrollToRef.current.scrollIntoView();
+      }
   },[]);
 
   useEffect(() => {
@@ -38,9 +49,9 @@ export const ProfilePage = () => {
         if (!user.id) return;
 
         if (vents.length === 0) {
-          setLoading(true);
+          addloading(true);
         } else {
-          setLoadingMore(true);
+          addloadingMore(true);
         }
         
         const token = Cookies.get("Auth");
@@ -49,17 +60,21 @@ export const ProfilePage = () => {
           'Authorization': `Bearer ${token}`
         };
         const { data: ventsJson } = await axios.get(`http://localhost:3000/v1/vents?skip=${skip}&author_id=${user.id}&category=${category}`,
-          { headers, signal: controller.signal } 
+          { 
+            headers, signal: controller.signal,
+            withCredentials: true
+          } 
         );
         
         console.log(ventsJson.vents);
-        const newVents = ventsJson.vents;
         
-        if (newVents.length === 0) {
-          setHasMore(false);
-        } else {
-          addVents(newVents);
+        if (ventsJson.vents.length < PAGE_SIZE) {
+          addHasMore(false);  
         }
+        if (ventsJson.vents.length > 0) {
+          addVents(ventsJson.vents);
+        }
+
         setError(null);
       } catch (error) {
           if (axios.isCancel(error)) {
@@ -69,8 +84,8 @@ export const ProfilePage = () => {
             setError("Failed to fetch vents");
           }
       } finally {
-        setLoading(false);
-        setLoadingMore(false);
+        addloading(false);
+        addloadingMore(false);
       }
     };
     
@@ -85,13 +100,12 @@ export const ProfilePage = () => {
     }
   }, [skip, category]);
 
-    const handleScroll = (e) => {
+  const handleScroll = (e) => {
     const { offsetHeight, scrollTop, scrollHeight } = e.target;
     const threshold = 1000; 
-        if (scrollHeight - (offsetHeight + scrollTop) < threshold && !loadingMore && hasMore) {
-            setSkip(vents.length);
+    if (scrollHeight - (offsetHeight + scrollTop) < threshold && !loadingMore && hasMore) {
+        addScrollSkip(vents.length);
     }
-
   }
 
   return (
@@ -101,10 +115,10 @@ export const ProfilePage = () => {
       <Sidebar></Sidebar>
       <CategoryBarM
         onSelect={(q)=>{
-            setSkip(0);
-            setHasMore(true);
+            addScrollSkip(0);
+            addHasMore(true);
             reset();
-            setCategory(q)
+            addcategory(q)
           }}
           ></CategoryBarM>
       </div>
@@ -147,24 +161,26 @@ export const ProfilePage = () => {
                                        </div>
                                      )}
                                      {/* Companies list */}
-                                    {vents.map((vent,index) => (
-                                        <VentCard
-                                          key={index}
-                                          id={vent?.id}
-                                          category= {vent?.category}
-                                          content = {vent?.content}
-                                          upvote={vent?.upvote}
-                                          downvote={vent?.downvote}
-                                          company_country={vent?.company?.country}
-                                          company_name={vent?.company?.name}
-                                          author={vent?.author?.username}
-                                          author_id = {vent?.author_id}
-                                          commentcount = {vent?._count?.comments}
-                                          createdAt= {vent?.createdAt}
-                                          media = {vent?.Media}
-                                          votes={vent?.votes}
-                                          user_id = {user.id}
-                                        />
+                                      {vents.map((vent,index) => (
+                                            <span key={index} onClick={()=> addScrollToItem(index) }>
+                                              <VentCard
+                                                id={vent.id}
+                                                category= {vent.category}
+                                                content = {vent.content}
+                                                upvote={vent.upvote}
+                                                downvote={vent.downvote}
+                                                company_country={vent.company?.country}
+                                                company_name={vent.company?.name}
+                                                author={vent.author?.username}
+                                                author_id = {vent.author_id}
+                                                commentcount = {vent._count?.comments}
+                                                createdAt= {vent.createdAt}
+                                                media = {vent.Media}
+                                                votes={vent.votes}
+                                                user_id = {user.id}
+                                                ref={index === scrollToCard ?  scrollToRef : null}
+                                            />     
+                                          </span>
                                       ))}
                                      {/* Loading more indicator */}
                                      {loadingMore && 
@@ -196,10 +212,10 @@ export const ProfilePage = () => {
           <UserCard username={user.username} location={location.city} />
           <CategoryBar
             onSelect={(q)=>{
-            setSkip(0);
-            setHasMore(true);
+            addScrollSkip(0);
+            addHasMore(true);
             reset();
-            setCategory(q)
+            addcategory(q)
           }}  
           ></CategoryBar>
         </div>

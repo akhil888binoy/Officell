@@ -220,10 +220,9 @@ export const createVent = async (req: Request | any , res : Response )=> {
 }
 
 export const updateVent = async (req: Request | any , res : Response )=>{
-            const redis = await redisConnection();
 
+    const redis = await redisConnection();
     const { id } = req.params;
-
     const {_id} = req.decoded;
 
     const { company_id , no_pii , content , category, media_url , media_type} = req.body;

@@ -16,9 +16,6 @@ export default function AddUsernamePage() {
 
       setStep(3);
       const token =  Cookies.get("Auth");
-      if(!token){
-          await axios.post("http://localhost:3000/v1/auth/refreshtoken", {}, { withCredentials: true });
-      }
       console.log(token);
       const headers={
         'Content-Type': 'application/json',
@@ -28,7 +25,9 @@ export default function AddUsernamePage() {
       const  response = await axios.post("http://localhost:3000/v1/add-username", {
         new_username: username
       },{
-          headers:headers
+          headers:headers,
+                    withCredentials: true
+
       });
       console.log(response);
       setTimeout(() => {

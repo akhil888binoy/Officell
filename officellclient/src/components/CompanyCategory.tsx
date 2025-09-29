@@ -17,7 +17,6 @@ export const categories = [
 export const CompanyCategory = ({ onSelect }) => {
 
   const [category , setCategory] = useState("");
-
   const handleCategory =(e)=>{
     if(category){
       setCategory("");

@@ -2,17 +2,7 @@ import {create} from 'zustand';
 import { persist, createJSONStorage } from "zustand/middleware";
 
 const commentStore=(set,get)=>({
-    comments:[{
-        id :"",
-        vent_id:"",
-        author:{
-            username:""
-        },
-        author_id:"",
-        comment:"",
-        createdAt:"",
-        subcomments:[]
-    }],
+    comments:[],
     addComments:(data)=>{
         set((state)=>({
             comments:[...state.comments, ...data]
@@ -60,7 +50,7 @@ const commentStore=(set,get)=>({
     },
     resetComments:()=>{
         set({
-            comments:[{}]
+            comments:[]
         })
     }
 })

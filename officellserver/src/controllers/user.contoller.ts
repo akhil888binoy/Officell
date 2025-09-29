@@ -65,6 +65,7 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
                 expiresIn: '1h',
         });
         const refreshToken = jwt.sign({ _id: add_user.id }, SECRET_KEY , {
+        
             expiresIn :'1d'
         });
 
@@ -74,9 +75,12 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
         res.cookie('Auth', token , {
             maxAge: 1 * 60 * 60 * 1000, // 60 minutes   
         });
+        res.cookie('RefreshExist' , true , {
+            maxAge: 24 * 60 * 60 * 1000 // 24 hour
+        });
         res.cookie('refreshToken', refreshToken , {
-            sameSite: 'strict',
-            httpOnly:true,
+            httpOnly: true,
+            sameSite: true,
             maxAge: 24 * 60 * 60 * 1000 // 24 hour
         });
         res.redirect("http://localhost:5173/username"); 
@@ -90,12 +94,16 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
         });
         await redis.set(`Profile:${user?.id}`, JSON.stringify(user));
         await redis.expire(`Profile:${user?.id}` , 3600);
+
         res.cookie('Auth', token, {
                 maxAge: 1 * 60 * 60 * 1000, // 60 minutes   
         });
-        res.cookie('refreshToken', refreshToken , {
-            sameSite: 'strict',
-            httpOnly:true,
+        res.cookie('RefreshExist' , true , {
+            maxAge: 24 * 60 * 60 * 1000 // 24 hour
+        });
+        res.cookie('refreshToken', refreshToken , { 
+            httpOnly: true,
+            sameSite: true,
             maxAge: 24 * 60 * 60 * 1000 // 24 hour
         });
         res.redirect("http://localhost:5173/feed");
@@ -106,12 +114,15 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
 }
 
 export const RefreshToken = async( req: Request , res: Response)=>{
-    const refreshToken = req.cookies['refreshToken'];
+
+    const refreshToken = req.cookies.refreshToken;
+
+    console.log("RefreshToken", refreshToken);
     if (!refreshToken) {
         return res.status(401).send('Access Denied. No refresh token provided.');
     }
-    try {
 
+    try {
     const decoded  = jwt.verify(refreshToken, SECRET_KEY) as MyPayload;
     
     const token = jwt.sign({_id : decoded._id}, SECRET_KEY , {
@@ -121,7 +132,9 @@ export const RefreshToken = async( req: Request , res: Response)=>{
     res.cookie('Auth', token, {
         maxAge: 1 * 60 * 60 * 1000, // 60 minutes   
     });
+
         return res.status(200).send("Token refreshed");
+
     } catch (error) {
         return res.status(400).send('Invalid refresh token.');
     }

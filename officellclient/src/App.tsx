@@ -17,7 +17,9 @@ import Cookies from 'js-cookie';
 
 
 function App() {
-  const token = Cookies.get("Auth");
+
+  const token = Cookies.get("RefreshExist");
+
   return (
     <>
       <BrowserRouter>

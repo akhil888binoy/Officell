@@ -10,6 +10,9 @@ import {   useLocation, useNavigate } from 'react-router-dom';
 import useVentStore from '../store/ventStore';
 import useCompanyStore from '../store/companyStore';
 import useUserStore from '../store/userStore';
+import useProfileVentStore from '../store/profileventStore';
+import useTrendingVentStore from '../store/trendingventStore';
+import useCompanyVentStore from '../store/companyventStore';
 
 // Initialize drawer component
 const initDrawer = () => {
@@ -49,7 +52,10 @@ export const Sidebar = () => {
 
   const navigate = useNavigate();
   const page = useLocation();
-  const resetVent = useVentStore((state)=> state.reset);
+  const logoutVent = useVentStore((state)=> state.logout);
+  const logoutProfileVent = useProfileVentStore((state)=> state.logout);
+  const logoutCompanyVent = useCompanyVentStore((state)=> state.logout);
+  const logoutTrendingVent = useTrendingVentStore((state)=> state.logout);
   const resetCompanies = useCompanyStore((state)=>state.reset);
   const resetUser = useUserStore((state)=> state.reset);
 
@@ -57,7 +63,11 @@ export const Sidebar = () => {
   const handleLogout = async ()=>{
       Cookies.remove("Auth");
       Cookies.remove("refreshToken");
-      resetVent();
+      Cookies.remove("RefreshExist")
+      logoutVent();
+      logoutProfileVent();
+      logoutCompanyVent();
+      logoutTrendingVent();
       resetCompanies();
       resetUser();
       navigate("/");

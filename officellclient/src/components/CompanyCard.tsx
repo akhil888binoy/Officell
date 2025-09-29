@@ -3,13 +3,14 @@ import { BiMessageDetail } from "react-icons/bi";
 import { Link } from "react-router-dom";
 import {getName} from "country-list";
 import { cleanCountryName, cleanDomain } from "../utils/cleanerText";
+import { forwardRef } from "react";
 
-export const CompanyCard = ({company_id , city , country , company_name , industry , vents_count, domain}) => {
+export const CompanyCard = forwardRef(({company_id , city , country , company_name , industry , vents_count, domain}, ref) => {
 
   return (
   <>
   {company_id ? 
-      <div className="relative flex flex-col bg-gray-950 border-t border-b border-gray-700 w-full overflow-hidden">
+      <div className="relative flex flex-col bg-gray-950 border-t border-b border-gray-700 w-full overflow-hidden" ref={ref}>
         {/* Header */}
         <a href={`/companies/${company_id}`} data-testid="company-link" >
         <div className="flex items-center justify-between px-4 py-3">
@@ -58,4 +59,4 @@ export const CompanyCard = ({company_id , city , country , company_name , indust
 
     
   );
-};
+});

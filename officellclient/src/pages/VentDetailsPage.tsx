@@ -52,7 +52,8 @@ export const VentDetailsPage = () => {
           'Authorization': `Bearer ${token}`
         };
         const { data: commentsJson } = await axios.get(`http://localhost:3000/v1/vents/${id}/comments?skip=${skip}`, {
-          headers: headers
+          headers: headers,
+          withCredentials: true
         });
         
         console.log("Comments",commentsJson.comments);

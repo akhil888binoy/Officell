@@ -2,38 +2,49 @@ import PostCard from "../components/PostCard";
 import { Sidebar } from "../components/Sidebar";
 import { UserCard } from "../components/UserCard";
 import { VentCard } from "../components/VentCard";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
 import useUserStore from "../store/userStore";
 import useVentStore from "../store/ventStore";
 import Shuffle from "../styles/Shuffle";
+import useTrendingVentStore from "../store/trendingventStore";
+import { PAGE_SIZE } from "../utils/pagesize";
 
 export const TrendingPage = () => {
-  
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
+
+  const scrollToRef = useRef<null | HTMLElement>(null);
+  const scrollToCard= useVentStore((state)=> state.scrollToItem) ;
   const [error, setError] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [skip, setSkip] = useState(0);
-  const location = useUserStore((state) => state.location)
+  const skip = useTrendingVentStore((state)=> state.scrollSkip);
+  const loadingMore = useTrendingVentStore((state)=> state.scrollLoadinMore);
+  const loading = useTrendingVentStore((state)=> state.scrollLoading);
+  const hasMore = useTrendingVentStore((state)=> state.scrollHasMore);
+  const location = useUserStore((state) => state.location);
   const user = useUserStore((state) => state.user);
-  const vents = useVentStore((state) => state.vents);
-  const addVents = useVentStore((state) => state.addVents);
-  const reset = useVentStore((state)=>state.reset);
+  const vents = useTrendingVentStore((state) => state.trendingvents);
+  const addVents = useTrendingVentStore((state) => state.addVents);
+  const addScrollSkip = useTrendingVentStore((state)=> state.addScrollSkip);
+  const addloading = useTrendingVentStore((state)=> state.addScrollLoading);
+  const addloadingMore = useTrendingVentStore((state)=> state.addScrollLoadingMore);
+  const addHasMore = useTrendingVentStore((state)=> state.addHasMore);
+  const addScrollToItem = useTrendingVentStore((state)=> state.addScrollToItem);
+  
 
   useEffect(()=>{
-    reset()
+    if(scrollToRef.current ) {
+        scrollToRef.current.scrollIntoView();
+      }
+
   },[]);
 
 useEffect(() => {
     const fetchVents = async () => {
-      
       try {
         if (vents.length === 0) {
-          setLoading(true);
+          addloading(true);
         } else {
-          setLoadingMore(true);
+          addloadingMore(true);
         }
         
         const token = Cookies.get("Auth");
@@ -42,25 +53,25 @@ useEffect(() => {
           'Authorization': `Bearer ${token}`
         };
         const { data: ventsJson } = await axios.get(`http://localhost:3000/v1/vents/trending?skip=${skip}`, {
-          headers: headers
+          headers: headers,
+          withCredentials: true
         });
         
         console.log(ventsJson.vents);
-        const newVents = ventsJson.vents;
         
-        // Check if we've reached the end of the list
-        if (newVents.length === 0) {
-          setHasMore(false);
-        } else {
-          addVents(newVents);
-        }
+      if (ventsJson.vents.length < PAGE_SIZE) {
+        addHasMore(false);  
+      }
+      if (ventsJson.vents.length > 0) {
+        addVents(ventsJson.vents);
+      }
         setError(null);
       } catch (error) {
         console.error(error);
         setError("Failed to fetch companies");
       } finally {
-        setLoading(false);
-        setLoadingMore(false);
+        addloading(false);
+        addloadingMore(false);
       }
     };
     
@@ -76,9 +87,8 @@ useEffect(() => {
     const { offsetHeight, scrollTop, scrollHeight } = e.target;
     const threshold = 1000; 
         if (scrollHeight - (offsetHeight + scrollTop) < threshold && 
-        !loadingMore && 
-        hasMore) {
-              setSkip(vents.length);
+        !loadingMore && hasMore) {
+            addScrollSkip(vents.length);
     }
   }
 
@@ -117,23 +127,25 @@ useEffect(() => {
                       
                       {/* Companies list */}
                       {vents.map((vent ,index)=> (
-                        <VentCard
-                          key={index}
-                          id={vent?.id}
-                          category= {vent?.category}
-                          content = {vent?.content}
-                          upvote={vent?.upvote}
-                          downvote={vent?.downvote}
-                          company_country={vent?.company?.country}
-                          company_name={vent?.company?.name}
-                          author={vent?.author?.username}
-                          author_id = {vent?.author_id}
-                          commentcount = {vent?._count?.comments}
-                          createdAt= {vent?.createdAt}
-                          media = {vent?.Media}
-                          votes={vent?.votes}
-                          user_id = {user.id}
-                        />
+                        <span key={index} onClick={()=> addScrollToItem(index) }>
+                          <VentCard
+                            id={vent.id}
+                            category= {vent.category}
+                            content = {vent.content}
+                            upvote={vent.upvote}
+                            downvote={vent.downvote}
+                            company_country={vent.company?.country}
+                            company_name={vent.company?.name}
+                            author={vent.author?.username}
+                            author_id = {vent.author_id}
+                            commentcount = {vent._count?.comments}
+                            createdAt= {vent.createdAt}
+                            media = {vent.Media}
+                            votes={vent.votes}
+                            user_id = {user.id}
+                            ref={index === scrollToCard ?  scrollToRef : null}
+                        />     
+                      </span>
                       ))}
                       
                       {/* Loading more indicator */}

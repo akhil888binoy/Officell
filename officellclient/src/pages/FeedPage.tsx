@@ -11,6 +11,7 @@ import useUserStore from "../store/userStore";
 import useVentStore from "../store/ventStore";
 import Shuffle from "../styles/Shuffle";
 import { FaSkullCrossbones } from "react-icons/fa";
+import { PAGE_SIZE } from "../utils/pagesize";
 
 
 
@@ -35,26 +36,18 @@ export const FeedPage = () => {
   const addcategory = useVentStore((state)=> state.addScrollCategory);
   const addHasMore = useVentStore((state)=> state.addHasMore);
   const addScrollToItem = useVentStore((state)=> state.addScrollToItem);
-  const reset = useVentStore((state)=>state.reset);
+  const logout = useVentStore((state)=> state.logout);
 
-  // const resetCategory = useVentStore((state)=>state.resetScrollCategory);
-  // const resetScrollLoading = useVentStore((state)=>state.resetScrollLoading);
-  // const resetScrollLoadingMore = useVentStore((state)=>state.resetScrollLoadingMore);
-  // const resetScrollSkip = useVentStore((state)=>state.resetScrollSkip);
-  // const resetScrollHasMore = useVentStore((state)=> state.resetHasMore);
-
-  const fetchData = async ()=>{
+  const fetchProfile = async ()=>{
       try {
         const token =  Cookies.get("Auth");
-        if(!token){
-          await axios.post("http://localhost:3000/v1/auth/refreshtoken", {}, { withCredentials: true });
-      }
         const headers={
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         }
         const {data: response } = await axios.get("http://localhost:3000/v1/profile",{
-          headers: headers
+          headers: headers,
+          withCredentials: true
         });
         addUser(response);
       } catch (error) {
@@ -63,9 +56,9 @@ export const FeedPage = () => {
     }
 
   useEffect(()=>{
-    fetchData();
+    fetchProfile();
     if( scrollToRef.current ) {
-            scrollToRef.current.scrollIntoView();
+          scrollToRef.current.scrollIntoView();
         }
   },[]);
 
@@ -88,12 +81,13 @@ useEffect(() => {
 
       const { data: ventsJson } = await axios.get(
         `http://localhost:3000/v1/vents?skip=${skip}&category=${category}`,
-        { headers, signal: controller.signal } 
+        { headers, signal: controller.signal, withCredentials: true } 
       );
 
-      if (ventsJson.vents.length === 0) {
-        addHasMore(false);
-      } else {
+      if (ventsJson.vents.length < PAGE_SIZE) {
+        addHasMore(false);  
+      }
+      if (ventsJson.vents.length > 0) {
         addVents(ventsJson.vents);
       }
       setError(null);
@@ -138,9 +132,7 @@ useEffect(() => {
       <Sidebar/>
       <CategoryBarM
           onSelect={(q)=>{
-              addScrollSkip(0);
-              addHasMore(true);
-              reset();
+              logout();
               addcategory(q)
             }} 
       ></CategoryBarM>
@@ -225,9 +217,7 @@ useEffect(() => {
           <UserCard username={user.username} location={location.city} />
           <CategoryBar
                 onSelect={(q)=>{
-                  addScrollSkip(0);
-                  addHasMore(true);
-                  reset();
+                  logout();
                   addcategory(q)
                 }}  
           ></CategoryBar>

@@ -5,12 +5,15 @@ import moment from 'moment';
 import { forwardRef, useEffect, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from 'axios';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { getName } from "country-list";
 import useVentStore from "../store/ventStore";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import useTrendingVentStore from "../store/trendingventStore";
+import useProfileVentStore from "../store/profileventStore";
+import useCompanyVentStore from "../store/companyventStore";
 
 
 export const VentCard = forwardRef(({ id , category , content , upvote , downvote , company_name , company_country, author, author_id, commentcount , createdAt, media, votes, user_id }, ref) => {
@@ -20,8 +23,17 @@ export const VentCard = forwardRef(({ id , category , content , upvote , downvot
   const [isdownvote , setIsDownVote] = useState(false);
   const [disableSubmitBtn, setDisableSubmitBtn] = useState(false);
   const upVote = useVentStore((state)=> state.upVote);
+  const upVoteTrending = useTrendingVentStore((state)=> state.upVote);
+  const upVoteProfile = useProfileVentStore((state)=> state.upVote);
+  const upVoteCompany = useCompanyVentStore((state)=> state.upVote);
   const downVote = useVentStore((state)=> state.downVote);
+  const downVoteTrending = useTrendingVentStore((state)=> state.downVote);
+  const downVoteProfile = useProfileVentStore((state)=> state.downVote);
+  const downVoteCompany = useCompanyVentStore((state)=> state.downVote);
   const deleteVent = useVentStore((state)=>state.deleteVent);
+  const deleteTrendingVent = useTrendingVentStore((state)=> state.deleteVent);
+  const deleteProfileVent = useProfileVentStore((state)=> state.deleteVent);
+  const deleteCompanyVent = useCompanyVentStore((state)=> state.deleteVent);
   const [open , setOpen] = useState(false);
   const page = useLocation();
   const [deletingComment, setDeletingComment] = useState(false);
@@ -50,9 +62,6 @@ const handleDownvote=async ()=>{
   try {
       setDisableSubmitBtn(true)
       const token =  Cookies.get("Auth");
-      if(!token){
-          await axios.post("http://localhost:3000/v1/auth/refreshtoken", {}, { withCredentials: true });
-      }
       const headers={
         'Authorization': `Bearer ${token}`
       };
@@ -74,8 +83,13 @@ const handleDownvote=async ()=>{
           setIsUpVote(false);
         }
         downVote(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
+        downVoteProfile(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
+        downVoteTrending(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
+        downVoteCompany(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
       const {data: response }= await axios.post(`http://localhost:3000/v1/vents/${id}/downvote`,"",{
           headers:headers,
+                    withCredentials: true
+
       });
 
     console.log(response.author_id);
@@ -101,9 +115,6 @@ const handleDownvote=async ()=>{
     try {
         setDisableSubmitBtn(true);
         const token =  Cookies.get("Auth");
-        if(!token){
-          await axios.post("http://localhost:3000/v1/auth/refreshtoken", {}, { withCredentials: true });
-      }
         const headers={
           'Authorization': `Bearer ${token}`
         };
@@ -126,8 +137,13 @@ const handleDownvote=async ()=>{
           setIsDownVote(false);
         }
         upVote(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
+        upVoteProfile(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
+        upVoteTrending(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
+        upVoteCompany(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
         const {data: response} = await axios.post(`http://localhost:3000/v1/vents/${id}/upvote`,"",{
             headers:headers,
+                      withCredentials: true
+
         });
         console.log(response.vote);
         setDisableSubmitBtn(false);
@@ -153,17 +169,18 @@ const handleDeleteVent =async()=>{
       setDisableSubmitBtn(true);
       setDeletingComment(true);
       const token =  Cookies.get("Auth");
-      if(!token){
-          await axios.post("http://localhost:3000/v1/auth/refreshtoken", {}, { withCredentials: true });
-      }
       const headers={
         'Authorization': `Bearer ${token}`
       };
       const response = await axios.delete(`http://localhost:3000/v1/vents/${id}`,{
           headers:headers,
+                    withCredentials: true
       });
     console.log(response);
     deleteVent(id);
+    deleteProfileVent(id);
+    deleteTrendingVent(id);
+    deleteCompanyVent(id);
     setDisableSubmitBtn(false);
     setOpen(false);
     toast.success('Deleted Successfully 💀', {
@@ -204,7 +221,6 @@ useEffect(() => {
   return (
     <>
     { id &&
-
     <div className="relative flex flex-col bg-gray-950 border-t border-b border-gray-700 w-full overflow-hidden" ref={ref}>
       <a href={`/vent/${id}`} >
         {/* Header */}
@@ -219,7 +235,6 @@ useEffect(() => {
             </div>
           </div>
         
-      
           {/* Company + Location */}
           <div className="flex flex-col items-end text-xs text-gray-300 lg:gap-2 gap-1">
             <div className="flex items-center gap-1 flex-wrap justify-end">
@@ -235,9 +250,6 @@ useEffect(() => {
               <MdLocationOn className="text-red-400 flex-shrink-0" />
             </div>
           </div>
-
-
-          
         </div>
       </a>
 
@@ -358,9 +370,9 @@ useEffect(() => {
           <div className="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <DialogPanel
               transition
-              className="relative transform overflow-hidden rounded-lg bg-gray-800 text-left shadow-xl outline -outline-offset-1 outline-white/10 transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 sm:w-full sm:max-w-lg data-closed:sm:translate-y-0 data-closed:sm:scale-95"
+              className="relative transform overflow-hidden rounded-lg bg-gray-950 text-left shadow-xl outline -outline-offset-1 outline-white/10 transition-all data-closed:translate-y-4 data-closed:opacity-0 data-enter:duration-300 data-enter:ease-out data-leave:duration-200 data-leave:ease-in sm:my-8 sm:w-full sm:max-w-lg data-closed:sm:translate-y-0 data-closed:sm:scale-95"
             >
-              <div className="bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+              <div className="bg-gray-950 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                 <div className="sm:flex sm:items-start">
                   <div className="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-red-500/10 sm:mx-0 sm:size-10">
                     <ExclamationTriangleIcon aria-hidden="true" className="size-6 text-red-400" />
@@ -378,7 +390,7 @@ useEffect(() => {
                   </div>
                 </div>
               </div>
-              <div className="bg-gray-700/25 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+              <div className="bg-gray-950 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
 
                 <button
                   type="button"

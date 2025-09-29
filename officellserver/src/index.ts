@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import morgan from "morgan";
 import helmet from "helmet";
 import cors from "cors";
-import fileuploader from 'express-fileupload';
+import cookieParser from 'cookie-parser';
 import { userRouter } from "./routes/user.route";
 import { ventRouter } from "./routes/vent.route";
 import { companyRouter } from "./routes/company.route";
@@ -12,9 +12,8 @@ import { commentRouter } from "./routes/comment.route";
 import {  PrismaClient } from './generated/prisma';
 import { withAccelerate } from '@prisma/extension-accelerate';
 import { createClient } from "redis";
- import multer, { Multer } from 'multer';
- import { v2 as cloudinary } from 'cloudinary';
- import sharp from 'sharp';
+import multer, { Multer } from 'multer';
+import { v2 as cloudinary } from 'cloudinary';
 
 cloudinary.config({ 
   cloud_name: process.env.CLOUD_NAME,
@@ -25,7 +24,8 @@ cloudinary.config({
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
-export const prisma = new PrismaClient().$extends(withAccelerate())
+export const prisma = new PrismaClient().$extends(withAccelerate());
+
 export const client = createClient({
         username: 'default',
         password: process.env.REDIS_PASSWORD,
@@ -37,25 +37,26 @@ export const client = createClient({
 
 app.set('trust proxy', true);
 app.use(express.json());
+app.use(cookieParser());
 app.use(morgan('combined'));
 app.use(helmet({
     crossOriginOpenerPolicy: false, 
     crossOriginResourcePolicy: { policy: "cross-origin" } 
 }));
-
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
 app.use(express.static('src/public/'));
 app.get("/", (req ,res )=>{
     res.status(200).json({message : "Officell Server Running Successfully"});
 });
-
 
 app.use("/v1/", userRouter);
 app.use("/v1/", ventRouter);
 app.use("/v1/", companyRouter);
 app.use("/v1/", reportRouter);
 app.use("/v1/", commentRouter);
-
 
 app.listen( PORT, ()=>{
     console.log(`🚀 Officell Server running on PORT : ${PORT} 📈`);

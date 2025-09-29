@@ -2,19 +2,14 @@ import { data } from 'react-router-dom';
 import {create} from 'zustand';
 import { persist, createJSONStorage } from "zustand/middleware";
 
-const ventStore=(set,get)=>({
-    post:"",
-    company_id:"",
-    category:"",
-    selectedMedia: null,
-    mediaType: "",
+const trendingventStore=(set,get)=>({
     scrollSkip:0,
     scrollLoading : true,
     scrollLoadinMore: false,
     scrollCategory: "",
     scrollHasMore : true,
     scrollToItem: 0,
-    vents:[],
+    trendingvents:[],
     addScrollSkip : (data)=>{
         set((state)=>({
             scrollSkip: data
@@ -47,54 +42,24 @@ const ventStore=(set,get)=>({
     },
     addVents:(data)=>{
         set((state)=>({
-                vents:[...state.vents, ...data]
+                trendingvents:[...state.trendingvents, ...data]
         }));
     },
     addVent:(data)=>{
         set((state)=>({
-            vents:[data,...state.vents]
+            trendingvents:[...state.trendingvents, data]
         }))
-    },
-    addTrendingVent:(data)=>{
-        set((state)=>({
-            vents:[...state.vents, data]
-        }))
-    },
-    addPost:(data)=>{
-        set({
-            post:data
-        });
-    },
-    addCategory:(data)=>{
-        set({
-            category: data
-        });
-    },
-    addCompany_id:(data)=>{
-        set({
-            company_id: data
-        });
-    },
-    addSelectedMedia:(data)=>{
-        set({
-            selectedMedia:data
-        });
-    },
-    addMediaType:(data)=>{
-        set({
-            mediaType: data
-        })
     },
     upVote: (id, user_id, votedata) => {
-        const vents = get().vents;
+        const trendingvents = get().trendingvents;
         console.log("votedata",votedata)
-            const updatedVents = vents.map((vent) => {
-                if (vent.id === id) {
+            const updatedVents = trendingvents.map((trendingvent) => {
+                if (trendingvent.id === id) {
                     if (votedata.vote ==='NOVOTE'){
                         return {
-                            ...vent,
-                            upvote: Number(vent.upvote) - 1,
-                            votes: vent.votes.map((vote)=>{
+                            ...trendingvent,
+                            upvote: Number(trendingvent.upvote) - 1,
+                            votes: trendingvent.votes.map((vote)=>{
                                 if( vote.user_id === user_id){
                                     return{
                                         ...vote,
@@ -105,14 +70,14 @@ const ventStore=(set,get)=>({
                             })
                         };
                     }else if (votedata.vote === 'UPVOTE'){
-                        const existDownVote = vent.votes.find((vote)=> vote.vote ==='DOWNVOTE');
+                        const existDownVote = trendingvent.votes.find((vote)=> vote.vote ==='DOWNVOTE');
                         return{
-                            ...vent,
-                            upvote: Number(vent.upvote) + 1,
-                            downvote: existDownVote ? Number(vent.downvote) - 1 : Number(vent.downvote),
+                            ...trendingvent,
+                            upvote: Number(trendingvent.upvote) + 1,
+                            downvote: existDownVote ? Number(trendingvent.downvote) - 1 : Number(trendingvent.downvote),
                             votes: (() => {
                                 let userFound = false;
-                                const updatedVotes = vent.votes.map((vote) => {
+                                const updatedVotes = trendingvent.votes.map((vote) => {
                                     if( vote.user_id === user_id){
                                         userFound = true;
                                         return{
@@ -131,20 +96,20 @@ const ventStore=(set,get)=>({
                         }
                     }
                 }
-                return vent;
+                return trendingvent;
             });
-                set({ vents: updatedVents });
+                set({ trendingvents: updatedVents });
             },
 downVote: (id, user_id, votedata) => {
-        const vents = get().vents;
+        const trendingvents = get().trendingvents;
         console.log("votedata",votedata)
-            const updatedVents = vents.map((vent) => {
-                if (vent.id === id) {
+            const updatedVents = trendingvents.map((trendingvent) => {
+                if (trendingvent.id === id) {
                     if (votedata.vote ==='NOVOTE'){
                         return {
-                            ...vent,
-                            downvote: Number(vent.downvote) - 1,
-                            votes: vent.votes.map((vote)=>{
+                            ...trendingvent,
+                            downvote: Number(trendingvent.downvote) - 1,
+                            votes: trendingvent.votes.map((vote)=>{
                                 if( vote.user_id === user_id){
                                     return{
                                         ...vote,
@@ -155,14 +120,14 @@ downVote: (id, user_id, votedata) => {
                             })
                         };
                     }else if (votedata.vote === 'DOWNVOTE'){
-                        const existUpVote = vent.votes.find((vote)=> vote.vote ==='UPVOTE');
+                        const existUpVote = trendingvent.votes.find((vote)=> vote.vote ==='UPVOTE');
                         return{
-                            ...vent,
-                            downvote: Number(vent.downvote) + 1,
-                            upvote: existUpVote ? Number(vent.upvote) - 1 : Number(vent.upvote),
+                            ...trendingvent,
+                            downvote: Number(trendingvent.downvote) + 1,
+                            upvote: existUpVote ? Number(trendingvent.upvote) - 1 : Number(trendingvent.upvote),
                             votes: (() => {
                                 let userFound = false;
-                                const updatedVotes = vent.votes.map((vote) => {
+                                const updatedVotes = trendingvent.votes.map((vote) => {
                                     if( vote.user_id === user_id){
                                         userFound = true;
                                         return{
@@ -181,20 +146,20 @@ downVote: (id, user_id, votedata) => {
                         }
                     }
                 }
-                return vent;
+                return trendingvent;
             });
                 
-            set({ vents: updatedVents });
+            set({ trendingvents: updatedVents });
             },
     getVent:(id)=>{
-        const vents = get().vents;
-        return vents.find((vent) => vent.id === Number(id)) || null;
+        const trendingvents = get().trendingvents;
+        return trendingvents.find((trendingvent) => trendingvent.id === Number(id)) || null;
     },
     deleteVent:(id)=>{
-        const vents= get().vents;
-        const updatedVents = vents.filter((vent => vent.id != id));
+        const trendingvents= get().trendingvents;
+        const updatedVents = trendingvents.filter((trendingvent => trendingvent.id != id));
         set({
-            vents: updatedVents
+            trendingvents: updatedVents
         })
     },
     resetScrollLoading:()=>{
@@ -224,56 +189,25 @@ downVote: (id, user_id, votedata) => {
     },
     reset:()=>{
         set({
-            vents:[]
+            trendingvents:[]
         })
     },
-    resetSelectedMedia:()=>{
-        set({
-            selectedMedia: null
-        })
-    },
-    restMediaType:()=>{
-        set({
-            mediaType: ""
-        })
-    },
-    resetCompany_id:()=>{
-        set({
-            company_id: ""
-        })
-    },
-    resetPost:()=>{
-        set({
-            post: ""
-        })
-    },
-    resetCategory:()=>{
-        set({
-            category: ""
-        })
-    },
-
     logout:()=>{
         set({
-            post:"",
-            company_id:"",
-            category:"",
-            selectedMedia: null,
-            mediaType: "",
             scrollSkip:0,
             scrollLoading : true,
             scrollLoadinMore: false,
             scrollCategory: "",
             scrollHasMore : true,
             scrollToItem: 0,
-            vents:[]
+            trendingvents:[],
         })
     }
 })
 
-const useVentStore=create(persist(ventStore,{
-    name:"vents",
+const useTrendingVentStore=create(persist(trendingventStore,{
+    name:"trendingvents",
     storage: createJSONStorage(()=>sessionStorage)
 }));
 
-export default useVentStore;
+export default useTrendingVentStore;

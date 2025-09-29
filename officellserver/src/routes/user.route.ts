@@ -9,7 +9,7 @@ export const userRouter = express.Router();
 
 userRouter.get("/auth/linkedin", authLinkedin);
 userRouter.get("/auth/linkedin/callback", authLinkedinCallback);
-userRouter.post("/auth/refreshtoken", RefreshToken);
+userRouter.get("/auth/refreshtoken", RefreshToken);
 userRouter.post("/logout", auth , logoutUser );
 userRouter.get("/profile", auth, checkCacheProfile,  getUserProfile);
 userRouter.post("/add-username", auth , validateData(addUsernameSchema) , addUsername);

@@ -38,6 +38,7 @@ export const CommentSection = ({vent_id}) => {
           comment: newComment
         },{
           headers:headers,
+                    withCredentials: true
       });
       setLoading(false);
       console.log(response.comment);

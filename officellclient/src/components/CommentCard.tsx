@@ -49,6 +49,7 @@ export const CommentCard = ({ comment , user_id}) => {
           subcomment: replyText
         },{
           headers:headers,
+          withCredentials: true
       });
       addSubComment(response.subcomment)
       console.log("Subcomment",response);
@@ -65,14 +66,12 @@ export const CommentCard = ({ comment , user_id}) => {
       setDisableSubmitBtn(true);
           setDeletingComment(true);
         const token =  Cookies.get("Auth");
-        if(!token){
-          await axios.post("http://localhost:3000/v1/auth/refreshtoken", {}, { withCredentials: true });
-      }
         const headers={
           'Authorization': `Bearer ${token}`
       }
       const response = await axios.delete(`http://localhost:3000/v1/comments/${comment.id}?vent_id=${comment.vent_id}`,{
-        headers: headers
+        headers: headers,
+        withCredentials: true
       });
 
       deleteComment(comment.id);
@@ -113,15 +112,13 @@ export const CommentCard = ({ comment , user_id}) => {
         setDeletingComment(true);
         setDisableSubmitBtn(true);
         const token =  Cookies.get("Auth");
-        if(!token){
-          await axios.post("http://localhost:3000/v1/auth/refreshtoken", {}, { withCredentials: true });
-      }
         const headers={
           'Authorization': `Bearer ${token}`
       }
       console.log("SubcommentId ", subcommentId)
       const response = await axios.delete(`http://localhost:3000/v1/subcomments/${subcommentId}`,{
-        headers: headers
+        headers: headers,
+                  withCredentials: true
       });
       deleteSubComment( subcommentId, comment.id);
       setDisableSubmitBtn(false);

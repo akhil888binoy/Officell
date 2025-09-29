@@ -107,9 +107,6 @@ const PostCard = () => {
     try {
       setPostLoading(true)
       const token =  Cookies.get("Auth");
-      if(!token){
-          await axios.post("http://localhost:3000/v1/auth/refreshtoken", {}, { withCredentials: true });
-      }
       console.log(token);
       const headers={
         'Authorization': `Bearer ${token}`
@@ -123,6 +120,7 @@ const PostCard = () => {
       formData.append('file', selectedMedia); 
       const  {data: response} = await axios.post("http://localhost:3000/v1/vents", formData, {
           headers:headers,
+          withCredentials: true
       });
       console.log(response.vent);
       setPostLoading(false);
@@ -216,10 +214,12 @@ const handleAddMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
         const token = Cookies.get("Auth");
         const headers = {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
         };
+
         const { data: companiesJson } = await axios.get(`http://localhost:3000/v1/companies?skip=${skip}&company_name=${search}`, {
-          headers: headers
+          headers: headers,
+          withCredentials: true
         });
         
         const newCompanies = companiesJson.companies;
@@ -500,7 +500,7 @@ const handleAddMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
         {loading && companies.length === 0 && (
           <div className="flex justify-center items-center h-full">
             <Shuffle
-              text="⟢ spilling the tea"
+              text="⟢ OFFICELL"
               className="font-arimo text-white font-bold tracking-[-0.001em] text-4xl sm:text-5xl md:text-6xl lg:text-[70px]"
               shuffleDirection="right"
               duration={0.35}
