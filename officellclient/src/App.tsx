@@ -14,27 +14,30 @@ import AddUsernamePage from './pages/AddUsernamePage';
 import NotFoundPage from './pages/NotFoundPage';
 import { TrendingPage } from './pages/TrendingPage';
 import Cookies from 'js-cookie';
-
+import SessionExpiredPage from './pages/SessionExpiredPage';
+import LandscapePrompt from './components/common/LandScapePrompt';
 
 function App() {
-
+  
   const token = Cookies.get("RefreshExist");
 
   return (
     <>
+      <LandscapePrompt />
       <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage></LandingPage>} ></Route>
         <Route path="/login" element={<LoginPage></LoginPage>} ></Route>
         <Route path="/username" element={<AddUsernamePage></AddUsernamePage>} ></Route>
-        <Route path="/feed" element={ token != null ? <FeedPage></FeedPage> : <Navigate to="/login" /> } ></Route>
-        <Route path="/trending" element={ token != null ? <TrendingPage></TrendingPage> :   <Navigate to="/login" />} ></Route>
-        <Route path="/companies" element={ token != null ?  <CompaniesPage></CompaniesPage> :   <Navigate to="/login" />} ></Route>       
-        <Route path="/companies/:id" element={ token != null ? <CompanyDetailsPage></CompanyDetailsPage> :   <Navigate to="/login" />} ></Route>       
-        <Route path="/companies/register" element={ token != null ? <RegisterCompanyPage></RegisterCompanyPage> :   <Navigate to="/login" />} ></Route>       
-        <Route path="/vent/:id" element={ token != null ? <VentDetailsPage></VentDetailsPage> :   <Navigate to="/login" />} ></Route>       
-        <Route path="/profile" element={ token != null ? <ProfilePage></ProfilePage> :   <Navigate to="/login" />} ></Route>       
-        <Route path="/settings" element={ token != null ? <SettingsPage></SettingsPage> :   <Navigate to="/login" />} ></Route>       
+        <Route path="/feed" element={ token != null ? <FeedPage></FeedPage> : <Navigate to="/sessionexpired" /> } ></Route>
+        <Route path="/trending" element={ token != null ? <TrendingPage></TrendingPage> :   <Navigate to="/sessionexpired" />} ></Route>
+        <Route path="/companies" element={ token != null ?  <CompaniesPage></CompaniesPage> :   <Navigate to="/sessionexpired" />} ></Route>       
+        <Route path="/companies/:id" element={ token != null ? <CompanyDetailsPage></CompanyDetailsPage> :   <Navigate to="/sessionexpired" />} ></Route>       
+        <Route path="/companies/register" element={ token != null ? <RegisterCompanyPage></RegisterCompanyPage> :   <Navigate to="/sessionexpired" />} ></Route>       
+        <Route path="/vent/:id" element={ token != null ? <VentDetailsPage></VentDetailsPage> :   <Navigate to="/sessionexpired" />} ></Route>       
+        <Route path="/profile" element={ token != null ? <ProfilePage></ProfilePage> :   <Navigate to="/sessionexpired" />} ></Route>  
+        <Route path="/settings" element={ token != null ? <SettingsPage></SettingsPage> :   <Navigate to="/sessionexpired" />} ></Route>            
+        <Route path="/sessionexpired" element={ <SessionExpiredPage></SessionExpiredPage>} ></Route>       
         <Route path="/admin/reports" element={<AdminReportsPage></AdminReportsPage>} ></Route>       
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

@@ -1,12 +1,35 @@
 import {Request , Response } from 'express';
-import { prisma } from "../index";
+import { companyBloomfilter, prisma } from "../index";
 import { redisConnection } from '../redis/connection';
 import geoip from 'geoip-lite';
+import { format } from 'path';
+import { count } from 'console';
 
+
+export const getCompaniesCount = async (req: Request , res: Response)=>{
+    const { lastcreatedAt } = req.query;
+    console.log("LasteCreatedAt", lastcreatedAt)
+    try {
+        const count_companies = await prisma.company.count({
+            where: { 
+                createdAt : {
+                    gte: String(lastcreatedAt)
+                }
+            }
+        });
+        res.status(200).json({
+            message: "Get Companies Count Successful",
+            count_companies: count_companies,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json(error);
+    }
+}
 
 export const getAllCompanies = async (req: Request , res : Response )=>{
 
-    const { industry , company_name, skip} = req.query;
+    const { industry , company_name, skip , place , searchcountry} = req.query;
     const ip = req.ip; 
     const location = geoip.lookup("207.97.227.239");
     const country = location?.country; 
@@ -23,7 +46,13 @@ export const getAllCompanies = async (req: Request , res : Response )=>{
                 } :{}),
             ...( industry ?  { 
                 industry: String(industry)
-            } :{})
+            } :{}),
+            ...( searchcountry ?  { 
+                country: String(searchcountry)
+            } :{}),
+            ...( place ?  { 
+                city: String(place)
+            } :{}),
         }, 
         include:{
             _count:{
@@ -63,7 +92,7 @@ export const getCompany = async (req: Request , res : Response )=>{
     const{id} = req.params;
     const redis = await redisConnection();
     
-   try {
+    try {
     const company = await prisma.company.findUnique({
         where:{id : Number(id)},
         include:{
@@ -78,10 +107,10 @@ export const getCompany = async (req: Request , res : Response )=>{
         message: "Get Company Successfull",
         company:company
     });
-   } catch (error : any ) { 
+} catch (error : any ) { 
     console.error(error); 
     res.status(500).json(error);
-   }
+}
 
 }
 
@@ -97,19 +126,15 @@ export const createCompany = async (req: Request , res : Response )=>{
     
     try {
 
-        const existing_company = await prisma.company.count({
-            where:{
-                name: name, 
-                city: city,
-                industry: industry,
-                country: country
-            }
-        });   
-        if(existing_company !=0 ){
+
+        const existing_company = companyBloomfilter.has(`${domain}${name}${industry}`);
+        
+        if(existing_company == true ){
             res.status(409).json({  
                 message: "Company already exist"
             })
         }
+
         const add_company = await prisma.company.create({
             data:{
                 name,
@@ -130,6 +155,7 @@ export const createCompany = async (req: Request , res : Response )=>{
         });
         await redis.set(`company:${company?.id}`, JSON.stringify(company));
         await redis.expire(`company:${company?.id}` , 3600);
+        companyBloomfilter.add(`${domain}${name}${industry}`)
         res.status(201).json({
             message: "Add Company Successfull",
             company : company

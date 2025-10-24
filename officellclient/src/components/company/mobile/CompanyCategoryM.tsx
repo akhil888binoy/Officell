@@ -1,22 +1,10 @@
 import { useEffect, useState } from 'react';
 import 'flowbite';
 import { Drawer } from 'flowbite';
-import { FaRocket, FaBuilding, FaUniversity, FaLaptopCode, FaBriefcase, FaIndustry, FaHospital, FaGraduationCap, FaFilm, FaBalanceScale, FaLeaf } from "react-icons/fa";
 import { MdOutlineCategory } from 'react-icons/md';
+import { categories } from '../../../utils/companyCategory';
 
-const categories = [
-{ name: "Startups", icon: <FaRocket className="text-pink-500" /> },
-  { name: "MNCs", icon: <FaBuilding className="text-blue-500" /> },
-  { name: "Government Jobs", icon: <FaUniversity className="text-yellow-600" /> },
-  { name: "Tech", icon: <FaLaptopCode className="text-indigo-500" /> },
-  { name: "Finance", icon: <FaBriefcase className="text-gray-50" /> },
-  { name: "Manufacturing ", icon: <FaIndustry className="text-orange-500" /> },
-  { name: "Healthcare ", icon: <FaHospital className="text-red-500" /> },
-  { name: "Education", icon: <FaGraduationCap className="text-green-600" /> },
-  { name: "Media ", icon: <FaFilm className="text-pink-600" /> },
-  { name: "Law", icon: <FaBalanceScale className="text-yellow-700" /> },
-  { name: "NGOs ", icon: <FaLeaf className="text-green-500" /> },
-];
+
 
 // Initialize drawer component
 const initDrawer = () => {
@@ -50,15 +38,12 @@ const initDrawer = () => {
   }
 };
 
-export const CompanyCategoryM = ({onSelect}) => {
-  const [category , setCategory] = useState("");
+export const CompanyCategoryM = ({category,onSelect}) => {
   
     const handleCategory =(e)=>{
       if(category){
-        setCategory("");
         onSelect("");
       }else{
-        setCategory(e.target.value);
         console.log(e.target.value);
         onSelect(e.target.value);
       }
@@ -99,7 +84,7 @@ export const CompanyCategoryM = ({onSelect}) => {
             </h1>
             <div className="w-full bg-gray-950 overflow-y-auto no-scrollbar mt-3">
       {/* Heading */}
-    <h2 className="px-4 pt-4 text-md font-light text-white tracking-widest">Company Categories</h2>
+    <h2 className="px-4 pt-4 text-md font-dmsans text-white tracking-[1px]">Company Categories</h2>
     
       {/* Category Buttons */}
         <div className="flex flex-col gap-4 p-4">
@@ -108,7 +93,7 @@ export const CompanyCategoryM = ({onSelect}) => {
             onClick={handleCategory}
             key={index}
             value={cat.name}
-            className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-4xl
+            className={`flex items-center gap-3 px-4 py-3 text-sm font-dmsans font-light tracking-[1px] rounded-4xl 
               border border-gray-700 bg-gray-800 text-gray-200
               hover:bg-gray-700 hover:border-gray-500 hover:scale-[1.02] 
               active:scale-95 active:bg-gray-600

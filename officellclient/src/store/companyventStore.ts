@@ -1,4 +1,3 @@
-import { data } from 'react-router-dom';
 import {create} from 'zustand';
 import { persist, createJSONStorage } from "zustand/middleware";
 
@@ -9,37 +8,37 @@ const companyventStore=(set,get)=>({
     scrollLoadinMore: false,
     scrollCategory: "",
     scrollHasMore : true,
-    scrollToItem: 0,
+    scrollToItem: null,
 
     companyvents:[],
 
     addScrollSkip : (data)=>{
-        set((state)=>({
+        set(({
             scrollSkip: data
         }))
     },
     addScrollLoading : (data)=>{
-        set((state)=>({
+        set(({
             scrollLoading: data
         }))
     },
     addScrollLoadingMore:(data)=>{
-        set((state)=>({
+        set(({
             scrollLoadinMore: data
         }))
     },
     addScrollCategory:(data)=>{
-        set((state)=>({
+        set(({
             scrollCategory: data
         }))
     },
     addHasMore: (data)=>{
-        set((state)=>({
+        set(({
             scrollHasMore : data,
         }))
     },
     addScrollToItem: (data)=>{
-        set((state)=>({
+        set(({
             scrollToItem : data,
         }))
     },
@@ -57,7 +56,6 @@ const companyventStore=(set,get)=>({
 
         const companyvents = get().companyvents;
 
-        console.log("votedata",votedata)
             const updatedVents = companyvents.map((companyvent) => {
                 if (companyvent.id === id) {
                     if (votedata.vote ==='NOVOTE'){
@@ -107,7 +105,6 @@ const companyventStore=(set,get)=>({
             },
 downVote: (id, user_id, votedata) => {
         const companyvents = get().companyvents;
-        console.log("votedata",votedata)
             const updatedVents = companyvents.map((companyvent) => {
                 if (companyvent.id === id) {
                     if (votedata.vote ==='NOVOTE'){
@@ -197,6 +194,11 @@ downVote: (id, user_id, votedata) => {
             companyvents:[]
         })
     },
+    resetScrollToItem:()=>{
+        set({
+            scrollToItem: null
+        })
+    },
     logout:()=>{
         set({
                 scrollSkip:0,
@@ -204,7 +206,7 @@ downVote: (id, user_id, votedata) => {
                 scrollLoadinMore: false,
                 scrollCategory: "",
                 scrollHasMore : true,
-                scrollToItem: 0,
+                scrollToItem: null,
                 companyvents:[],
         })
     }

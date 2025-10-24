@@ -1,9 +1,9 @@
-import {CategoryBar} from "../components/CategoryBar";
-import { CategoryBarM } from "../components/CategoryBarM";
-import PostCard from "../components/PostCard";
-import { Sidebar } from "../components/Sidebar";
-import { UserCard } from "../components/UserCard";
-import {VentCard}  from "../components/VentCard";
+import {CategoryBar} from "../components/common/CategoryBar";
+import { CategoryBarM } from "../components/common/mobile/CategoryBarM";
+import PostCard from "../components/vent/PostCard";
+import { Sidebar } from "../components/common/Sidebar";
+import { UserCard } from "../components/user/UserCard";
+import {VentCard}  from "../components/vent/VentCard";
 import { useEffect, useRef, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
@@ -12,6 +12,11 @@ import useVentStore from "../store/ventStore";
 import Shuffle from "../styles/Shuffle";
 import { FaSkullCrossbones } from "react-icons/fa";
 import { PAGE_SIZE } from "../utils/pagesize";
+import useTrendingVentStore from "../store/trendingventStore";
+import useCompanyStore from "../store/companyStore";
+import useCompanyVentStore from "../store/companyventStore";
+import useProfileVentStore from "../store/profileventStore";
+import RefreshFeed from "../components/vent/RefreshFeed";
 
 
 
@@ -20,6 +25,7 @@ export const FeedPage = () => {
   const scrollToRef = useRef<null | HTMLElement>(null);
   const scrollToCard= useVentStore((state)=> state.scrollToItem) ;
   const [error, setError] = useState<string | null>(null);
+  const refreshButton = useVentStore((state)=> state.refreshButton);
   const skip = useVentStore((state)=> state.scrollSkip);
   const loadingMore = useVentStore((state)=> state.scrollLoadinMore);
   const loading = useVentStore((state)=> state.scrollLoading);
@@ -37,6 +43,11 @@ export const FeedPage = () => {
   const addHasMore = useVentStore((state)=> state.addHasMore);
   const addScrollToItem = useVentStore((state)=> state.addScrollToItem);
   const logout = useVentStore((state)=> state.logout);
+  const resetScrollToItemTrending = useTrendingVentStore((state)=> state.resetScrollToItem);
+  const resetScrollToItemCompany = useCompanyStore((state)=> state.resetScrollToItem);
+  const resetScrollToItemCompanyVent = useCompanyVentStore((state)=> state.resetScrollToItem);
+  const resetScrollToItemProfileVent = useProfileVentStore((state)=> state.resetScrollToItem);
+  const logoutTrendingVents = useTrendingVentStore((state)=> state.logout);
 
   const fetchProfile = async ()=>{
       try {
@@ -45,7 +56,7 @@ export const FeedPage = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         }
-        const {data: response } = await axios.get("http://localhost:3000/v1/profile",{
+        const {data: response } = await axios.get(`${import.meta.env.VITE_API}/profile`,{
           headers: headers,
           withCredentials: true
         });
@@ -55,16 +66,21 @@ export const FeedPage = () => {
       }
     }
 
+
   useEffect(()=>{
+    logoutTrendingVents();
     fetchProfile();
+    resetScrollToItemTrending();
+    resetScrollToItemCompany();
+    resetScrollToItemCompanyVent();
+    resetScrollToItemProfileVent();
     if( scrollToRef.current ) {
           scrollToRef.current.scrollIntoView();
-        }
+      }
   },[]);
 
 useEffect(() => {
   const controller = new AbortController();
-  
   const fetchVents = async () => {
     try {
       if (vents.length === 0) {
@@ -80,7 +96,7 @@ useEffect(() => {
       };
 
       const { data: ventsJson } = await axios.get(
-        `http://localhost:3000/v1/vents?skip=${skip}&category=${category}`,
+        `${import.meta.env.VITE_API}/vents?skip=${skip}&category=${category}`,
         { headers, signal: controller.signal, withCredentials: true } 
       );
 
@@ -104,7 +120,7 @@ useEffect(() => {
     }
   };
 
-  if (hasMore || vents?.length === 0 || category.length > 0) {
+  if (hasMore || vents?.length === 0 ) {
     const timer = setTimeout(() => {
       fetchVents();
     }, 100);
@@ -114,7 +130,7 @@ useEffect(() => {
       controller.abort(); 
     };
   }
-}, [skip, category]);
+}, [skip, category, refreshButton]);
 
 
   const handleScroll = (e) => {
@@ -131,21 +147,24 @@ useEffect(() => {
       <div className="h-screen border-r-1 border-gray-700" >
       <Sidebar/>
       <CategoryBarM
+          category={category}
           onSelect={(q)=>{
               logout();
               addcategory(q)
             }} 
       ></CategoryBarM>
-
+      <RefreshFeed></RefreshFeed>
       </div>
+
       {/* Main Content */}
       <div className="flex-1 flex flex-row transition-all duration-300 sm:ml-64">
         {/* Feeds */}
         <div className="flex-1 bg-gray-950 overflow-y-scroll " onScroll={handleScroll}>
+          
             <PostCard />
             {loading && vents.length === 0 &&  <Shuffle
                                       text="⟢ OFFICELL"
-                                      className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] md:ml-4 lg:ml-20"
+                                      className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] md:ml-4 lg:ml-80"
                                       shuffleDirection="right"
                                       duration={0.35}
                                       animationMode="evenodd"
@@ -162,33 +181,34 @@ useEffect(() => {
                           {error}
                         </div>
                       )}
-                      
-
+          {!loading && vents.length === 0 && (
+                <div className="text-center text-gray-500 py-6">
+                  Come on! spill something
+                </div>
+              )}
                       {/* Companies list */}
                       {vents.map((vent,index) => (
                         <span key={index} onClick={()=> addScrollToItem(index) }>
-                          <VentCard
-                            id={vent.id}
-                            category= {vent.category}
-                            content = {vent.content}
-                            upvote={vent.upvote}
-                            downvote={vent.downvote}
-                            company_country={vent.company?.country}
-                            company_name={vent.company?.name}
-                            author={vent.author?.username}
-                            author_id = {vent.author_id}
-                            commentcount = {vent._count?.comments}
-                            createdAt= {vent.createdAt}
-                            media = {vent.Media}
-                            votes={vent.votes}
-                            user_id = {user.id}
-                            ref={index === scrollToCard ?  scrollToRef : null}
-                        />     
-                      </span>
-
+                            <VentCard
+                              id={vent.id}
+                              category= {vent.category}
+                              content = {vent.content}
+                              upvote={vent.upvote}
+                              downvote={vent.downvote}
+                              company_country={vent.company?.country}
+                              company_name={vent.company?.name}
+                              author={vent.author?.username}
+                              author_id = {vent.author_id}
+                              commentcount = {vent._count?.comments}
+                              createdAt= {vent.createdAt}
+                              media = {vent.Media}
+                              votes={vent.votes}
+                              user_id = {user.id}
+                              ref={index === scrollToCard ?  scrollToRef : null}
+                          />     
+                        </span>
                       ))}
                       
-
                       {/* Loading more indicator */}
                       {loadingMore && <Shuffle
                           text="⟢ OFFICELL"
@@ -216,9 +236,10 @@ useEffect(() => {
         <div className="bg-gray-950 w-80 h-screen hidden border-l border-gray-700 lg:block p-4 ">
           <UserCard username={user.username} location={location.city} />
           <CategoryBar
+                category={category}
                 onSelect={(q)=>{
                   logout();
-                  addcategory(q)
+                  addcategory(q);
                 }}  
           ></CategoryBar>
         </div>

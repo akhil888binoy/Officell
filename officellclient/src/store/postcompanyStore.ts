@@ -1,8 +1,8 @@
 import {create} from 'zustand';
 import { persist, createJSONStorage } from "zustand/middleware";
 
+const postcompanyStore=(set,get)=>({
 
-const companyStore=(set,get)=>({
     scrollSkip:0,
     scrollLoading : true,
     scrollLoadinMore: false,
@@ -15,54 +15,54 @@ const companyStore=(set,get)=>({
     region: null,
     companySearch : "",
     setCompanySearch:(data)=>{
-        set(({
+        set({
             companySearch: data
-        }))
+        })
     },
     setRegion:(data)=>{
-        set(({
+        set({
             region: data
-        }))
+        })
     },
     setCountry:(data)=>{
-        set(({
+        set({
             searchcountry: data
-        }))
+        })
     },
     setRefreshButton : (data)=>{
-        set(({
+        set({
             refreshButton: data
-        }))
+        })
     },
     addScrollSkip : (data)=>{
-        set(({
+        set({
             scrollSkip: data
-        }))
+        })
     },
     addScrollLoading : (data)=>{
-        set(({
+        set({
             scrollLoading: data
-        }))
+        })
     },
     addScrollLoadingMore:(data)=>{
-        set(({
+        set({
             scrollLoadinMore: data
-        }))
+        })
     },
     addScrollCategory:(data)=>{
-        set(({
+        set({
             scrollCategory: data
-        }))
+        })
     },
     addHasMore: (data)=>{
-        set(({
+        set({
             scrollHasMore : data,
-        }))
+        })
     },
     addScrollToItem: (data)=>{
-        set(({
+        set({
             scrollToItem : data,
-        }))
+        })
     },
     addCompanies:(data)=>{
         set((state)=>({
@@ -108,9 +108,9 @@ const companyStore=(set,get)=>({
 
 })
 
-const useCompanyStore=create(persist(companyStore,{
-    name:"companies",
+const usePostCompanyStore=create(persist(postcompanyStore,{
+    name:"postcompanies",
     storage: createJSONStorage(()=>sessionStorage)
 }));
 
-export default useCompanyStore;
+export default usePostCompanyStore;

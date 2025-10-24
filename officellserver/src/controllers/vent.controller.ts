@@ -6,6 +6,26 @@ import { readFileSync } from 'fs';
 import { v2 as cloudinary } from 'cloudinary';
 
 
+export const getVentsCount = async (req: Request , res: Response)=>{
+    const { lastcreatedAt } = req.query;
+    console.log("LasteCreatedAt", lastcreatedAt)
+    try {
+        const count_vents = await prisma.vent.count({
+            where: { 
+                createdAt : {
+                    gte: String(lastcreatedAt)
+                }
+            }
+        });
+        res.status(200).json({
+            message: "Get Vents Count Successful",
+            count_vents: count_vents,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json(error);
+    }
+}
 
 export const getAllVents = async (req: Request , res : Response )=>{
 

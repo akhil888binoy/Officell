@@ -16,20 +16,18 @@ export default function AddUsernamePage() {
 
       setStep(3);
       const token =  Cookies.get("Auth");
-      console.log(token);
       const headers={
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       }
 
-      const  response = await axios.post("http://localhost:3000/v1/add-username", {
+      const  response = await axios.post(`${import.meta.env.VITE_API}/add-username`, {
         new_username: username
       },{
           headers:headers,
-                    withCredentials: true
+          withCredentials: true
 
       });
-      console.log(response);
       setTimeout(() => {
         navigate("/feed");
       }, 1200);

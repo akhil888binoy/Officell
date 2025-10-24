@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react'
 import Select from 'react-select';
 import { CountryDropdown, RegionDropdown } from 'react-country-region-selector';
-import { categories } from './CompanyCategory';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { ToastContainer, toast } from 'react-toastify';
 import * as Yup from "yup";
+import { categories } from '../../utils/companyCategory';
+import useCompanyStore from '../../store/companyStore';
+import useTrendingVentStore from '../../store/trendingventStore';
+import { useEffect, useState } from 'react';
 
 const customRender = (props) => {
   const {
@@ -62,8 +64,15 @@ const CompanyRegister = () => {
     const [region, setRegion] = useState<ReactSelectOption | undefined>();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const [inputNameError , setInputNameError] = useState("")
+    const [inputNameError , setInputNameError] = useState("");
+    const logoutcompanies = useCompanyStore((state)=>state.logout);
+    const logoutTrendingVents = useTrendingVentStore((state)=> state.logout);
 
+    useEffect(()=>{
+      logoutcompanies();
+      logoutTrendingVents();
+    })
+    
 const validateCompany = async () => {
   try {
     await companySchema.validate({ companyName });
@@ -143,7 +152,7 @@ if(!domain){
       const headers={
         'Authorization': `Bearer ${token}`
       }
-      const  response = await axios.post("http://localhost:3000/v1/companies", {
+      const  response = await axios.post(`${import.meta.env.VITE_API}/companies`, {
         name: companyName,
         domain : domain,
         industry: industry,
@@ -153,7 +162,7 @@ if(!domain){
           headers:headers,
                   withCredentials: true
       });
-      console.log(response);
+
       setLoading(false);
       setCompanyName("");
       setIndustry("");
@@ -189,8 +198,8 @@ if(!domain){
   <div>
     <ToastContainer></ToastContainer>
   <div className=" mx-auto  lg:p-20 p-10">
-  <h2 className="text-4xl sm:text-4xl md:text-6xl lg:text-[40px] mt-4 mb-10 font-arimo text-white font-bold tracking-[-0.02em]">
-        Add Company on the Hitlist
+  <h2 className="text-4xl sm:text-4xl md:text-6xl lg:text-[40px] mt-4 mb-10 font-dmsans text-white font-semibold tracking-[1px]">
+        Add Company on the Hitlist .
   </h2>
         {/* Company Name */}
   <div className="relative z-0 w-full mb-5 group">
@@ -224,7 +233,6 @@ if(!domain){
         classNamePrefix: "country-",
         onChange: (value) => {
           setCountry(value ? value : undefined);
-          console.log("Country Code ", value?.key)
           setRegion(null);
         },
       }}
@@ -256,7 +264,6 @@ if(!domain){
       <div className="relative">
         <select value={industry} onChange={(e)=> {
           setIndustry(e.target.value);
-          console.log(e.target.value);
         }} className="block appearance-none w-full bg-gray-50 border border-gray-200 text-gray-700 py-2 px-4 pr-8 rounded leading-tight focus:outline-none focus:bg-white focus:border-gray-500" id="grid-state">
         <option value="">Select Industry</option>
         {categories.map((cat, index)=>(

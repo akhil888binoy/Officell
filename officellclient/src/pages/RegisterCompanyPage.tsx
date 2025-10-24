@@ -1,6 +1,6 @@
-import { Sidebar } from "../components/Sidebar";
-import { UserCard } from "../components/UserCard";
-import CompanyRegister from "../components/CompanyRegister";
+import { Sidebar } from "../components/common/Sidebar";
+import { UserCard } from "../components/user/UserCard";
+import CompanyRegister from "../components/company/CompanyRegister";
 import useUserStore from "../store/userStore";
 
 const RegisterCompanyPage = () => {
@@ -17,7 +17,6 @@ const RegisterCompanyPage = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-row transition-all duration-300 sm:ml-64">
         {/* Feeds */}
-
         <div className="flex-1 bg-gray-950 overflow-y-scroll " >
         <CompanyRegister></CompanyRegister>
         </div>

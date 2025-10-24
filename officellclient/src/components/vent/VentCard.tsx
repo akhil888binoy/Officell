@@ -7,13 +7,13 @@ import Cookies from 'js-cookie';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { getName } from "country-list";
-import useVentStore from "../store/ventStore";
+import useVentStore from "../../store/ventStore";
 import { useLocation } from "react-router-dom";
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
-import useTrendingVentStore from "../store/trendingventStore";
-import useProfileVentStore from "../store/profileventStore";
-import useCompanyVentStore from "../store/companyventStore";
+import useTrendingVentStore from "../../store/trendingventStore";
+import useProfileVentStore from "../../store/profileventStore";
+import useCompanyVentStore from "../../store/companyventStore";
 
 
 export const VentCard = forwardRef(({ id , category , content , upvote , downvote , company_name , company_country, author, author_id, commentcount , createdAt, media, votes, user_id }, ref) => {
@@ -86,13 +86,11 @@ const handleDownvote=async ()=>{
         downVoteProfile(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
         downVoteTrending(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
         downVoteCompany(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
-      const {data: response }= await axios.post(`http://localhost:3000/v1/vents/${id}/downvote`,"",{
+      const {data: response }= await axios.post(`${import.meta.env.VITE_API}/vents/${id}/downvote`,"",{
           headers:headers,
-                    withCredentials: true
-
+          withCredentials: true
       });
 
-    console.log(response.author_id);
     setDisableSubmitBtn(false)
   } catch (error) {
     console.error(error);
@@ -136,16 +134,16 @@ const handleDownvote=async ()=>{
           setIsUpVote(true);
           setIsDownVote(false);
         }
+
         upVote(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
         upVoteProfile(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
         upVoteTrending(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
         upVoteCompany(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
-        const {data: response} = await axios.post(`http://localhost:3000/v1/vents/${id}/upvote`,"",{
+        const {data: response} = await axios.post(`${import.meta.env.VITE_API}/vents/${id}/upvote`,"",{
             headers:headers,
-                      withCredentials: true
+            withCredentials: true
 
         });
-        console.log(response.vote);
         setDisableSubmitBtn(false);
     } catch (error) {
       console.error(error);
@@ -172,11 +170,10 @@ const handleDeleteVent =async()=>{
       const headers={
         'Authorization': `Bearer ${token}`
       };
-      const response = await axios.delete(`http://localhost:3000/v1/vents/${id}`,{
+      const response = await axios.delete(`${import.meta.env.VITE_API}/vents/${id}`,{
           headers:headers,
                     withCredentials: true
       });
-    console.log(response);
     deleteVent(id);
     deleteProfileVent(id);
     deleteTrendingVent(id);
@@ -238,7 +235,7 @@ useEffect(() => {
           {/* Company + Location */}
           <div className="flex flex-col items-end text-xs text-gray-300 lg:gap-2 gap-1">
             <div className="flex items-center gap-1 flex-wrap justify-end">
-              <span className="text-right break-words max-w-[140px] md:max-w-[180px]">
+              <span className="text-right  break-words max-w-[140px] md:max-w-[180px]">
                 {company_name}
               </span>
                     <RiBuilding2Line className="text-blue-400 flex-shrink-0" />
@@ -260,7 +257,7 @@ useEffect(() => {
     {category}
   </span>
 </div>
-  <p className="text-gray-200 leading-relaxed text-sm md:text-base lg:text-lg">
+  <p className="text-gray-200 leading-relaxed text-sm md:text-base lg:text-sm ">
     {content}
   </p>
   <div className="mt-3 flex flex-wrap justify-center items-center gap-3">

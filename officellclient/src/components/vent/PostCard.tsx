@@ -3,69 +3,63 @@ import { MdOutlineAttachFile, MdOutlineCategory } from "react-icons/md"
 import { RiBuilding2Line } from "react-icons/ri"
 import Cookies from 'js-cookie';
 import axios from 'axios';
-import CompanySearchBar from "./CompanySearchBar";
-import { CompanySearchCard } from "./CompanySearchCard";
-import { FaUserTie, FaRegLaughBeam, FaBeer, FaUsers, FaBriefcase } from "react-icons/fa";
-import { MdOutlineWorkHistory, MdOutlineLaptopChromebook, MdOutlineDarkMode } from "react-icons/md";
-import { BiMoney } from "react-icons/bi";
-import { FiEye } from "react-icons/fi";
+import CompanySearchBar from "../company/CompanySearchBar";
+import { CompanySearchCard } from "../company/CompanySearchCard";
 import { ToastContainer, toast } from 'react-toastify';
-import AddCompany from "./AddCompany";
-import useCompanyStore from "../store/companyStore";
-import useVentStore from "../store/ventStore";
-import {  useLocation, useParams } from 'react-router-dom';
-import Shuffle from "../styles/Shuffle";
+import AddCompany from "../company/AddCompany";
+import useVentStore from "../../store/ventStore";
+import Shuffle from "../../styles/Shuffle";
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
+import { categories } from "../../utils/ventCategory";
+import useCompanyVentStore from "../../store/companyventStore";
+import useProfileVentStore from "../../store/profileventStore";
+import useTrendingVentStore from "../../store/trendingventStore";
+import usePostCompanyStore from "../../store/postcompanyStore";
+import { PAGE_SIZE } from "../../utils/pagesize";
 
 const PostCard = () => {
 
-  const {id} = useParams();
-  const page = useLocation();
   const [skip, setSkip] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const [search , setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
+  const search = usePostCompanyStore((state)=>state.companySearch);
+  const setSearch = usePostCompanyStore((state)=>state.setCompanySearch);
+  const hasMore = usePostCompanyStore((state)=>state.scrollHasMore);
+  const loading = usePostCompanyStore((state)=> state.scrollLoading);
+  const loadingMore = usePostCompanyStore((state)=>state.scrollLoadinMore);
+  const setLoading = usePostCompanyStore((state)=>state.addScrollLoading);
+  const setLoadingMore = usePostCompanyStore((state)=>state.addScrollLoadingMore);
+  const setHasMore = usePostCompanyStore((state)=> state.addHasMore);
   const [postloading, setPostLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openCategory , setOpenCategory] = useState(false);
   const [openMedia , setOpenMedia] = useState(false);
   const [openCompanies , setOpenCompanies] = useState(false);
-  const companies = useCompanyStore((state) => state.companies);
+  const companies = usePostCompanyStore((state) => state.companies);
   const post = useVentStore((state)=> state.post);
   const category = useVentStore((state)=> state.category);
   const company_id = useVentStore((state)=>state.company_id);
   const selectedMedia = useVentStore((state)=>state.selectedMedia);
   const mediaType = useVentStore((state)=>state.mediaType);
-  const addCompanies = useCompanyStore((state) => state.addCompanies);
+  const categoryVent = useVentStore((state)=> state.scrollCategory);
+  const categoryCompanyVent = usePostCompanyStore((state)=>state.scrollCategory);
+  const categoryProfileVent = useProfileVentStore((state)=>state.scrollCategory);
+  const addCompanies = usePostCompanyStore((state) => state.addCompanies);
   const addVent = useVentStore((state) => state.addVent);
-  const addTrendingVent = useVentStore((state) => state.addTrendingVent);
+  const addTrendingVent = useTrendingVentStore((state) => state.addVent);
+  const addCompanyVent = useCompanyVentStore((state)=> state.addVent);
+  const addProfileVent = useProfileVentStore((state)=>state.addVent);
   const addPost = useVentStore((state)=>state.addPost);
   const addCompanyId = useVentStore((state)=>state.addCompany_id);
   const addCategory = useVentStore((state)=>state.addCategory);
   const addSelectedMedia = useVentStore((state)=>state.addSelectedMedia);
   const addMediaType = useVentStore((state)=>state.addMediaType);
-  const reset = useCompanyStore((state)=>state.reset);
   const resetPost = useVentStore((state)=>state.resetPost);
   const resetCategory = useVentStore((state)=>state.resetCategory);
   const resetCompanyId = useVentStore((state)=>state.resetCompany_id);
   const resetSelectedMedia = useVentStore((state)=>state.resetSelectedMedia);
   const resetMediaType = useVentStore((state)=>state.restMediaType);
+  const reset = usePostCompanyStore((state)=>state.reset);
 
 
- const categories = [
-   { name: "Work Culture", icon: <FaBriefcase /> },
-   { name: "Colleague Drama", icon: <FaUsers /> },
-   { name: "Boss Stories", icon: <FaUserTie /> },
-   { name: "Overtime", icon: <MdOutlineWorkHistory /> },
-   { name: "Salary & Perks", icon: <BiMoney /> },
-   { name: "WFH Chronicles", icon: <MdOutlineLaptopChromebook /> },
-   { name: "Secret Affairs", icon: <FiEye /> },
-   { name: "Gossip", icon: <FaRegLaughBeam /> },
-   { name: "After Work Fun", icon: <FaBeer /> },
-   { name: "Dark Secrets", icon: <MdOutlineDarkMode /> },
- ];
- 
   const handlePost= async ()=>{
     if(!post){
             toast.error('Spill Some tea to post', {
@@ -107,7 +101,6 @@ const PostCard = () => {
     try {
       setPostLoading(true)
       const token =  Cookies.get("Auth");
-      console.log(token);
       const headers={
         'Authorization': `Bearer ${token}`
       }
@@ -118,22 +111,30 @@ const PostCard = () => {
       formData.append('type', mediaType);
       if (selectedMedia)
       formData.append('file', selectedMedia); 
-      const  {data: response} = await axios.post("http://localhost:3000/v1/vents", formData, {
+      const  {data: response} = await axios.post(`${import.meta.env.VITE_API}/vents`, formData, {
           headers:headers,
           withCredentials: true
       });
-      console.log(response.vent);
       setPostLoading(false);
-      if(page.pathname === '/feed' || (page.pathname === `/companies/${id}` && Number(company_id) === Number(id)) || page.pathname ==='/profile'){
-        addVent(response.vent);
-      } else if(page.pathname === '/trending'){
-        addTrendingVent(response.vent);
-      } 
+
+    if (categoryVent === category || categoryVent === "") {
+      addVent(response.vent);
+    }
+
+    if (categoryCompanyVent === category || categoryCompanyVent === "") {
+      addCompanyVent(response.vent);
+    }
+
+    if (categoryProfileVent === category || categoryProfileVent === "") {
+      addProfileVent(response.vent);
+    }
+      addTrendingVent(response.vent);
       resetPost();
       resetCompanyId();
       resetCategory();
       resetSelectedMedia();
       resetMediaType();
+
         toast.success('Yay! you spilled it 🎉', {
           position: "top-right",
           autoClose: 5000,
@@ -193,14 +194,10 @@ const handleAddMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
 };
 
 
-  const handleAddCategory=(e)=>{
-    const newCategory = e.currentTarget.value;
-    addCategory(newCategory);
-  }
-
-  useEffect(()=>{
-    reset();
-  },[]);
+const handleAddCategory = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const newCategory = e.currentTarget.value;
+  addCategory(newCategory);
+};
 
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -217,18 +214,18 @@ const handleAddMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
           'Authorization': `Bearer ${token}`,
         };
 
-        const { data: companiesJson } = await axios.get(`http://localhost:3000/v1/companies?skip=${skip}&company_name=${search}`, {
+        const { data: companiesJson } = await axios.get(`${import.meta.env.VITE_API}/companies?skip=${skip}&company_name=${search}`, {
           headers: headers,
           withCredentials: true
         });
         
         const newCompanies = companiesJson.companies;
-        if (newCompanies.length === 0) {
-          setHasMore(false);
-        } else {
-          addCompanies(newCompanies);
-        }
-        
+        if (newCompanies.length < PAGE_SIZE) {
+                  setHasMore(false);  
+              }
+          if (newCompanies.length > 0) {
+              addCompanies(newCompanies);
+          }
         setError(null);
       } catch (error) {
         console.error(error);
@@ -246,7 +243,7 @@ const handleAddMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
       return () => clearTimeout(timer)
     }
   }, [skip, search]);
-
+  
   
   return (
 
@@ -336,7 +333,7 @@ const handleAddMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
     >
       {/* Header */}
       <div className="bg-gray-950 px-4 sm:px-6 pt-5 pb-4">
-        <DialogTitle as="h3" className="text-base sm:text-lg font-semibold text-white">
+        <DialogTitle as="h3" className="text-base sm:text-lg font-dmsans tracking-[1px] font-semibold text-white">
           Show us proof
         </DialogTitle>
         <div className="flex items-center justify-between md:p-5 rounded-t ">
@@ -418,7 +415,7 @@ const handleAddMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
     >
       {/* Header */}
       <div className="bg-gray-950 px-4 sm:px-6 pt-5 pb-4">
-        <DialogTitle as="h3" className="text-base sm:text-lg font-semibold text-white">
+        <DialogTitle as="h3" className="text-lg font-dmsans tracking-[1px] text-white">
           Choose a category
         </DialogTitle>
 
@@ -428,14 +425,14 @@ const handleAddMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
               onClick={handleAddCategory}
               key={index}
               value={cat.name}
-              className={`flex items-center gap-3 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base font-medium rounded-xl
-                bg-gray-800 text-gray-200
+              className={`flex items-center gap-3 px-3 sm:px-4 py-2 sm:py-3 text-sm   rounded-xl
+                bg-gray-800 text-gray-200 font-dmsans tracking-[1px] font-light
                 hover:bg-gray-700 hover:border-gray-500 hover:scale-[1.02] 
                 active:scale-95 active:bg-gray-600
                 transition-all duration-200 ease-in-out
                 shadow-sm ${category === cat.name ? 'border border-white' : ''}`}
             >
-              <span className="text-lg">{cat.icon}</span>
+              <span className="text-sm ">{cat.icon}</span>
               {cat.name}
             </button>
           ))}
@@ -488,7 +485,8 @@ const handleAddMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
     >
       {/* Header */}
           <CompanySearchBar 
-            onSearch={(q) => {
+            search={search}
+            onSearch={(q: string) => {
               setSkip(0);
               setHasMore(true);
               reset();
@@ -532,7 +530,6 @@ const handleAddMedia = (e: React.ChangeEvent<HTMLInputElement>) => {
               }`}
               onClick={() => {
                 addCompanyId(company.id);
-                console.log("Company Id", company_id);
               }}
             >
               <CompanySearchCard

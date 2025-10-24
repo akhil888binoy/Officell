@@ -4,10 +4,10 @@ import { CommentCard } from "./CommentCard";
 import Cookies from 'js-cookie';
 import axios from "axios";
 import { ToastContainer, toast } from 'react-toastify';
-import useVentStore from "../store/ventStore";
-import useCommentStore from "../store/commentStore";
-import { Loader } from "./Loader";
-import Shuffle from "../styles/Shuffle";
+import useVentStore from "../../store/ventStore";
+import useCommentStore from "../../store/commentStore";
+import { Loader } from "../common/Loader";
+import Shuffle from "../../styles/Shuffle";
 
 export const CommentSection = ({vent_id}) => {
     const [newComment, setNewComment] = useState("");
@@ -34,14 +34,13 @@ export const CommentSection = ({vent_id}) => {
         const headers={
           'Authorization': `Bearer ${token}`
         }
-        const  {data:response} = await axios.post(`http://localhost:3000/v1/vents/${vent_id}/comments`, {
+        const  {data:response} = await axios.post(`${import.meta.env.VITE_API}/vents/${vent_id}/comments`, {
           comment: newComment
         },{
           headers:headers,
                     withCredentials: true
       });
       setLoading(false);
-      console.log(response.comment);
       addComment(response.comment);
       setNewComment("");
       } catch (error) {

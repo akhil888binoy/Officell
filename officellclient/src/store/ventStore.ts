@@ -1,11 +1,11 @@
-import { data } from 'react-router-dom';
 import {create} from 'zustand';
 import { persist, createJSONStorage } from "zustand/middleware";
 
 const ventStore=(set,get)=>({
+
     post:"",
     company_id:"",
-    category:"",
+    category:null,
     selectedMedia: null,
     mediaType: "",
     scrollSkip:0,
@@ -13,35 +13,42 @@ const ventStore=(set,get)=>({
     scrollLoadinMore: false,
     scrollCategory: "",
     scrollHasMore : true,
-    scrollToItem: 0,
+    scrollToItem: null,
     vents:[],
+    refreshButton: false,
+   
+    setRefreshButton : (data)=>{
+        set(({
+            refreshButton: data
+        }))
+    },
     addScrollSkip : (data)=>{
-        set((state)=>({
+        set(({
             scrollSkip: data
         }))
     },
     addScrollLoading : (data)=>{
-        set((state)=>({
+        set(({
             scrollLoading: data
         }))
     },
     addScrollLoadingMore:(data)=>{
-        set((state)=>({
+        set(({
             scrollLoadinMore: data
         }))
     },
     addScrollCategory:(data)=>{
-        set((state)=>({
+        set(({
             scrollCategory: data
         }))
     },
     addHasMore: (data)=>{
-        set((state)=>({
+        set(({
             scrollHasMore : data,
         }))
     },
     addScrollToItem: (data)=>{
-        set((state)=>({
+        set(({
             scrollToItem : data,
         }))
     },
@@ -87,7 +94,6 @@ const ventStore=(set,get)=>({
     },
     upVote: (id, user_id, votedata) => {
         const vents = get().vents;
-        console.log("votedata",votedata)
             const updatedVents = vents.map((vent) => {
                 if (vent.id === id) {
                     if (votedata.vote ==='NOVOTE'){
@@ -137,7 +143,6 @@ const ventStore=(set,get)=>({
             },
 downVote: (id, user_id, votedata) => {
         const vents = get().vents;
-        console.log("votedata",votedata)
             const updatedVents = vents.map((vent) => {
                 if (vent.id === id) {
                     if (votedata.vote ==='NOVOTE'){
@@ -186,11 +191,11 @@ downVote: (id, user_id, votedata) => {
                 
             set({ vents: updatedVents });
             },
-    getVent:(id)=>{
+    getVent:(id : string)=>{
         const vents = get().vents;
         return vents.find((vent) => vent.id === Number(id)) || null;
     },
-    deleteVent:(id)=>{
+    deleteVent:(id: string)=>{
         const vents= get().vents;
         const updatedVents = vents.filter((vent => vent.id != id));
         set({
@@ -249,7 +254,12 @@ downVote: (id, user_id, votedata) => {
     },
     resetCategory:()=>{
         set({
-            category: ""
+            category: null
+        })
+    },
+    resetScrollToItem :()=>{
+        set({
+            scrollToItem: null
         })
     },
 
@@ -265,7 +275,7 @@ downVote: (id, user_id, votedata) => {
             scrollLoadinMore: false,
             scrollCategory: "",
             scrollHasMore : true,
-            scrollToItem: 0,
+            scrollToItem: null,
             vents:[]
         })
     }

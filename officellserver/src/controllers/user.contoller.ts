@@ -1,7 +1,7 @@
 import {Request , Response } from 'express';
 import axios from 'axios';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { prisma } from "../index";
+import { userBloomfilter, prisma } from "../index";
 import { redisConnection } from '../redis/connection';
 import geoip from 'geoip-lite';
 import crypto from "crypto";
@@ -178,19 +178,17 @@ export const addUsername = async (req: Request | any  , res : Response ) => {
     const { _id } = req.decoded;
     const {new_username} = req.body;
     const redis = await redisConnection();
-
+    
     try {
-        const existing_username = await prisma.user.findUnique({
-            where: {username: new_username}
-        });
-
-        if (existing_username == null){
+        const existing_username =  userBloomfilter.has(new_username)
+        if (existing_username == false){
             const user = await prisma.user.update({
                 where: {id : _id},
                     data:{
                         username: new_username
                     }
             });
+            userBloomfilter.add(new_username);
             await redis.set(`Profile:${_id}`, JSON.stringify(user));
             await redis.expire(`Profile:${_id}` , 3600);
             res.status(200).json({
@@ -201,7 +199,6 @@ export const addUsername = async (req: Request | any  , res : Response ) => {
         res.status(500).json({
             message: "Username already exist"
         });
-
     } catch (error: any ) {
         res.status(500).json(error);
     }

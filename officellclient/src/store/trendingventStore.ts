@@ -8,35 +8,35 @@ const trendingventStore=(set,get)=>({
     scrollLoadinMore: false,
     scrollCategory: "",
     scrollHasMore : true,
-    scrollToItem: 0,
+    scrollToItem: null,
     trendingvents:[],
     addScrollSkip : (data)=>{
-        set((state)=>({
+        set(({
             scrollSkip: data
         }))
     },
     addScrollLoading : (data)=>{
-        set((state)=>({
+        set(({
             scrollLoading: data
         }))
     },
     addScrollLoadingMore:(data)=>{
-        set((state)=>({
+        set(({
             scrollLoadinMore: data
         }))
     },
     addScrollCategory:(data)=>{
-        set((state)=>({
+        set(({
             scrollCategory: data
         }))
     },
     addHasMore: (data)=>{
-        set((state)=>({
+        set(({
             scrollHasMore : data,
         }))
     },
     addScrollToItem: (data)=>{
-        set((state)=>({
+        set(({
             scrollToItem : data,
         }))
     },
@@ -52,7 +52,6 @@ const trendingventStore=(set,get)=>({
     },
     upVote: (id, user_id, votedata) => {
         const trendingvents = get().trendingvents;
-        console.log("votedata",votedata)
             const updatedVents = trendingvents.map((trendingvent) => {
                 if (trendingvent.id === id) {
                     if (votedata.vote ==='NOVOTE'){
@@ -102,7 +101,6 @@ const trendingventStore=(set,get)=>({
             },
 downVote: (id, user_id, votedata) => {
         const trendingvents = get().trendingvents;
-        console.log("votedata",votedata)
             const updatedVents = trendingvents.map((trendingvent) => {
                 if (trendingvent.id === id) {
                     if (votedata.vote ==='NOVOTE'){
@@ -187,6 +185,11 @@ downVote: (id, user_id, votedata) => {
             scrollHasMore: true
         })
     },
+    resetScrollToItem :()=>{
+        set({
+            scrollToItem: null
+        })
+    },
     reset:()=>{
         set({
             trendingvents:[]
@@ -199,7 +202,7 @@ downVote: (id, user_id, votedata) => {
             scrollLoadinMore: false,
             scrollCategory: "",
             scrollHasMore : true,
-            scrollToItem: 0,
+            scrollToItem: null,
             trendingvents:[],
         })
     }

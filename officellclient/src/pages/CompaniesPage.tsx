@@ -1,18 +1,55 @@
-import { CompanyCategory } from "../components/CompanyCategory";
-import { Sidebar } from "../components/Sidebar";
-import { UserCard } from "../components/UserCard";
-import { CompanyCategoryM } from "../components/CompanyCategoryM";
-import CompanySearchBar from "../components/CompanySearchBar";
-import { CompanyCard } from "../components/CompanyCard";
+import { CompanyCategory } from "../components/company/CompanyCategory";
+import { Sidebar } from "../components/common/Sidebar";
+import { UserCard } from "../components/user/UserCard";
+import { CompanyCategoryM } from "../components/company/mobile/CompanyCategoryM";
+import CompanySearchBar from "../components/company/CompanySearchBar";
+import { CompanyCard } from "../components/company/CompanyCard";
 import { useEffect, useRef, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
-import AddCompany from "../components/AddCompany";
+import AddCompany from "../components/company/AddCompany";
 import useUserStore from "../store/userStore";
 import useCompanyStore from "../store/companyStore";
 import Shuffle from "../styles/Shuffle";
 import { PAGE_SIZE } from "../utils/pagesize";
 import useCompanyVentStore from "../store/companyventStore";
+import useVentStore from "../store/ventStore";
+import useProfileVentStore from "../store/profileventStore";
+import useTrendingVentStore from "../store/trendingventStore";
+import RefreshCompanies from "../components/company/RefreshCompanies";
+import { CountryDropdown, RegionDropdown } from 'react-country-region-selector';
+import Select from 'react-select';
+
+
+const customRender = (props) => {
+  const {
+    options,
+    value,
+    disabled,
+    onChange,
+    onBlur,
+    customProps,
+    ...selectProps
+  } = props;
+
+  return (
+    <Select
+      {...selectProps}
+      options={options}
+      isDisabled={disabled}
+      isSearchable={true}
+      isClearable={true}
+      value={customProps.reactSelectValue}
+      onChange={customProps.onChange}   
+    />
+  );
+};
+
+type ReactSelectOption = {
+  label: string;
+  key:string;
+  value: string;
+};
 
 
 export const CompaniesPage = () => {
@@ -20,7 +57,16 @@ export const CompaniesPage = () => {
   const scrollToRef = useRef<null | HTMLElement>(null);
   const scrollToCard= useCompanyStore((state)=> state.scrollToItem) ;
   const [error, setError] = useState<string | null>(null);
-  const [search , setSearch] = useState("");
+  // const [search , setSearch] = useState("");
+  const search = useCompanyStore((state)=>state.companySearch);
+  const setSearch = useCompanyStore((state)=>state.setCompanySearch);
+  // const [country, setCountry] = useState<ReactSelectOption | undefined>();
+  // const [region, setRegion] = useState<ReactSelectOption | undefined>();
+  const country = useCompanyStore((state)=>state.searchcountry);
+  const region = useCompanyStore((state)=> state.region);
+  const setCountry = useCompanyStore((state)=>state.setCountry);
+  const setRegion = useCompanyStore((state)=> state.setRegion);
+  const refreshCompanies = useCompanyStore((state)=> state.refreshButton);
   const skip = useCompanyStore((state)=> state.scrollSkip);
   const loadingMore = useCompanyStore((state)=> state.scrollLoadinMore);
   const loading = useCompanyStore((state)=> state.scrollLoading);
@@ -38,7 +84,11 @@ export const CompaniesPage = () => {
   const addScrollToItem = useCompanyStore((state)=> state.addScrollToItem);
   const logout = useCompanyStore((state)=> state.logout);
   const logoutCompanyVent = useCompanyVentStore((state)=>state.logout);
-
+  const resetScrollToItemFeed = useVentStore((state)=> state.resetScrollToItem);
+  const resetScrollToItemProfileVent = useProfileVentStore((state)=> state.resetScrollToItem);
+  const resetScrollToItemTrending = useTrendingVentStore((state)=> state.resetScrollToItem);
+  const logoutTrendingVents = useTrendingVentStore((state)=> state.logout);
+  const resetCompanies= useCompanyStore((state)=> state.resetCompanies);
 
   const handleScroll = (e) => {
     const { offsetHeight, scrollTop, scrollHeight } = e.target;
@@ -67,11 +117,10 @@ export const CompaniesPage = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         };
-        const { data: companiesJson } = await axios.get(`http://localhost:3000/v1/companies?skip=${skip}&company_name=${search}&industry=${category}`, {
+        const { data: companiesJson } = await axios.get(`${import.meta.env.VITE_API}/companies?skip=${skip}&company_name=${search}&industry=${category}&place=${region ? region.value:''}&searchcountry=${country? country.key:''}`, {
           headers, signal: controller.signal , withCredentials: true
         });
         
-        console.log("Companies",companiesJson.companies);
         const newCompanies = companiesJson.companies;
         
         // Check if we've reached the end of the list
@@ -94,43 +143,52 @@ export const CompaniesPage = () => {
         addloadingMore(false);
       }
     };
-    
-    if (hasMore || companies?.length === 0 || search.length > 0 || category.length > 0 ) {
+  
+    if (hasMore || companies?.length === 0 ) {
       const timer = setTimeout(()=>{
         fetchCompanies();
       },1000);
-
       return () => {
         clearTimeout(timer);
         controller.abort(); 
       };
     }
-  }, [skip, search, category]);
+  }, [skip, search, category, refreshCompanies, country , region]);
+
 
   useEffect(()=>{
+   
+    resetScrollToItemFeed();
     logoutCompanyVent();
+    logoutTrendingVents();
+    resetScrollToItemProfileVent();
+    resetScrollToItemTrending();
     if( scrollToRef.current ) {
         scrollToRef.current.scrollIntoView();
       }
   },[]);
 
+  
   return (
     <div className="w-screen h-screen flex bg-gray-950">
       {/* Sidebar */}
       <div className="h-screen border-r-1 border-gray-700">
         <Sidebar />
-        <CompanyCategoryM onSelect={(q)=>{
+        <CompanyCategoryM 
+          category={category}
+          onSelect={(q)=>{
             logout()
             addcategory(q)
           }} />
+          <RefreshCompanies></RefreshCompanies>
       </div>
       
       {/* Main Content */}
       <div className="flex-1 flex flex-row transition-all duration-300 sm:ml-64">
         {/* Feeds */}
         <div className="flex-1 bg-gray-950 overflow-y-scroll" onScroll={handleScroll}>
-          <CompanySearchBar onSearch={(q) => {
-            logout();
+          <CompanySearchBar  search={search} onSearch={(q) => {
+            resetCompanies();
             setSearch(q);
           }} />
           
@@ -149,8 +207,7 @@ export const CompaniesPage = () => {
                           loop={true}
                           respectReducedMotion={true}
                         />
-            }
-          
+          }
           {/* Error message */}
           {error && (
             <div className="text-red-500 text-center p-4">
@@ -176,6 +233,7 @@ export const CompaniesPage = () => {
           
           {/* Loading more indicator */}
           {loadingMore &&  <Shuffle
+
                           text="⟢ OFFICELL"
                           className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] lg:ml-80"
                           shuffleDirection="right"
@@ -187,8 +245,9 @@ export const CompaniesPage = () => {
                           threshold={0.1}
                           loop={true}
                           respectReducedMotion={true}
+
                         />
-                  }
+            }
           <AddCompany></AddCompany>
           {/* End of results message */}
           {!hasMore && companies.length > 0 && (
@@ -199,9 +258,63 @@ export const CompaniesPage = () => {
         </div>
         
         {/* Filters & Categories (desktop only) */}
-        <div className="bg-gray-950 w-80 h-screen hidden border-l border-gray-700 lg:block p-4">
-          <UserCard username={user.username} location={location.city} />
-          <CompanyCategory onSelect={(q)=>{
+        <div className="bg-gray-950 w-80 h-screen hidden border-l border-gray-700 lg:block p-4 overflow-y-scroll">
+       <div className="space-y-6 bg-gray-950 p-6 rounded-2xl">
+  {/* Country */}
+  <div>
+    <h2 className="text-sm font-dmsans tracking-[1px] mb-2 text-gray-50 ">
+      Country
+    </h2>
+    <div className="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 shadow-sm hover:border-gray-700 transition">
+      <CountryDropdown
+        value={country?.value || ""}
+        className="country w-full"
+        name="country-field"
+        customRender={customRender}
+        customProps={{
+          reactSelectValue: country,
+          classNamePrefix: "country-",
+          onChange: (value) => {
+            resetCompanies();
+            setCountry(value ? value : undefined);
+            setRegion(null);
+            console.log("Country", value);
+          },
+        }}
+      />
+    </div>
+  </div>
+
+  {/* City */}
+  <div>
+    <h2 className="text-sm font-dmsans  tracking-[1px] mb-2 text-gray-50">
+      City
+    </h2>
+    <div className="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 shadow-sm hover:border-gray-700 transition">
+      <RegionDropdown
+        country={country?.value || ""}
+        value={region?.value || null}
+        className="region w-full"
+        name="region-field"
+        customRender={customRender}
+        customProps={{
+          reactSelectValue: region,
+          classNamePrefix: "region-",
+          onChange: (value) => {
+            resetCompanies();
+            setRegion(value ? value : undefined);
+            console.log("Region", value);
+          },
+        }}
+      />
+    </div>
+  </div>
+</div>
+
+          
+          <CompanyCategory 
+          category={category}
+          onSelect={(q)=>{
             logout()
             addcategory(q)
           }} />

@@ -14,18 +14,18 @@ import { withAccelerate } from '@prisma/extension-accelerate';
 import { createClient } from "redis";
 import multer, { Multer } from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
+import { BloomFilter } from 'bloom-filters';
 
 cloudinary.config({ 
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.API_KEY,
-  api_secret: process.env.API_SECRET,
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.API_KEY,
+    api_secret: process.env.API_SECRET,
 });
 
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 export const prisma = new PrismaClient().$extends(withAccelerate());
-
 export const client = createClient({
         username: 'default',
         password: process.env.REDIS_PASSWORD,
@@ -34,7 +34,8 @@ export const client = createClient({
             port: 16198,
         }
     });
-
+export const userBloomfilter = new BloomFilter(1000000,4);
+export const companyBloomfilter = new BloomFilter(1000000,4);
 app.set('trust proxy', true);
 app.use(express.json());
 app.use(cookieParser());
@@ -44,8 +45,8 @@ app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" } 
 }));
 app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true
+    origin: 'http://localhost:5173',
+    credentials: true
 }));
 app.use(express.static('src/public/'));
 app.get("/", (req ,res )=>{

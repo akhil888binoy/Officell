@@ -1,7 +1,7 @@
-import PostCard from "../components/PostCard";
-import { Sidebar } from "../components/Sidebar";
-import { UserCard } from "../components/UserCard";
-import { VentCard } from "../components/VentCard";
+import PostCard from "../components/vent/PostCard";
+import { Sidebar } from "../components/common/Sidebar";
+import { UserCard } from "../components/user/UserCard";
+import { VentCard } from "../components/vent/VentCard";
 import { useEffect, useRef, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
@@ -10,12 +10,17 @@ import useVentStore from "../store/ventStore";
 import Shuffle from "../styles/Shuffle";
 import useTrendingVentStore from "../store/trendingventStore";
 import { PAGE_SIZE } from "../utils/pagesize";
+import useCompanyStore from "../store/companyStore";
+import useCompanyVentStore from "../store/companyventStore";
+import useProfileVentStore from "../store/profileventStore";
+import RefreshFeed from "../components/vent/RefreshFeed";
 
 export const TrendingPage = () => {
 
   const scrollToRef = useRef<null | HTMLElement>(null);
   const scrollToCard= useVentStore((state)=> state.scrollToItem) ;
   const [error, setError] = useState<string | null>(null);
+  const refreshButton = useVentStore((state)=> state.refreshButton);
   const skip = useTrendingVentStore((state)=> state.scrollSkip);
   const loadingMore = useTrendingVentStore((state)=> state.scrollLoadinMore);
   const loading = useTrendingVentStore((state)=> state.scrollLoading);
@@ -29,13 +34,20 @@ export const TrendingPage = () => {
   const addloadingMore = useTrendingVentStore((state)=> state.addScrollLoadingMore);
   const addHasMore = useTrendingVentStore((state)=> state.addHasMore);
   const addScrollToItem = useTrendingVentStore((state)=> state.addScrollToItem);
-  
+  const resetScrollToItemFeed = useVentStore((state)=> state.resetScrollToItem);
+  const resetScrollToItemCompany = useCompanyStore((state)=> state.resetScrollToItem);
+  const resetScrollToItemCompanyVent = useCompanyVentStore((state)=> state.resetScrollToItem);
+  const resetScrollToItemProfileVent = useProfileVentStore((state)=> state.resetScrollToItem);
+
 
   useEffect(()=>{
-    if(scrollToRef.current ) {
+      resetScrollToItemFeed();
+      resetScrollToItemCompany();
+      resetScrollToItemCompanyVent();
+      resetScrollToItemProfileVent();
+    if(scrollToRef.current) {
         scrollToRef.current.scrollIntoView();
       }
-
   },[]);
 
 useEffect(() => {
@@ -52,12 +64,11 @@ useEffect(() => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         };
-        const { data: ventsJson } = await axios.get(`http://localhost:3000/v1/vents/trending?skip=${skip}`, {
+        const { data: ventsJson } = await axios.get(`${import.meta.env.VITE_API}/vents/trending?skip=${skip}`, {
           headers: headers,
           withCredentials: true
         });
         
-        console.log(ventsJson.vents);
         
       if (ventsJson.vents.length < PAGE_SIZE) {
         addHasMore(false);  
@@ -81,8 +92,8 @@ useEffect(() => {
       },100) ;
       return()=>clearTimeout(timer);
     }
-  }, [skip]);
-
+  }, [skip, refreshButton]);
+  
   const handleScroll = (e) => {
     const { offsetHeight, scrollTop, scrollHeight } = e.target;
     const threshold = 1000; 
@@ -97,6 +108,7 @@ useEffect(() => {
       {/* Sidebar */}
       <div className="h-screen border-r-1 border-gray-700  " >
       <Sidebar/>
+      <RefreshFeed></RefreshFeed>
       </div>
       {/* Main Content */}
       <div className="flex-1 flex flex-row transition-all duration-300 sm:ml-64">
@@ -125,8 +137,14 @@ useEffect(() => {
                         </div>
                       )}
                       
+              {!loading && vents.length === 0 && vents && (
+                <div className="text-center text-gray-500 py-6">
+                  Spill the first trending confession of this week
+                </div>
+              )}
                       {/* Companies list */}
-                      {vents.map((vent ,index)=> (
+                      {vents
+                      .map((vent ,index)=> (
                         <span key={index} onClick={()=> addScrollToItem(index) }>
                           <VentCard
                             id={vent.id}

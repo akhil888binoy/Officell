@@ -1,18 +1,20 @@
 import { useParams } from "react-router-dom";
-import { CategoryBarM } from "../components/CategoryBarM";
-import { CommentSection } from "../components/CommentSection";
-import { Sidebar } from "../components/Sidebar";
-import { VentCard } from "../components/VentCard";
+import { CommentSection } from "../components/comment/CommentSection";
+import { Sidebar } from "../components/common/Sidebar";
+import { VentCard } from "../components/vent/VentCard";
 import { useEffect, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
-import { CommentCard } from "../components/CommentCard";
-import { UserCard } from "../components/UserCard";
+import { CommentCard } from "../components/comment/CommentCard";
+import { UserCard } from "../components/user/UserCard";
 import useUserStore from "../store/userStore";
 import useVentStore from "../store/ventStore";
 import useCommentStore from "../store/commentStore";
 import Shuffle from "../styles/Shuffle";
 import { FaSkullCrossbones } from "react-icons/fa";
+import useProfileVentStore from "../store/profileventStore";
+import useCompanyVentStore from "../store/companyventStore";
+import useTrendingVentStore from "../store/trendingventStore";
 
 
 
@@ -25,17 +27,33 @@ export const VentDetailsPage = () => {
   const [skip, setSkip] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [interact , setInteract] = useState(false);
   const location = useUserStore((state) => state.location);
   const user = useUserStore((state) => state.user);
   const addComments = useCommentStore((state)=>state.addComments);
-  const vent = useVentStore((state)=>state.getVent(id));
+  const [vent , setVent] = useState();
+  const feedVent = useVentStore((state)=>state.getVent(id));
+  const profileVent = useProfileVentStore((state)=> state.getVent(id));
+  const companyVent = useCompanyVentStore((state)=> state.getVent(id));
+  const trendingVent = useTrendingVentStore((state)=>state.getVent(id));
   const comments = useCommentStore((state)=>state.comments);
   const resetComments = useCommentStore((state)=>state.resetComments);
+  const logoutTrendingVents = useTrendingVentStore((state)=> state.logout);
+
 
   useEffect(() => {
-    resetComments();
-  }, [id]); 
+    const selectedVent =
+    feedVent ||
+    profileVent ||
+    companyVent ||
+    trendingVent ||
+    null; 
+    setVent(selectedVent);
+  }, [id,interact]);
 
+  useEffect(()=>{
+      resetComments();
+  }, [id]);
 
   useEffect(() => {
     const fetchComments = async () => {
@@ -51,12 +69,11 @@ export const VentDetailsPage = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         };
-        const { data: commentsJson } = await axios.get(`http://localhost:3000/v1/vents/${id}/comments?skip=${skip}`, {
+        const { data: commentsJson } = await axios.get(`${import.meta.env.VITE_API}/vents/${id}/comments?skip=${skip}`, {
           headers: headers,
           withCredentials: true
         });
         
-        console.log("Comments",commentsJson.comments);
         const newComments = commentsJson.comments;
         
         // Check if we've reached the end of the list
@@ -100,7 +117,10 @@ export const VentDetailsPage = () => {
         <div className="flex-1 flex flex-row transition-all duration-300 sm:ml-64">
         <div className="flex-1 bg-gray-950 overflow-y-scroll " onScroll={handleScroll} >
         { vent &&
-                    <VentCard
+                    <span onClick={()=>{
+                      setInteract(!interact);
+                    }}>
+                      <VentCard
                           id={vent.id}
                           category= {vent.category}
                           content = {vent.content}
@@ -115,7 +135,9 @@ export const VentDetailsPage = () => {
                           media = {vent.Media}
                           votes={vent.votes}
                           user_id = {user.id}
-                        />
+                    />
+                    </span>
+                    
         }
           <div className="space-y-4 ">
           {vent &&  <CommentSection vent_id ={vent.id}></CommentSection> }
@@ -171,7 +193,7 @@ export const VentDetailsPage = () => {
             />}
                                      {/* End of results message */}
                                     {!hasMore && comments.length > 0 && (
-                                       <div className="text-center text-gray-400 py-6 flex justify-center items-center space-x-2">
+                                        <div className="text-center text-gray-400 py-6 flex justify-center items-center space-x-2">
                                                                 <FaSkullCrossbones />
                                                                 <span>THE END</span>
                                         </div>

@@ -26,7 +26,7 @@ export default function LoginPage() {
           <button
             type="button"
             className="w-full flex items-center justify-center gap-3 rounded-xl bg-[#0A66C2] px-4 py-3 font-semibold text-white shadow-lg hover:bg-[#004182] focus:ring-2 focus:ring-[#0A66C2] focus:ring-offset-2 focus:ring-offset-[#0a0a0a]"
-            onClick={()=>{ window.location.href = 'http://localhost:3000/v1/auth/linkedin' }}
+            onClick={()=>{ window.location.href = `${import.meta.env.VITE_API}/auth/linkedin` }}
           >
             <FaLinkedin className="text-xl" />
             Sign in with LinkedIn

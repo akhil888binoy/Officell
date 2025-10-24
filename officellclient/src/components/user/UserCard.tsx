@@ -9,11 +9,11 @@ export const UserCard = ({ username, location }: { username: string; location: s
       </div> */}
 
       {/* Info */}
-      <div className="flex flex-col">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+      <div className="flex flex-col space-y-4">
+        <h3 className="text-lg font-semibold tracking-[1px] font-dmsans text-gray-900 dark:text-gray-100">
           {username}
         </h3>
-        <div className="flex items-center text-sm text-gray-600 dark:text-gray-400">
+        <div className="flex font-dmsans items-center text-sm text-gray-600 dark:text-gray-400">
           <MdLocationOn className="mr-1 text-red-400" />
           <span>{location}</span>
         </div>

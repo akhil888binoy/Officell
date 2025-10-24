@@ -13,12 +13,11 @@ export const auth = async (req: Request | any , res: Response, next: NextFunctio
         if (!token) {
             throw new Error();
         }
-        const decoded = jwt.verify(token, SECRET_KEY);
-        req.decoded = decoded;
+        const decoded =  jwt.verify(token, SECRET_KEY);
+        req.decoded = decoded; 
         next();
     } catch (err) {
         const refreshToken = req.cookies.refreshToken;
-        console.log("RefreshToken", refreshToken);
         if (!refreshToken) {
             return res.status(401).send('Access Denied. No refresh token provided.');
         }
@@ -29,12 +28,14 @@ export const auth = async (req: Request | any , res: Response, next: NextFunctio
             });
             res.cookie('Auth', token, {
                 maxAge: 1 * 60 * 60 * 1000, // 60 minutes   
-            });
+            }); 
             const decodedtoken = jwt.verify(token, SECRET_KEY);
-            req.decoded = decodedtoken;
+            req.decoded = decodedtoken; 
             next();
         } catch (error) {
-                return res.status(400).send('Invalid refresh token.');
+            res.redirect("http://localhost:5173/sessionexpired")
+            return res.status(400).send('Invalid refresh token.');
+            
         }
     }
 };

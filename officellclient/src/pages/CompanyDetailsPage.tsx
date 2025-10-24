@@ -1,11 +1,11 @@
 import { useParams } from "react-router-dom";
-import {CategoryBar} from "../components/CategoryBar";
-import { CategoryBarM } from "../components/CategoryBarM";
-import { CompanyCard } from "../components/CompanyCard";
-import PostCard from "../components/PostCard";
-import { Sidebar } from "../components/Sidebar";
-import { UserCard } from "../components/UserCard";
-import  {VentCard } from "../components/VentCard";
+import {CategoryBar} from "../components/common/CategoryBar";
+import { CategoryBarM } from "../components/common/mobile/CategoryBarM";
+import { CompanyCard } from "../components/company/CompanyCard";
+import PostCard from "../components/vent/PostCard";
+import { Sidebar } from "../components/common/Sidebar";
+import { UserCard } from "../components/user/UserCard";
+import  {VentCard } from "../components/vent/VentCard";
 import { useEffect, useRef, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
@@ -15,6 +15,8 @@ import Shuffle from "../styles/Shuffle";
 import { FaSkullCrossbones } from "react-icons/fa";
 import useCompanyVentStore from "../store/companyventStore";
 import { PAGE_SIZE } from "../utils/pagesize";
+import useVentStore from "../store/ventStore";
+import RefreshFeed from "../components/vent/RefreshFeed";
 
 
 export const CompanyDetailsPage = () => {
@@ -40,7 +42,7 @@ export const CompanyDetailsPage = () => {
   const addScrollToItem = useCompanyVentStore((state)=> state.addScrollToItem);
   const logout = useCompanyVentStore((state)=>state.logout);
   const vents = useCompanyVentStore((state) => state.companyvents);
-
+  const refreshButton = useVentStore((state)=> state.refreshButton);
 
 useEffect(() => {
     const controller = new AbortController();
@@ -58,11 +60,10 @@ useEffect(() => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         };
-        const { data: ventsJson } = await axios.get(`http://localhost:3000/v1/vents?skip=${skip}&company_id=${id}&category=${category}`, {
+        const { data: ventsJson } = await axios.get(`${import.meta.env.VITE_API}/vents?skip=${skip}&company_id=${id}&category=${category}`, {
           headers, signal: controller.signal , withCredentials: true
         });
         
-        console.log(ventsJson.vents);
           if (ventsJson.vents.length < PAGE_SIZE) {
             addHasMore(false);  
           }
@@ -86,14 +87,13 @@ useEffect(() => {
     if (hasMore || vents.length === 0|| category.length > 0) {
       const timer = setTimeout(()=>{
         fetchVents();
-        console.log('calling fetch vents')
       },100) ;
       return () => {
         clearTimeout(timer);
         controller.abort(); 
     };
     }
-  }, [skip, id, category]);
+  }, [skip, id, category,refreshButton]);
 
 
   useEffect(()=>{
@@ -118,11 +118,13 @@ useEffect(() => {
       <div className="h-screen border-r-1 border-gray-700">
         <Sidebar></Sidebar>
         <CategoryBarM 
+        category={category}
         onSelect={(q)=>{
             logout();
             addcategory(q)
           }}  
           />
+        <RefreshFeed></RefreshFeed>
       </div>
       
       {/* Main Content */}
@@ -130,8 +132,8 @@ useEffect(() => {
         {/* Feeds */}
         <div className="flex-1 bg-gray-950 overflow-y-scroll" onScroll={handleScroll}>
           <PostCard />
-         {company && 
-         <CompanyCard 
+        {company && 
+        <CompanyCard 
             key={company.id} 
             company_id={company.id} 
             company_name={company.name} 
@@ -141,7 +143,7 @@ useEffect(() => {
             vents_count={company._count.vents}
             domain={company.domain}
           />
-          }
+          } 
               {!loading && vents.length === 0 && (
                 <div className="text-center text-gray-500 py-6">
                   Be the first to bitch
@@ -179,7 +181,7 @@ useEffect(() => {
                                     ))}
                                     
                                      {/* Loading more indicator */}
-                                    {loadingMore && 
+                                    {loadingMore || loading && 
                                               <Shuffle
                                                 text="⟢ OFFICELL"
                                                 className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] lg:ml-80"
@@ -208,6 +210,7 @@ useEffect(() => {
         <div className="bg-gray-950 w-80 h-screen hidden border-l border-gray-700 lg:block p-4">
           <UserCard username={user.username} location={location.city} />
           <CategoryBar 
+            category={category}
             onSelect={(q)=>{
             logout();
             addcategory(q)

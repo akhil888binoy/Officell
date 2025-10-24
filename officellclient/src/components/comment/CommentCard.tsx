@@ -4,11 +4,9 @@ import { FaTrash } from "react-icons/fa";
 import Cookies from 'js-cookie';
 import axios from "axios";
 import { ToastContainer, toast } from 'react-toastify';
-import useCommentStore from "../store/commentStore";
+import useCommentStore from "../../store/commentStore";
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
-import { Loader } from "lucide-react";
-import Shuffle from "../styles/Shuffle";
 
 export const CommentCard = ({ comment , user_id}) => {
 
@@ -45,14 +43,13 @@ export const CommentCard = ({ comment , user_id}) => {
       const headers={
           'Authorization': `Bearer ${token}`
       }
-      const  {data:response }= await axios.post(`http://localhost:3000/v1/comments/${comment.id}/subcomments`, {
+      const  {data:response }= await axios.post(`${import.meta.env.VITE_API}/comments/${comment.id}/subcomments`, {
           subcomment: replyText
         },{
           headers:headers,
           withCredentials: true
       });
       addSubComment(response.subcomment)
-      console.log("Subcomment",response);
       setReplyText("");
       setLoading(false);
     } catch (error) {
@@ -69,7 +66,7 @@ export const CommentCard = ({ comment , user_id}) => {
         const headers={
           'Authorization': `Bearer ${token}`
       }
-      const response = await axios.delete(`http://localhost:3000/v1/comments/${comment.id}?vent_id=${comment.vent_id}`,{
+      const response = await axios.delete(`${import.meta.env.VITE_API}/comments/${comment.id}?vent_id=${comment.vent_id}`,{
         headers: headers,
         withCredentials: true
       });
@@ -108,15 +105,13 @@ export const CommentCard = ({ comment , user_id}) => {
 
   const handleDeleteSubComment = async (subcommentId)=>{
     try {
-        console.log("Handle delete sub comment");
         setDeletingComment(true);
         setDisableSubmitBtn(true);
         const token =  Cookies.get("Auth");
         const headers={
           'Authorization': `Bearer ${token}`
       }
-      console.log("SubcommentId ", subcommentId)
-      const response = await axios.delete(`http://localhost:3000/v1/subcomments/${subcommentId}`,{
+      const response = await axios.delete(`${import.meta.env.VITE_API}/subcomments/${subcommentId}`,{
         headers: headers,
                   withCredentials: true
       });
@@ -137,7 +132,7 @@ export const CommentCard = ({ comment , user_id}) => {
 
        {/* Comment Content */}
         <div className="flex items-start justify-between">
-        <p className="text-gray-200 text-sm sm:text-base leading-relaxed break-words flex-1">
+        <p className="text-gray-200 text-sm  leading-relaxed break-words flex-1">
           {comment.comment}
         </p>
 

@@ -9,35 +9,35 @@ const profileventStore=(set,get)=>({
     scrollLoadinMore: false,
     scrollCategory: "",
     scrollHasMore : true,
-    scrollToItem: 0,
+    scrollToItem: null,
     profilevents:[],
     addScrollSkip : (data)=>{
-        set((state)=>({
+        set(({
             scrollSkip: data
         }))
     },
     addScrollLoading : (data)=>{
-        set((state)=>({
+        set(({
             scrollLoading: data
         }))
     },
     addScrollLoadingMore:(data)=>{
-        set((state)=>({
+        set(({
             scrollLoadinMore: data
         }))
     },
     addScrollCategory:(data)=>{
-        set((state)=>({
+        set(({
             scrollCategory: data
         }))
     },
     addHasMore: (data)=>{
-        set((state)=>({
+        set(({
             scrollHasMore : data,
         }))
     },
     addScrollToItem: (data)=>{
-        set((state)=>({
+        set(({
             scrollToItem : data,
         }))
     },
@@ -55,7 +55,6 @@ const profileventStore=(set,get)=>({
 
         const profilevents = get().profilevents;
 
-        console.log("votedata",votedata)
             const updatedVents = profilevents.map((profilevent) => {
                 if (profilevent.id === id) {
                     if (votedata.vote ==='NOVOTE'){
@@ -105,7 +104,6 @@ const profileventStore=(set,get)=>({
             },
 downVote: (id, user_id, votedata) => {
         const profilevents = get().profilevents;
-        console.log("votedata",votedata)
             const updatedVents = profilevents.map((profilevent) => {
                 if (profilevent.id === id) {
                     if (votedata.vote ==='NOVOTE'){
@@ -195,6 +193,11 @@ downVote: (id, user_id, votedata) => {
             profilevents:[]
         })
     },
+    resetScrollToItem:()=>{
+        set({
+            scrollToItem:null
+        })
+    },
     logout:()=>{
         set({
             scrollSkip:0,
@@ -202,7 +205,7 @@ downVote: (id, user_id, votedata) => {
             scrollLoadinMore: false,
             scrollCategory: "",
             scrollHasMore : true,
-            scrollToItem: 0,
+            scrollToItem: null,
             profilevents:[],
         })
     }

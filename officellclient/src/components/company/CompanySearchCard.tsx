@@ -3,7 +3,7 @@ import { BiMessageDetail } from "react-icons/bi";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import {getName} from "country-list";
-import { cleanCountryName, cleanDomain } from "../utils/cleanerText";
+import { cleanCountryName, cleanDomain } from "../../utils/cleanerText";
 
 export const CompanySearchCard = ({company_id , city , country , company_name , industry, domain}) => {
 
@@ -14,23 +14,23 @@ export const CompanySearchCard = ({company_id , city , country , company_name , 
       <div className="relative flex flex-col bg-gray-950   w-full overflow-hidden ">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3">
-        <h3 className="text-white font-semibold text-lg md:text-xl lg:text-2xl">
+          <h3 className="text-white font-dmsans font-semibold text-md ">
             {company_name}
         </h3>
         {/* Category Badge */}
-        <span className="px-3 py-1 text-xs md:text-sm lg:text-base font-medium rounded-full bg-blue-500/20 text-blue-400 border border-blue-400/30">
+          <span className="px-3 py-1 text-xs tracking-[1px] font-dmsans rounded-full bg-blue-500/20 text-blue-400 border border-blue-400/30">
           {industry}
         </span>
       </div>
 
       {/* Body */}
       <div className="px-4 pb-3 flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-gray-400 text-sm md:text-base">
+        <div className="flex items-center gap-2 text-gray-400 text-xs ">
           <FaMapMarkerAlt className="text-red-400" />
               <span>{city}, {cleanCountryName(getName(country))}</span>
         </div>
         {domain && (
-                        <div className="flex items-center gap-2 text-gray-400 text-sm md:text-base">
+                        <div className="flex items-center gap-2 text-gray-400 text-xs ">
                           <FaGlobe className="text-green-400" />
                           <a
                             data-testid="website-link"
