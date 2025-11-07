@@ -5,10 +5,7 @@ import Select from 'react-select';
 const customRender = (props) => {
   const {
     options,
-    value,
     disabled,
-    onChange,
-    onBlur,
     customProps,
     ...selectProps
   } = props;
@@ -34,8 +31,8 @@ type ReactSelectOption = {
 
 
 const CompanyPlace = () => {
-    const [country, setCountry] = useState<ReactSelectOption | undefined>();
-    const [region, setRegion] = useState<ReactSelectOption | undefined>();
+    const [country, setCountry] = useState<ReactSelectOption | null>(null);
+    const [region, setRegion] = useState<ReactSelectOption | null>(null);
 
   return (
   <div className="space-y-5">
@@ -52,7 +49,6 @@ const CompanyPlace = () => {
         onChange: (value) => {
           setCountry(value ? value : undefined)
           setRegion(null)
-          console.log("Country", value);
         },
       }}
     />
@@ -62,7 +58,7 @@ const CompanyPlace = () => {
     <h2 className="text-md font-dmsans font-light tracking-[1px] mb-2 text-gray-50">City</h2>
     <RegionDropdown
       country={country?.value || ""}
-      value={region?.value || null}
+      value={region?.value || ""}
       className="region"
       name="region-field"
       customRender={customRender}
@@ -81,4 +77,4 @@ const CompanyPlace = () => {
   )
 }
 
-export default CompanyPlace  'value' is assigned a value but never used  'onChange' is assigned a value but never used. 'onBlur' is assigned a value but never used.
+export default CompanyPlace

@@ -12,10 +12,7 @@ import { useEffect, useState } from 'react';
 const customRender = (props) => {
   const {
     options,
-    value,
     disabled,
-    onChange,
-    onBlur,
     customProps,
     ...selectProps
   } = props;
@@ -60,9 +57,8 @@ const CompanyRegister = () => {
     const [companyName, setCompanyName] = useState("");
     const [domain , setDomain] = useState("");
     const [industry, setIndustry] = useState("");
-    const [country, setCountry] = useState<ReactSelectOption | undefined>();
-    const [region, setRegion] = useState<ReactSelectOption | undefined>();
-    const [loading, setLoading] = useState(false);
+    const [country, setCountry] = useState<ReactSelectOption | null>(null);
+    const [region, setRegion] = useState<ReactSelectOption | null>(null);
     const [error, setError] = useState("");
     const [inputNameError , setInputNameError] = useState("");
     const logoutcompanies = useCompanyStore((state)=>state.logout);
@@ -73,27 +69,35 @@ const CompanyRegister = () => {
       logoutTrendingVents();
     },[])
     
-const validateCompany = async () => {
-  try {
-    await companySchema.validate({ companyName });
-    setInputNameError(""); // clear error if valid
-  } catch (err: any) {
-    setInputNameError(err.message); // show error message
-  }
-};
 
+      const validateCompany = async () => {
+        try {
+          await companySchema.validate({ companyName });
+          setInputNameError(""); // clear error if valid
+        } catch (err: unknown) {
+          if (err instanceof Error) {
+            setInputNameError(err.message);
+          } else {
+            setInputNameError("Validation failed");
+          }
+        }
+      };
 
-const handleDomainChange = async (e) => {
-  const value = e.target.value;
-  setDomain(value);
+      const handleDomainChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      setDomain(value);
 
-  try {
-    await domainSchema.validate(value);
-    setError(""); // valid input
-  } catch (err: any) {
-    setError(err.message); // show Yup error
-  }
-};
+      try {
+        await domainSchema.validate(value);
+        setError(""); // valid input
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError("An unknown error occurred");
+        }
+      }
+    };
 
 const handleSubmit=async()=>{
     
@@ -147,7 +151,6 @@ if(!domain){
         return
       }
     try {
-      setLoading(true);
       const token = Cookies.get("Auth");
       const headers={
         'Authorization': `Bearer ${token}`
@@ -162,8 +165,6 @@ if(!domain){
           headers:headers,
                   withCredentials: true
       });
-
-      setLoading(false);
       setCompanyName("");
       setIndustry("");
       setDomain("");
@@ -191,7 +192,6 @@ if(!domain){
                     progress: undefined,
                     theme: "dark",
               });
-      setLoading(false);
     }
   }
   return (
@@ -242,7 +242,7 @@ if(!domain){
   <div className="w-full sm:w-1/2">
     <RegionDropdown
       country={country?.value || ""}
-      value={region?.value || null}
+      value={region?.value || ""}
       className="region"
       name="region-field"
       customRender={customRender}

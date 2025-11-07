@@ -16,7 +16,6 @@ export const CommentCard = ({ comment , user_id}) => {
   const [replying, setReplying] = useState(false);
   const [disableSubmitBtn, setDisableSubmitBtn] = useState(false);
   const [replyText, setReplyText] = useState("");
-  const [loading , setLoading] = useState(false);
   const addSubComment = useCommentStore((state)=>state.addSubComment);
   const deleteComment = useCommentStore((state)=>state.deleteComment);
   const deleteSubComment = useCommentStore((state)=>state.deleteSubComment);
@@ -40,7 +39,6 @@ export const CommentCard = ({ comment , user_id}) => {
         return;
     }
     try {
-      setLoading(true);
       const token = Cookies.get("Auth");
       const headers={
           'Authorization': `Bearer ${token}`
@@ -53,10 +51,8 @@ export const CommentCard = ({ comment , user_id}) => {
       });
       addSubComment(response.subcomment)
       setReplyText("");
-      setLoading(false);
     } catch (error) {
       console.error(error);
-      setLoading(false);
     }
   }
 

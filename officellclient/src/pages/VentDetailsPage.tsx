@@ -3,7 +3,6 @@ import { CommentSection } from "../components/comment/CommentSection";
 import { Sidebar } from "../components/common/Sidebar";
 import { VentCard } from "../components/vent/VentCard";
 import { useEffect, useState } from "react";
-import type {  UIEvent } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
 import { CommentCard } from "../components/comment/CommentCard";
@@ -16,46 +15,48 @@ import { FaSkullCrossbones } from "react-icons/fa";
 import useProfileVentStore from "../store/profileventStore";
 import useCompanyVentStore from "../store/companyventStore";
 import useTrendingVentStore from "../store/trendingventStore";
-import type { Vent, Comment } from "../types/vent";
+
+
+
 
 export const VentDetailsPage = () => {
-  const { id } = useParams();
+
+  const {id} = useParams();
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [skip, setSkip] = useState(0);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [interact, setInteract] = useState(false);
+  const [interact , setInteract] = useState(false);
   const location = useUserStore((state) => state.location);
   const user = useUserStore((state) => state.user);
-  const addComments = useCommentStore((state) => state.addComments);
-  const [vent, setVent] = useState<Vent | null>(null);
+  const addComments = useCommentStore((state)=>state.addComments);
+  const [vent , setVent] = useState();
   const feedVent = useVentStore((state) => state.getVent(id || ""));
-  const profileVent = useProfileVentStore((state) => state.getVent(id || ""));
-  const companyVent = useCompanyVentStore((state) => state.getVent(id || ""));
-  const trendingVent = useTrendingVentStore((state) => state.getVent(id || ""));
-  const comments = useCommentStore((state) => state.comments);
-  const resetComments = useCommentStore((state) => state.resetComments);
+  const profileVent = useProfileVentStore((state)=> state.getVent(id));
+  const companyVent = useCompanyVentStore((state)=> state.getVent(id));
+  const trendingVent = useTrendingVentStore((state)=>state.getVent(id));
+  const comments = useCommentStore((state)=>state.comments);
+  const resetComments = useCommentStore((state)=>state.resetComments);
+
 
   useEffect(() => {
     const selectedVent =
-      feedVent ||
-      profileVent ||
-      companyVent ||
-      trendingVent ||
-      null; 
+    feedVent ||
+    profileVent ||
+    companyVent ||
+    trendingVent ||
+    null; 
     setVent(selectedVent);
-  }, [id, interact, feedVent, profileVent, companyVent, trendingVent]);
+  }, [id,interact]);
 
-  useEffect(() => {
-    resetComments();
-  }, [id, resetComments]);
+  useEffect(()=>{
+      resetComments();
+  }, [id]);
 
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        if (!id) return;
-        
         if (comments.length === 0) {
           setLoading(true);
         } else {
@@ -83,133 +84,123 @@ export const VentDetailsPage = () => {
         setError(null);
       } catch (error) {
         console.error(error);
-        setError("Failed to fetch comments");
+        setError("Failed to fetch companies");
       } finally {
         setLoading(false);
         setLoadingMore(false);
       }
     };
-    
     if (hasMore || comments.length === 0) {
-      const timer = setTimeout(() => {
+      const timer = setTimeout(()=>{
         fetchComments();
-      }, 100);
-      return () => clearTimeout(timer);
+      },100) ;
+      return()=>clearTimeout(timer);
     }
-  }, [skip, id, hasMore, comments.length, addComments]);
+  }, [skip, id]);
 
-  const handleScroll = (e: UIEvent<HTMLDivElement>) => {
-    const { offsetHeight, scrollTop, scrollHeight } = e.currentTarget;
+    const handleScroll = (e) => {
+    const { offsetHeight, scrollTop, scrollHeight } = e.target;
     const threshold = 1000; 
-    
-    if (scrollHeight - (offsetHeight + scrollTop) < threshold && !loadingMore && hasMore) {
-      setSkip(comments.length);
+        if (scrollHeight - (offsetHeight + scrollTop) < threshold && !loadingMore && hasMore) {
+              setSkip(comments.length);
     }
-  };
+  }
 
   return (
     <div className="w-screen h-screen flex bg-gray-950">
       {/* Sidebar */}
-      <div className="border-r-1 border-gray-700">
-        <Sidebar />
+    <div className="border-r-1  border-gray-700  " >
+      <Sidebar/>
       </div>
-      
       {/* Main Content */}
-      <div className="flex-1 flex flex-row transition-all duration-300 sm:ml-64">
-        <div className="flex-1 bg-gray-950 overflow-y-scroll" onScroll={handleScroll}>
-          {vent && (
-            <span onClick={() => {
-              setInteract(!interact);
-            }}>
-              <VentCard
-                id={vent.id}
-                category={vent.category}
-                content={vent.content}
-                upvote={vent.upvote}
-                downvote={vent.downvote}
-                company_country={vent.company?.country}
-                company_name={vent.company?.name}
-                author={vent.author?.username}
-                author_id={vent.author_id}
-                commentcount={vent._count?.comments}
-                createdAt={vent.createdAt}
-                media={vent.Media}
-                votes={vent.votes}
-                user_id={user.id}
-              />
-            </span>
-          )}
-          
-          <div className="space-y-4">
-            {vent && <CommentSection vent_id={vent.id} />}
-            
-            {loading && !vent && (
+        <div className="flex-1 flex flex-row transition-all duration-300 sm:ml-64">
+        <div className="flex-1 bg-gray-950 overflow-y-scroll " onScroll={handleScroll} >
+        { vent &&
+                    <span onClick={()=>{
+                      setInteract(!interact);
+                    }}>
+                      <VentCard
+                          id={vent.id}
+                          category= {vent.category}
+                          content = {vent.content}
+                          upvote={vent.upvote}
+                          downvote={vent.downvote}
+                          company_country={vent.company?.country}
+                          company_name={vent.company?.name}
+                          author={vent.author?.username}
+                          author_id = {vent.author_id}
+                          commentcount = {vent._count?.comments}
+                          createdAt= {vent.createdAt}
+                          media = {vent.Media}
+                          votes={vent.votes}
+                          user_id = {user.id}
+                    />
+                    </span>
+                    
+        }
+          <div className="space-y-4 ">
+          {vent &&  <CommentSection vent_id ={vent.id}></CommentSection> }
+              {loading && !vent && 
               <Shuffle
-                text="⟢ OFFICELL"
-                className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] lg:ml-80"
-                shuffleDirection="right"
-                duration={0.35}
-                animationMode="evenodd"
-                shuffleTimes={1}
-                ease="power3.out"
-                stagger={0.03}
-                threshold={0.1}
-                loop={true}
-                respectReducedMotion={true}
-              />
-            )}
-            
-            {!loading && comments.length === 0 && vent && (
-              <div className="text-center text-gray-500 py-6">
-                Be the first to comment
-              </div>
-            )}
-            
-            {/* Error message */}
-            {error && (
-              <div className="text-red-500 text-center p-4">
-                {error}
-              </div>
-            )}
+                          text="⟢ OFFICELL"
+                          className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] lg:ml-80"
+                          shuffleDirection="right"
+                          duration={0.35}
+                          animationMode="evenodd"
+                          shuffleTimes={1}
+                          ease="power3.out"
+                          stagger={0.03}
+                          threshold={0.1}
+                          loop={true}
+                          respectReducedMotion={true}
+            />
+            }
+              {!loading && comments.length === 0 && vent && (
+                <div className="text-center text-gray-500 py-6">
+                  Be the first to comment
+                </div>
+              )}
+                {/* Error message */}
+                      {error && (
+                          <div className="text-red-500 text-center p-4">
+                                {error}
+                            </div>
+                          )}
 
             {/* Render Comments */}
-            {comments.map((comment: Comment, index: number) => (
-              <CommentCard
-                key={comment.id || index}
-                comment={comment}
-                user_id={user.id}
-              />
-            ))}
+          {comments.map((comment, index )=> (
+            <CommentCard
+              key={index}
+              comment={comment}
+              user_id = {user.id}
+            />
+          ))}
 
-            {/* Loading more indicator */}
-            {loadingMore && (
-              <Shuffle
-                text="⟢ OFFICELL"
-                className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] lg:ml-80"
-                shuffleDirection="right"
-                duration={0.35}
-                animationMode="evenodd"
-                shuffleTimes={1}
-                ease="power3.out"
-                stagger={0.03}
-                threshold={0.1}
-                loop={true}
-                respectReducedMotion={true}
-              />
-            )}
-            
-            {/* End of results message */}
-            {!hasMore && comments.length > 0 && (
-              <div className="text-center text-gray-400 py-6 flex justify-center items-center space-x-2">
-                <FaSkullCrossbones />
-                <span>THE END</span>
-              </div>
-            )}
+              {/* Loading more indicator */}
+                  {loadingMore &&  <Shuffle
+                          text="⟢ OFFICELL"
+                          className="font-arimo text-white font-bold tracking-[-0.001em] text-5xl sm:text-4xl md:text-6xl lg:text-[70px] lg:ml-80"
+                          shuffleDirection="right"
+                          duration={0.35}
+                          animationMode="evenodd"
+                          shuffleTimes={1}
+                          ease="power3.out"
+                          stagger={0.03}
+                          threshold={0.1}
+                          loop={true}
+                          respectReducedMotion={true}
+            />}
+                                     {/* End of results message */}
+                                    {!hasMore && comments.length > 0 && (
+                                        <div className="text-center text-gray-400 py-6 flex justify-center items-center space-x-2">
+                                                                <FaSkullCrossbones />
+                                                                <span>THE END</span>
+                                        </div>
+                              )}
           </div>
         </div>
-        
-        <div className="bg-gray-950 w-80 h-screen hidden border-l border-gray-700 lg:block p-4">
-          <UserCard username={user.username} location={location.city} />
+        <div className="bg-gray-950 w-80 h-screen hidden border-l border-gray-700 lg:block p-4 ">
+              <UserCard username={user.username} location={location.city} />
         </div>
       </div>
     </div>

@@ -22,10 +22,7 @@ import Select from 'react-select';
 const customRender = (props) => {
   const {
     options,
-    value,
     disabled,
-    onChange,
-    onBlur,
     customProps,
     ...selectProps
   } = props;
