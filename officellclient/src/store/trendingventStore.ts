@@ -1,4 +1,3 @@
-import { data } from 'react-router-dom';
 import {create} from 'zustand';
 import { persist, createJSONStorage } from "zustand/middleware";
 
@@ -213,4 +212,4 @@ const useTrendingVentStore=create(persist(trendingventStore,{
     storage: createJSONStorage(()=>sessionStorage)
 }));
 
-export default useTrendingVentStore;
+export default useTrendingVentStore; 

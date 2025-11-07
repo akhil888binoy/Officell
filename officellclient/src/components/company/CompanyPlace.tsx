@@ -81,4 +81,4 @@ const CompanyPlace = () => {
   )
 }
 
-export default CompanyPlace
+export default CompanyPlace  'value' is assigned a value but never used  'onChange' is assigned a value but never used. 'onBlur' is assigned a value but never used.

@@ -1,12 +1,14 @@
 // src/components/CommentCard.jsx
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { FaTrash } from "react-icons/fa";
 import Cookies from 'js-cookie';
 import axios from "axios";
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import useCommentStore from "../../store/commentStore";
 import { Dialog, DialogBackdrop, DialogPanel, DialogTitle } from '@headlessui/react'
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+
+
 
 export const CommentCard = ({ comment , user_id}) => {
 
@@ -66,7 +68,8 @@ export const CommentCard = ({ comment , user_id}) => {
         const headers={
           'Authorization': `Bearer ${token}`
       }
-      const response = await axios.delete(`${import.meta.env.VITE_API}/comments/${comment.id}?vent_id=${comment.vent_id}`,{
+
+      await axios.delete(`${import.meta.env.VITE_API}/comments/${comment.id}?vent_id=${comment.vent_id}`,{
         headers: headers,
         withCredentials: true
       });
@@ -103,7 +106,7 @@ export const CommentCard = ({ comment , user_id}) => {
   }
 
 
-  const handleDeleteSubComment = async (subcommentId)=>{
+  const handleDeleteSubComment = async (subcommentId:string)=>{
     try {
         setDeletingComment(true);
         setDisableSubmitBtn(true);
@@ -111,7 +114,7 @@ export const CommentCard = ({ comment , user_id}) => {
         const headers={
           'Authorization': `Bearer ${token}`
       }
-      const response = await axios.delete(`${import.meta.env.VITE_API}/subcomments/${subcommentId}`,{
+      await axios.delete(`${import.meta.env.VITE_API}/subcomments/${subcommentId}`,{
         headers: headers,
                   withCredentials: true
       });

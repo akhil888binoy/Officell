@@ -1,12 +1,25 @@
 import { FaGlobe, FaMapMarkerAlt } from "react-icons/fa";
-import { BiMessageDetail } from "react-icons/bi";
-import { Link } from "react-router-dom";
-import { useState } from "react";
 import {getName} from "country-list";
 import { cleanCountryName, cleanDomain } from "../../utils/cleanerText";
 
-export const CompanySearchCard = ({company_id , city , country , company_name , industry, domain}) => {
+interface CompanySearchCardProps {
+  company_id: string;
+  city: string;
+  country: string;
+  company_name: string;
+  industry: string;
+  domain: string;
+}
 
+
+export const CompanySearchCard = ({
+  company_id,
+  city,
+  country,
+  company_name,
+  industry,
+  domain,
+}: CompanySearchCardProps) =>  {
 
   return (
      <>
@@ -27,7 +40,9 @@ export const CompanySearchCard = ({company_id , city , country , company_name , 
       <div className="px-4 pb-3 flex flex-col gap-2">
         <div className="flex items-center gap-2 text-gray-400 text-xs ">
           <FaMapMarkerAlt className="text-red-400" />
-              <span>{city}, {cleanCountryName(getName(country))}</span>
+              <span>
+                {city}, {cleanCountryName(getName(country) ?? "")}
+              </span>
         </div>
         {domain && (
                         <div className="flex items-center gap-2 text-gray-400 text-xs ">

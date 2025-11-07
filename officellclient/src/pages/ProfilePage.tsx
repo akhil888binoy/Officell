@@ -115,13 +115,15 @@ export const ProfilePage = () => {
     }
   }, [skip, category,refreshButton]);
 
-  const handleScroll = (e) => {
-    const { offsetHeight, scrollTop, scrollHeight } = e.target;
-    const threshold = 1000; 
-    if (scrollHeight - (offsetHeight + scrollTop) < threshold && !loadingMore && hasMore) {
-        addScrollSkip(vents.length);
-    }
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  const target = e.currentTarget; // safer than e.target
+  const { offsetHeight, scrollTop, scrollHeight } = target;
+  const threshold = 1000;
+
+  if (scrollHeight - (offsetHeight + scrollTop) < threshold && !loadingMore && hasMore) {
+    addScrollSkip(vents.length);
   }
+};
 
   return (
     <div className="w-screen h-screen flex bg-gray-950">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect} from 'react';
 import 'flowbite';
 import { Drawer } from 'flowbite';
 import { MdOutlineCategory } from 'react-icons/md';
@@ -38,16 +38,22 @@ const initDrawer = () => {
   }
 };
 
-export const CompanyCategoryM = ({category,onSelect}) => {
+type CompanyCategoryProps = {
+  category: string;
+  onSelect: (value: string) => void;
+};
+
+
+export const CompanyCategoryM = ({ category, onSelect }: CompanyCategoryProps) => {
   
-    const handleCategory =(e)=>{
-      if(category){
-        onSelect("");
-      }else{
-        console.log(e.target.value);
-        onSelect(e.target.value);
-      }
-    }
+
+  const handleCategory = (e: React.MouseEvent<HTMLButtonElement>) => {
+  if (category) {
+    onSelect("");
+  } else {
+    onSelect((e.target as HTMLButtonElement).value);
+  }
+};
 
   useEffect(() => {
     initDrawer();

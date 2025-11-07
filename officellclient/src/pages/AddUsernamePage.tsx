@@ -21,7 +21,7 @@ export default function AddUsernamePage() {
         'Authorization': `Bearer ${token}`
       }
 
-      const  response = await axios.post(`${import.meta.env.VITE_API}/add-username`, {
+      await axios.post(`${import.meta.env.VITE_API}/add-username`, {
         new_username: username
       },{
           headers:headers,

@@ -1,7 +1,7 @@
 import {create} from 'zustand';
 import { persist, createJSONStorage } from "zustand/middleware";
 
-const userStore=(set ,get)=>({
+const userStore=(set)=>({
     user:{
         username:"",
         id:""

@@ -1,15 +1,16 @@
 // src/components/CommentSection.jsx
-import { useState, useRef } from "react";
-import { CommentCard } from "./CommentCard";
+import { useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
 import { ToastContainer, toast } from 'react-toastify';
-import useVentStore from "../../store/ventStore";
 import useCommentStore from "../../store/commentStore";
-import { Loader } from "../common/Loader";
 import Shuffle from "../../styles/Shuffle";
 
-export const CommentSection = ({vent_id}) => {
+interface CommentSectionProps {
+  vent_id: string; 
+}
+
+export const CommentSection = ({ vent_id }: CommentSectionProps) => {
     const [newComment, setNewComment] = useState("");
     const [loading , setLoading]= useState(false);
     const addComment = useCommentStore((state)=> state.addComment);

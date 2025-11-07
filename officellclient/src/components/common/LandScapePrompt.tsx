@@ -11,8 +11,6 @@ function LandscapePrompt() {
       // Screen dimensions
       const screenWidth = window.screen.width;
       const screenHeight = window.screen.height;
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
       const minDimension = Math.min(screenWidth, screenHeight);
       const maxDimension = Math.max(screenWidth, screenHeight);
       

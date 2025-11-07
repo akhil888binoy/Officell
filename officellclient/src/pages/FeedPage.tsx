@@ -99,7 +99,6 @@ useEffect(() => {
         `${import.meta.env.VITE_API}/vents?skip=${skip}&category=${category}`,
         { headers, signal: controller.signal, withCredentials: true } 
       );
-
       if (ventsJson.vents.length < PAGE_SIZE) {
         addHasMore(false);  
       }
@@ -133,13 +132,16 @@ useEffect(() => {
 }, [skip, category, refreshButton]);
 
 
-  const handleScroll = (e) => {
-    const { offsetHeight, scrollTop, scrollHeight } = e.target;
-    const threshold = 1000;
-    if (scrollHeight - (offsetHeight + scrollTop) < threshold && !loadingMore && hasMore) {
-      addScrollSkip(vents.length);
-    }
+ const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  const target = e.currentTarget; // safer than e.target
+  const { offsetHeight, scrollTop, scrollHeight } = target;
+  const threshold = 1000;
+
+  if (scrollHeight - (offsetHeight + scrollTop) < threshold && !loadingMore && hasMore) {
+    addScrollSkip(vents.length);
   }
+};
+
 
   return (
     <div className="w-screen h-screen flex bg-gray-950">
@@ -148,7 +150,7 @@ useEffect(() => {
       <Sidebar/>
       <CategoryBarM
           category={category}
-          onSelect={(q)=>{
+          onSelect={(q:string)=>{
               logout();
               addcategory(q)
             }} 
@@ -237,7 +239,7 @@ useEffect(() => {
           <UserCard username={user.username} location={location.city} />
           <CategoryBar
                 category={category}
-                onSelect={(q)=>{
+                onSelect={(q:string)=>{
                   logout();
                   addcategory(q);
                 }}  

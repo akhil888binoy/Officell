@@ -1,3 +1,4 @@
+
 import { useParams } from "react-router-dom";
 import {CategoryBar} from "../components/common/CategoryBar";
 import { CategoryBarM } from "../components/common/mobile/CategoryBarM";
@@ -21,7 +22,7 @@ import RefreshFeed from "../components/vent/RefreshFeed";
 
 export const CompanyDetailsPage = () => {
 
-  const scrollToRef = useRef<null | HTMLElement>(null);
+  const scrollToRef = useRef<null | HTMLDivElement>(null);
   const scrollToCard= useCompanyVentStore((state)=> state.scrollToItem) ;
   const {id} = useParams();
   const [error, setError] = useState<string | null>(null);
@@ -103,13 +104,15 @@ useEffect(() => {
   },[id]);
 
 
-  const handleScroll = (e) => {
-    const { offsetHeight, scrollTop, scrollHeight } = e.target;
-    const threshold = 1000; 
-    if (scrollHeight - (offsetHeight + scrollTop) < threshold && !loadingMore && hasMore) {
-        addScrollSkip(vents.length);
-    }
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  const target = e.currentTarget; // safer than e.target
+  const { offsetHeight, scrollTop, scrollHeight } = target;
+  const threshold = 1000;
+
+  if (scrollHeight - (offsetHeight + scrollTop) < threshold && !loadingMore && hasMore) {
+    addScrollSkip(vents.length);
   }
+};
 
 
   return (
@@ -119,7 +122,7 @@ useEffect(() => {
         <Sidebar></Sidebar>
         <CategoryBarM 
         category={category}
-        onSelect={(q)=>{
+        onSelect={(q:string)=>{
             logout();
             addcategory(q)
           }}  
@@ -177,7 +180,7 @@ useEffect(() => {
                                             ref={index === scrollToCard ?  scrollToRef : null}
                                         />     
                                     </span>
-                                      
+                  
                                     ))}
                                     
                                      {/* Loading more indicator */}
@@ -211,7 +214,7 @@ useEffect(() => {
           <UserCard username={user.username} location={location.city} />
           <CategoryBar 
             category={category}
-            onSelect={(q)=>{
+            onSelect={(q:string)=>{
             logout();
             addcategory(q)
           }}  

@@ -1,6 +1,5 @@
 import { CompanyCategory } from "../components/company/CompanyCategory";
 import { Sidebar } from "../components/common/Sidebar";
-import { UserCard } from "../components/user/UserCard";
 import { CompanyCategoryM } from "../components/company/mobile/CompanyCategoryM";
 import CompanySearchBar from "../components/company/CompanySearchBar";
 import { CompanyCard } from "../components/company/CompanyCard";
@@ -8,7 +7,6 @@ import { useEffect, useRef, useState } from "react";
 import Cookies from 'js-cookie';
 import axios from "axios";
 import AddCompany from "../components/company/AddCompany";
-import useUserStore from "../store/userStore";
 import useCompanyStore from "../store/companyStore";
 import Shuffle from "../styles/Shuffle";
 import { PAGE_SIZE } from "../utils/pagesize";
@@ -45,11 +43,6 @@ const customRender = (props) => {
   );
 };
 
-type ReactSelectOption = {
-  label: string;
-  key:string;
-  value: string;
-};
 
 
 export const CompaniesPage = () => {
@@ -74,8 +67,6 @@ export const CompaniesPage = () => {
   const hasMore = useCompanyStore((state)=> state.scrollHasMore);
   const companies = useCompanyStore((state) => state.companies);
   const addCompanies = useCompanyStore((state) => state.addCompanies);
-  const location = useUserStore((state) => state.location)
-  const user = useUserStore((state) => state.user);
   const addScrollSkip = useCompanyStore((state)=> state.addScrollSkip);
   const addloading = useCompanyStore((state)=> state.addScrollLoading);
   const addloadingMore = useCompanyStore((state)=> state.addScrollLoadingMore);
@@ -90,14 +81,16 @@ export const CompaniesPage = () => {
   const logoutTrendingVents = useTrendingVentStore((state)=> state.logout);
   const resetCompanies= useCompanyStore((state)=> state.resetCompanies);
 
-  const handleScroll = (e) => {
-    const { offsetHeight, scrollTop, scrollHeight } = e.target;
-    const threshold = 1000; 
-        if (scrollHeight - (offsetHeight + scrollTop) < threshold && 
-        !loadingMore && hasMore) {
-        addScrollSkip(companies.length);
-    }
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+  const target = e.currentTarget; // safer than e.target
+  const { offsetHeight, scrollTop, scrollHeight } = target;
+  const threshold = 1000;
+
+  if (scrollHeight - (offsetHeight + scrollTop) < threshold && !loadingMore && hasMore) {
+    addScrollSkip(companies.length);
   }
+};
+
 
 
   useEffect(() => {
@@ -176,7 +169,7 @@ export const CompaniesPage = () => {
         <Sidebar />
         <CompanyCategoryM 
           category={category}
-          onSelect={(q)=>{
+          onSelect={(q:string)=>{
             logout()
             addcategory(q)
           }} />
@@ -187,7 +180,7 @@ export const CompaniesPage = () => {
       <div className="flex-1 flex flex-row transition-all duration-300 sm:ml-64">
         {/* Feeds */}
         <div className="flex-1 bg-gray-950 overflow-y-scroll" onScroll={handleScroll}>
-          <CompanySearchBar  search={search} onSearch={(q) => {
+          <CompanySearchBar  search={search} onSearch={(q:string) => {
             resetCompanies();
             setSearch(q);
           }} />
@@ -300,7 +293,7 @@ export const CompaniesPage = () => {
         customProps={{
           reactSelectValue: region,
           classNamePrefix: "region-",
-          onChange: (value) => {
+          onChange: (value:string) => {
             resetCompanies();
             setRegion(value ? value : undefined);
             console.log("Region", value);
@@ -314,7 +307,7 @@ export const CompaniesPage = () => {
           
           <CompanyCategory 
           category={category}
-          onSelect={(q)=>{
+          onSelect={(q:string)=>{
             logout()
             addcategory(q)
           }} />
@@ -322,4 +315,4 @@ export const CompaniesPage = () => {
       </div>
     </div>
   );
-};
+}; 

@@ -26,7 +26,7 @@ const RefreshFeed = () => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
             }
-            const lastCreatedAt = vents.sort((a,b)=> a.createdAt > b.createdAt ? -1: 1)[0];
+            const lastCreatedAt = vents.sort((a , b  )=> a.createdAt > b.createdAt ? -1: 1)[0];
             const {data: response } = await axios.get(`${import.meta.env.VITE_API}/vents/count?lastcreatedAt=${lastCreatedAt.createdAt}`,{
                 headers: headers,
                 withCredentials: true

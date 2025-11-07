@@ -86,7 +86,7 @@ const handleDownvote=async ()=>{
         downVoteProfile(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
         downVoteTrending(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
         downVoteCompany(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
-      const {data: response }= await axios.post(`${import.meta.env.VITE_API}/vents/${id}/downvote`,"",{
+      await axios.post(`${import.meta.env.VITE_API}/vents/${id}/downvote`,"",{
           headers:headers,
           withCredentials: true
       });
@@ -139,7 +139,7 @@ const handleDownvote=async ()=>{
         upVoteProfile(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
         upVoteTrending(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
         upVoteCompany(id , author_id, {vent_id : id , user_id : user_id , vote: voteenum});
-        const {data: response} = await axios.post(`${import.meta.env.VITE_API}/vents/${id}/upvote`,"",{
+       await axios.post(`${import.meta.env.VITE_API}/vents/${id}/upvote`,"",{
             headers:headers,
             withCredentials: true
 
@@ -170,7 +170,7 @@ const handleDeleteVent =async()=>{
       const headers={
         'Authorization': `Bearer ${token}`
       };
-      const response = await axios.delete(`${import.meta.env.VITE_API}/vents/${id}`,{
+      await axios.delete(`${import.meta.env.VITE_API}/vents/${id}`,{
           headers:headers,
                     withCredentials: true
       });

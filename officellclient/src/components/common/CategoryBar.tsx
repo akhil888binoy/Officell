@@ -1,19 +1,22 @@
 
 import { categories } from "../../utils/ventCategory";
 
+interface CategoryBarProps {
+  category: string;
+  onSelect: (value: string) => void;
+}
 
-export const CategoryBar = ({category,onSelect}) => {
+
+export const CategoryBar = ({ category, onSelect }: CategoryBarProps) => {
 
 
-  const handleCategory =(e)=>{
-      if(category){
-        // setCategory("");
-        onSelect("");
-      }else{
-        // setCategory(e.target.value);
-        onSelect(e.target.value);
-      }
+  const handleCategory = (e: React.MouseEvent<HTMLButtonElement>) => {
+  if (category) {
+    onSelect("");
+  } else {
+    onSelect((e.target as HTMLButtonElement).value);
   }
+};
 
   return (
     <div className="w-full  bg-gray-950 overflow-y-auto no-scrollbar mt-3">

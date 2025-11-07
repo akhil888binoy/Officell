@@ -71,7 +71,7 @@ const CompanyRegister = () => {
     useEffect(()=>{
       logoutcompanies();
       logoutTrendingVents();
-    })
+    },[])
     
 const validateCompany = async () => {
   try {
@@ -152,7 +152,7 @@ if(!domain){
       const headers={
         'Authorization': `Bearer ${token}`
       }
-      const  response = await axios.post(`${import.meta.env.VITE_API}/companies`, {
+       await axios.post(`${import.meta.env.VITE_API}/companies`, {
         name: companyName,
         domain : domain,
         industry: industry,

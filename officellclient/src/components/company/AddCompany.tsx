@@ -1,4 +1,3 @@
-import React from 'react'
 import { RiBuilding2Line } from 'react-icons/ri'
 
 const AddCompany = () => {

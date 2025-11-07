@@ -1,17 +1,20 @@
-import { useState } from "react";
 import { categories } from "../../utils/companyCategory";
 
 
-export const CompanyCategory = ({category,  onSelect }) => {
+type CompanyCategoryProps = {
+  category: string;
+  onSelect: (value: string) => void;
+};
 
-  const handleCategory =(e)=>{
-    if(category){
-      onSelect("");
-    }else{
-
-      onSelect(e.target.value);
-    }
+export const CompanyCategory = ({ category, onSelect }: CompanyCategoryProps) => {
+  
+const handleCategory = (e: React.MouseEvent<HTMLButtonElement>) => {
+  if (category) {
+    onSelect("");
+  } else {
+    onSelect((e.target as HTMLButtonElement).value);
   }
+};
 
   return (
     <div className="w-full bg-gray-950 overflow-y-auto no-scrollbar mt-3">
