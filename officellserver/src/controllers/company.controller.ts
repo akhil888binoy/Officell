@@ -8,7 +8,6 @@ import { count } from 'console';
 
 export const getCompaniesCount = async (req: Request , res: Response)=>{
     const { lastcreatedAt } = req.query;
-    console.log("LasteCreatedAt", lastcreatedAt)
     try {
         const count_companies = await prisma.company.count({
             where: { 
@@ -27,13 +26,12 @@ export const getCompaniesCount = async (req: Request , res: Response)=>{
     }
 }
 
-export const getAllCompanies = async (req: Request , res : Response )=>{
+export const getAllCompanies = async (req: Request | any, res : Response )=>{
 
     const { industry , company_name, skip , place , searchcountry} = req.query;
     const ip = req.ip; 
-    const location = geoip.lookup("207.97.227.239");
+    const location = geoip.lookup(ip);
     const country = location?.country; 
-    console.log("County", country)
     try {
 
     const companies = await prisma.company.findMany({

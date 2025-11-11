@@ -3,6 +3,31 @@ import 'flowbite';
 import { Drawer } from 'flowbite';
 import { MdOutlineCategory } from 'react-icons/md';
 import { categories } from '../../../utils/companyCategory';
+import useCompanyStore from '../../../store/companyStore';
+import { CountryDropdown, RegionDropdown } from 'react-country-region-selector';
+import Select from 'react-select';
+
+
+const customRender = (props) => {
+  const {
+    options,
+    disabled,
+    customProps,
+    ...selectProps
+  } = props;
+
+  return (
+    <Select
+      {...selectProps}
+      options={options}
+      isDisabled={disabled}
+      isSearchable={true}
+      isClearable={true}
+      value={customProps.reactSelectValue}
+      onChange={customProps.onChange}   
+    />
+  );
+};
 
 
 
@@ -45,7 +70,11 @@ type CompanyCategoryProps = {
 
 
 export const CompanyCategoryM = ({ category, onSelect }: CompanyCategoryProps) => {
-  
+    const country = useCompanyStore((state)=>state.searchcountry);
+    const region = useCompanyStore((state)=> state.region);
+    const resetCompanies= useCompanyStore((state)=> state.resetCompanies);
+    const setCountry = useCompanyStore((state)=>state.setCountry);
+    const setRegion = useCompanyStore((state)=> state.setRegion);
 
   const handleCategory = (e: React.MouseEvent<HTMLButtonElement>) => {
   if (category) {
@@ -88,33 +117,83 @@ export const CompanyCategoryM = ({ category, onSelect }: CompanyCategoryProps) =
             <h1 className="text-4xl sm:text-4xl md:text-6xl lg:text-[40px] mt-4 font-arimo text-white font-bold tracking-[-0.07em]">
             ⟢ OFFICELL
             </h1>
+              <div className="space-y-6 bg-gray-950 p-6 rounded-2xl">
+            {/* Country */}
+            <div>
+              <h2 className="text-sm font-dmsans tracking-[1px] mb-2 text-gray-50 ">
+                Country
+              </h2>
+                <CountryDropdown
+                  value={country?.value || ""}
+                  className="country w-ful"
+                  name="country-field"
+                  customRender={customRender}
+                  customProps={{
+                    reactSelectValue: country,
+                    classNamePrefix: "country-",
+                    onChange: (value) => {
+                      resetCompanies();
+                      setCountry(value ? value : undefined);
+                      setRegion(null);
+                      console.log("Country", value);
+                    },
+                  }}
+                />
+            </div>
+            {/* City */}
+            <div>
+              <h2 className="text-sm font-dmsans  tracking-[1px] mb-2 text-gray-50">
+                City
+              </h2>
+                <RegionDropdown
+                  country={country?.value || ""}
+                  value={region?.value || ""}
+                  className="region w-full"
+                  name="region-field"
+                  customRender={customRender}
+                  customProps={{
+                    reactSelectValue: region,
+                    classNamePrefix: "region-",
+                    onChange: (value) => {
+                      resetCompanies();
+                      setRegion(value ? value : undefined);
+                      console.log("Region", value);
+                    },
+                  }}
+                />
+            </div>
+          </div>
+          
             <div className="w-full bg-gray-950 overflow-y-auto no-scrollbar mt-3">
+
       {/* Heading */}
     <h2 className="px-4 pt-4 text-md font-dmsans text-white tracking-[1px]">Company Categories</h2>
     
       {/* Category Buttons */}
         <div className="flex flex-col gap-4 p-4">
         {categories.map((cat, index) => (
-            <button
-            onClick={handleCategory}
-            key={index}
-            value={cat.name}
-            className={`flex items-center gap-3 px-4 py-3 text-sm font-dmsans font-light tracking-[1px] rounded-4xl 
-              border border-gray-700 bg-gray-800 text-gray-200
-              hover:bg-gray-700 hover:border-gray-500 hover:scale-[1.02] 
-              active:scale-95 active:bg-gray-600
-              focus:outline-none
-              transition-all duration-200 ease-in-out shadow-sm
-              ${category === cat.name?'border-2 border-white':''} `}>
-            <span className="text-lg">{cat.icon}</span>
-            {cat.name}
-          </button>
+              <button
+              onClick={handleCategory}
+              key={index}
+              value={cat.name}
+              className={`flex items-center gap-2 px-3 py-2 text-xs font-dmsans font-light tracking-[0.5px] rounded-2xl
+                border border-gray-700 bg-gray-800 text-gray-200
+                hover:bg-gray-700 hover:border-gray-500 hover:scale-[1.01] 
+                active:scale-95 active:bg-gray-600
+                transition-all duration-200 ease-in-out shadow-sm
+                ${category === cat.name ? 'border border-white' : ''}`}>
+              <span className="text-base">{cat.icon}</span>
+              {cat.name}
+            </button>
         ))}
         </div>
     </div>
+    
     </div>
         </div>
         </aside>
+
+      
     </div>
     );
 };

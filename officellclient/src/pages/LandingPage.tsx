@@ -1,69 +1,85 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import DecryptedText from "../styles/DecryptedText"
-import ScrambledText from "../styles/ScrambledText";
+import ScrollVelocity from "../styles/ScrollVelocity";
+import { useState } from "react";
 
-export const LandingPage=()=>{
-    return(
-        <div className="bg-gray-950 w-screen min-h-screen overflow-x-hidden">
-            <div className="flex">
-                <div className="lg:ml-3">
-                    <DecryptedText
-                        text="⟢ OFFICELL"
-                        className="text-3xl sm:text-4xl md:text-5xl lg:text-[70px] font-arimo text-white font-bold tracking-[-0.07em]"
-                        encryptedClassName="text-3xl sm:text-4xl md:text-5xl lg:text-[70px] font-arimo text-white font-bold tracking-[-0.09em]"
-                        parentClassName="mt-4 sm:mt-6 lg:mt-6 ml-4 sm:ml-10"
-                        animateOn="view"
-                        speed={75}
-                        characters="ABCDEFGHIJKLMNOPQRST"
-                        maxIterations={20}
+export const LandingPage = () => {
+    const navigate = useNavigate();
+    const [copied, setCopied] = useState(false);
+    const wallet = "officell";
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(wallet);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1000);
+    };
+
+    return (
+    <div className="bg-gray-950 w-screen min-h-screen">
+    <div className="flex items-center justify-between ">
+    {/* LEFT: Officell Text */}
+    <DecryptedText
+        text="⟢ OFFICELL"
+        className="text-3xl sm:text-4xl md:text-5xl lg:text-[70px] font-arimo text-white font-bold tracking-[-0.07em]"
+        encryptedClassName="text-3xl sm:text-4xl md:text-5xl lg:text-[70px] font-arimo text-white font-bold tracking-[-0.09em]"
+        parentClassName=""
+        animateOn="view"
+        speed={75}
+        characters="ABCDEFGHIJKLMNOPQRST"
+        maxIterations={20}
+    />
+    {/* RIGHT: Punch In Button */}
+    <button
+        onClick={() => navigate("/login")}
+        className="
+            lg:text-5xl text-3xl
+            lg:px-10 px-6
+            lg:py-2 py-1.5
+            bg-white text-gray-950
+            font-arimo font-bold tracking-[-0.07em]
+            hover:bg-gray-950 hover:text-white
+        "
+    >
+        Punch In.
+    </button>
+
+</div>
+
+
+
+                        <div className="relative w-full mt-10 flex items-center justify-center overflow-x-hidden">
+
+                    <ScrollVelocity
+                        texts={['SPILL THE TEA', 'NO NAME . NO SHAME .']}
+                        velocity={100}
+                        className="
+                            custom-scroll-text font-arimo text-white font-bold tracking-[-0.07em]
+                            text-[200px]
+                            sm:text-[120px]
+                            md:text-[180px]
+                            lg:text-[260px]
+                            xl:text-[330px]
+                            leading-[1]
+                            whitespace-nowrap
+                        "
                     />
                 </div>
-            </div> 
-            <div className="mt-4 sm:mt-6 lg:mt-10 flex flex-col leading-[0.9] px-2 sm:px-0">
-                <div className="mt-4 sm:mt-6 lg:mt-10" > 
-                    <DecryptedText
-                    text="SPILL THE TEA"
-                    className="text-[60px] landscape:text-[160px] sm:text-[80px] md:text-[120px] lg:text-[200px] xl:text-[250px] font-arimo font-medium dark:text-white tracking-[-0.1em] lg:ml-2"
-                    encryptedClassName="text-[50px] landscape:text-[160px] sm:text-[70px] md:text-[100px] lg:text-[180px] xl:text-[200px] font-arimo text-white font-medium"
-                    parentClassName="mt-4 sm:mt-6 lg:mt-10"
-                    animateOn="view"
-                    speed={75}
-                    characters="ABCDEFG"      
-                    maxIterations={20}
-                    />
-                </div>
-                <div className="flex flex-row justify-center items-center gap-2 sm:gap-4 lg:gap-6" >
-                    
-                    <div className="flex flex-col leading-[0.9]">
-                        <h1 className="text-[50px] sm:text-[70px] md:text-[100px] lg:text-[130px] xl:text-[160px] font-arimo font-medium dark:text-white">N</h1>
-                        <h1 className="text-[50px] sm:text-[70px] md:text-[100px] lg:text-[130px] xl:text-[160px] font-arimo font-medium dark:text-white">N</h1>
-                    </div>
-                    <Link to={`/login`}>
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 lg:w-64 lg:h-64 xl:w-72 xl:h-72 border-white border-[8px] sm:border-[10px] lg:border-[16px] xl:border-[18px] rounded-full 
-                            flex items-center justify-center hover:bg-white active:bg-white transition cursor-pointer group">
-                            <span className="text-[8px] sm:text-[10px] md:text-sm lg:text-xl xl:text-2xl font-bold uppercase text-white group-hover:text-black group-active:text-black">
-                                Get in
-                            </span>
-                        </div>
-                    </Link>
+        <div className="mt-8 flex justify-center">
+                <button
+                    onClick={handleCopy}
+                    className="text-white font-arimo text-xl tracking-wide opacity-80 flex items-center gap-2 hover:opacity-100"
+                >
+                    Founder's wallet: {wallet}
+                    <span className="text-lg">📋</span>
 
-                    <div className="relative inline-block min-w-[20ch]">
-                        <ScrambledText
-                            className="text-[50px] sm:text-[70px] md:text-[100px] lg:text-[130px] xl:text-[160px] font-arimo font-medium dark:text-white tracking-[-0.09em]"
-                            radius={100}
-                            duration={1.2}
-                            speed={0.5}
-                            scrambleChars=".:"   
-                        >
-                            NAME
-                        </ScrambledText>
-
-                        <h1 className="text-[50px] sm:text-[70px] md:text-[100px] lg:text-[130px] xl:text-[160px] font-arimo font-medium dark:text-white tracking-[-0.09em]">
-                            SHAME
-                        </h1>
-                    </div>
-                </div>             
+                    {copied && (
+                        <span className="text-white text-lg  animate-fade">
+                            Copied!
+                        </span>
+                    )}
+                </button>
             </div>
         </div>
-    )
-}
+    );
+};
+

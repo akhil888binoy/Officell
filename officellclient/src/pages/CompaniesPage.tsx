@@ -44,7 +44,7 @@ const customRender = (props) => {
 
 export const CompaniesPage = () => {
 
-  const scrollToRef = useRef<null | HTMLElement>(null);
+  const scrollToRef = useRef<null | HTMLDivElement>(null);
   const scrollToCard= useCompanyStore((state)=> state.scrollToItem) ;
   const [error, setError] = useState<string | null>(null);
   // const [search , setSearch] = useState("");
@@ -143,6 +143,7 @@ export const CompaniesPage = () => {
         controller.abort(); 
       };
     }
+     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skip, search, category, refreshCompanies, country , region]);
 
 
@@ -156,6 +157,7 @@ export const CompaniesPage = () => {
     if( scrollToRef.current ) {
         scrollToRef.current.scrollIntoView();
       }
+       // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
 
   
@@ -170,6 +172,7 @@ export const CompaniesPage = () => {
             logout()
             addcategory(q)
           }} />
+
           <RefreshCompanies></RefreshCompanies>
       </div>
       
@@ -214,7 +217,7 @@ export const CompaniesPage = () => {
               industry={company.industry}
               city={company.city}
               country={company.country}
-              vents_count={company._count?.vents}
+              vents_count={company._count?.vents ? company._count?.vents : 0}
               domain={company.domain}
               ref={index === scrollToCard ?  scrollToRef : null}
             />
@@ -249,59 +252,52 @@ export const CompaniesPage = () => {
         
         {/* Filters & Categories (desktop only) */}
         <div className="bg-gray-950 w-80 h-screen hidden border-l border-gray-700 lg:block p-4 overflow-y-scroll">
-       <div className="space-y-6 bg-gray-950 p-6 rounded-2xl">
-  {/* Country */}
-  <div>
-    <h2 className="text-sm font-dmsans tracking-[1px] mb-2 text-gray-50 ">
-      Country
-    </h2>
-    <div className="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 shadow-sm hover:border-gray-700 transition">
-      <CountryDropdown
-        value={country?.value || ""}
-        className="country w-full"
-        name="country-field"
-        customRender={customRender}
-        customProps={{
-          reactSelectValue: country,
-          classNamePrefix: "country-",
-          onChange: (value) => {
-            resetCompanies();
-            setCountry(value ? value : undefined);
-            setRegion(null);
-            console.log("Country", value);
-          },
-        }}
-      />
-    </div>
-  </div>
-
-  {/* City */}
-  <div>
-    <h2 className="text-sm font-dmsans  tracking-[1px] mb-2 text-gray-50">
-      City
-    </h2>
-    <div className="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 shadow-sm hover:border-gray-700 transition">
-      <RegionDropdown
-        country={country?.value || ""}
-        value={region?.value || null}
-        className="region w-full"
-        name="region-field"
-        customRender={customRender}
-        customProps={{
-          reactSelectValue: region,
-          classNamePrefix: "region-",
-          onChange: (value:string) => {
-            resetCompanies();
-            setRegion(value ? value : undefined);
-            console.log("Region", value);
-          },
-        }}
-      />
-    </div>
-  </div>
-</div>
-
-          
+            <div className="space-y-6 bg-gray-950 p-6 rounded-2xl">
+            {/* Country */}
+            <div>
+              <h2 className="text-sm font-dmsans tracking-[1px] mb-2 text-gray-50 ">
+                Country
+              </h2>
+                <CountryDropdown
+                  value={country?.value || ""}
+                  className="country w-ful"
+                  name="country-field"
+                  customRender={customRender}
+                  customProps={{
+                    reactSelectValue: country,
+                    classNamePrefix: "country-",
+                    onChange: (value) => {
+                      resetCompanies();
+                      setCountry(value ? value : undefined);
+                      setRegion(null);
+                      console.log("Country", value);
+                    },
+                  }}
+                />
+            </div>
+            {/* City */}
+            <div>
+              <h2 className="text-sm font-dmsans  tracking-[1px] mb-2 text-gray-50">
+                City
+              </h2>
+                <RegionDropdown
+                  country={country?.value || ""}
+                  value={region?.value || ""}
+                  className="region w-full"
+                  name="region-field"
+                  customRender={customRender}
+                  customProps={{
+                    reactSelectValue: region,
+                    classNamePrefix: "region-",
+                    onChange: (value) => {
+                      resetCompanies();
+                      setRegion(value ? value : undefined);
+                      console.log("Region", value);
+                    },
+                  }}
+                />
+            </div>
+          </div>
           <CompanyCategory 
           category={category}
           onSelect={(q:string)=>{
@@ -309,6 +305,7 @@ export const CompaniesPage = () => {
             addcategory(q)
           }} />
         </div>
+
       </div>
     </div>
   );

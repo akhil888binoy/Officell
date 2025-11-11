@@ -6,17 +6,15 @@ import { redisConnection } from '../redis/connection';
 import geoip from 'geoip-lite';
 import crypto from "crypto";
 
-const REDIRECT_URI = 'http://localhost:3000/v1/auth/linkedin/callback';
 
 
-export const SECRET_KEY : jwt.Secret = 'SECRETKEYJSON';
 
 export interface MyPayload extends JwtPayload {
     _id: number; 
 }
 
 export const authLinkedin = (req: Request , res : Response )=>{
-    const linkedinAuthUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.CLIENT_ID}&redirect_uri=${REDIRECT_URI}&state=123456&scope=profile%20email%20openid`;
+    const linkedinAuthUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${process.env.CLIENT_ID}&redirect_uri=${process.env.REDIRECT_URI}&state=123456&scope=profile%20email%20openid`;
     res.redirect(linkedinAuthUrl);
 }
 
@@ -39,7 +37,6 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
 
     const accessToken = tokenResponse?.data.access_token;
 
-    console.log("Access Token", accessToken);
 
     const profileResponse: any  = await axios.get('https://api.linkedin.com/v2/userinfo', {
         headers: {
@@ -48,7 +45,6 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
     });
 
     const data = profileResponse?.data;
-    console.log("Data",data);
     const user = await prisma.user.findUnique({
         where:{linkedin_id : String(data.sub)}
     });
@@ -61,10 +57,10 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
                 email: hashedEmail,
             }
         });
-        const token = jwt.sign({ _id: add_user.id }, SECRET_KEY, {
+        const token = jwt.sign({ _id: add_user.id }, process.env.SECRET_KEY  as jwt.Secret, {
                 expiresIn: '1h',
         });
-        const refreshToken = jwt.sign({ _id: add_user.id }, SECRET_KEY , {
+        const refreshToken = jwt.sign({ _id: add_user.id }, process.env.SECRET_KEY  as jwt.Secret , {
         
             expiresIn :'1d'
         });
@@ -83,13 +79,13 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
             sameSite: true,
             maxAge: 24 * 60 * 60 * 1000 // 24 hour
         });
-        res.redirect("http://localhost:5173/username"); 
+        res.redirect(`${process.env.FRONTEND_URL}/username`); 
 
     }else{
-        const token = jwt.sign({_id : user?.id}, SECRET_KEY , {
+        const token = jwt.sign({_id : user?.id}, process.env.SECRET_KEY as jwt.Secret, {
             expiresIn: '1h',
         });
-        const refreshToken = jwt.sign({ _id: user?.id }, SECRET_KEY , {
+        const refreshToken = jwt.sign({ _id: user?.id }, process.env.SECRET_KEY  as jwt.Secret , {
             expiresIn :'1d'
         });
         await redis.set(`Profile:${user?.id}`, JSON.stringify(user));
@@ -106,7 +102,7 @@ export const authLinkedinCallback = async (req: Request , res : Response )=>{
             sameSite: true,
             maxAge: 24 * 60 * 60 * 1000 // 24 hour
         });
-        res.redirect("http://localhost:5173/feed");
+        res.redirect(`${process.env.FRONTEND_URL}/feed`);
     }
     } catch (error: any) {
         res.status(500).json({error: error});
@@ -117,15 +113,14 @@ export const RefreshToken = async( req: Request , res: Response)=>{
 
     const refreshToken = req.cookies.refreshToken;
 
-    console.log("RefreshToken", refreshToken);
     if (!refreshToken) {
         return res.status(401).send('Access Denied. No refresh token provided.');
     }
 
     try {
-    const decoded  = jwt.verify(refreshToken, SECRET_KEY) as MyPayload;
+    const decoded  = jwt.verify(refreshToken, process.env.SECRET_KEY  as jwt.Secret) as MyPayload;
     
-    const token = jwt.sign({_id : decoded._id}, SECRET_KEY , {
+    const token = jwt.sign({_id : decoded._id}, process.env.SECRET_KEY  as jwt.Secret , {
         expiresIn: '1h',
     });
 
@@ -145,7 +140,7 @@ export const getUserProfile = async (req: Request | any  , res : Response ) => {
     const { _id } = req.decoded;
     const redis = await redisConnection();
     const ip = req.ip;
-    const location = geoip.lookup("207.97.227.239");
+    const location = geoip.lookup(ip);
     try {
         const user = await prisma.user.findUnique({
             where:{id : _id}

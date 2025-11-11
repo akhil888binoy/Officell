@@ -8,7 +8,6 @@ import { v2 as cloudinary } from 'cloudinary';
 
 export const getVentsCount = async (req: Request , res: Response)=>{
     const { lastcreatedAt } = req.query;
-    console.log("LasteCreatedAt", lastcreatedAt)
     try {
         const count_vents = await prisma.vent.count({
             where: { 

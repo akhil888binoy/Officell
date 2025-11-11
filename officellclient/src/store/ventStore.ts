@@ -1,7 +1,8 @@
  import {create} from 'zustand';
 import { persist, createJSONStorage } from "zustand/middleware";
+import type { VentState } from '../types/vent';
 
-const ventStore=(set,get)=>({
+const ventStore=(set,get): VentState=>({
 
     post:"",
     company_id:"",

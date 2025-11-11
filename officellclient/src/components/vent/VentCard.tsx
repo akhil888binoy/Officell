@@ -2,7 +2,7 @@ import { FaArrowUp, FaArrowDown, FaRegComment, FaTrash } from "react-icons/fa";
 import { RiBuilding2Line } from "react-icons/ri";
 import { MdLocationOn } from "react-icons/md";
 import moment from 'moment';
-import { forwardRef, useEffect, useState } from "react";
+import { forwardRef, useEffect, useState, type Ref } from "react";
 import Cookies from 'js-cookie';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -14,9 +14,13 @@ import { ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import useTrendingVentStore from "../../store/trendingventStore";
 import useProfileVentStore from "../../store/profileventStore";
 import useCompanyVentStore from "../../store/companyventStore";
+import type { VentCardProps } from "../../types/vent";
 
+interface VentCardComponentProps extends VentCardProps{
+  ref?: Ref<HTMLDivElement>;
+}
 
-export const VentCard = forwardRef(({ id , category , content , upvote , downvote , company_name , company_country, author, author_id, commentcount , createdAt, media, votes, user_id }, ref) => {
+export const VentCard = forwardRef<HTMLDivElement, VentCardComponentProps>(({ id , category , content , upvote , downvote , company_name , company_country, author, author_id, commentcount , createdAt, media, votes, user_id }, ref) => {
 
   const [time, setTime] = useState("");
   const [isupvote , setIsUpVote] = useState(false);
@@ -38,7 +42,7 @@ export const VentCard = forwardRef(({ id , category , content , upvote , downvot
   const page = useLocation();
   const [deletingComment, setDeletingComment] = useState(false);
 
-const cleanCountryName = (name) => {
+const cleanCountryName = (name: string | undefined) => {
   if (!name) return '';
   return name
     .replace(/^(?:the\s|The\s)/i, '') 
@@ -56,6 +60,7 @@ const cleanCountryName = (name) => {
         }
       }
     }
+         // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
 
 const handleDownvote=async ()=>{
@@ -242,7 +247,7 @@ useEffect(() => {
             </div>
             <div className="flex items-center gap-1 flex-wrap justify-end">
               <span className="text-right break-words max-w-[140px] md:max-w-[180px]">
-                {cleanCountryName(getName(company_country))}
+  {cleanCountryName(getName(company_country || ''))}
               </span>
               <MdLocationOn className="text-red-400 flex-shrink-0" />
             </div>
@@ -251,47 +256,49 @@ useEffect(() => {
       </a>
 
       {/* Confession Text */}
-<div className="px-4 pb-3">
-  <div className="mb-2">
-  <span className="inline-block px-2 py-0.5 text-xs font-medium rounded-md bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-sm">
-    {category}
-  </span>
-</div>
-  <p className="text-gray-200 leading-relaxed text-sm md:text-base lg:text-sm ">
-    {content}
-  </p>
-  <div className="mt-3 flex flex-wrap justify-center items-center gap-3">
-  {media?.map((item) => (
-    <div key={item.id} className="relative group">
-      {item.type === "IMAGE" && (
-        <img
-          src={item.url}
-          alt="Post content"
-          className="max-w-full h-auto rounded-lg shadow-md transition-transform duration-300 hover:shadow-lg"
-          style={{
-            maxHeight: media.length === 1 ? '480px' : '320px',
-            minHeight: '160px'
-          }}
-        />
-      )}
-      {item.type === "VIDEO" && (
-        <video
-          controls
-          className="max-w-full rounded-lg shadow-md transition-transform duration-300 hover:shadow-lg"
-          style={{
-            maxHeight: media.length === 1 ? '480px' : '320px',
-            minHeight: '160px'
-          }}
-        >
-          <source src={item.url} type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      )}
-    </div>
-  ))}
-</div>
+      <div className="px-4 pb-3">
+        <div className="mb-2">
 
-</div>
+        <span className="inline-block px-1.5 py-0.5 text-[10px] font-medium rounded bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+          {category}
+        </span>
+
+        </div>
+        <p className="text-gray-200 leading-relaxed text-sm md:text-base lg:text-sm ">
+          {content}
+        </p>
+        <div className="mt-3 flex flex-wrap justify-center items-center gap-3">
+        {media?.map((item) => (
+          <div key={item.id} className="relative group">
+            {item.type === "IMAGE" && (
+              <img
+                src={item.url}
+                alt="Post content"
+                className="max-w-full h-auto rounded-lg shadow-md transition-transform duration-300 hover:shadow-lg"
+                style={{
+                  maxHeight: media.length === 1 ? '480px' : '320px',
+                  minHeight: '160px'
+                }}
+              />
+            )}
+            {item.type === "VIDEO" && (
+              <video
+                controls
+                className="max-w-full rounded-lg shadow-md transition-transform duration-300 hover:shadow-lg"
+                style={{
+                  maxHeight: media.length === 1 ? '480px' : '320px',
+                  minHeight: '160px'
+                }}
+              >
+                <source src={item.url} type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            )}
+          </div>
+        ))}
+      </div>
+
+      </div>
 
       {/* Footer (Upvote / Downvote / Comments / Delete) */}
       <div className="flex items-center justify-between px-4 py-3">

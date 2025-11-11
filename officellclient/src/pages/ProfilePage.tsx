@@ -20,7 +20,7 @@ import RefreshFeed from "../components/vent/RefreshFeed";
 
 export const ProfilePage = () => {
 
-  const scrollToRef = useRef<null | HTMLElement>(null);
+  const scrollToRef = useRef<null | HTMLDivElement>(null);
   const scrollToCard= useProfileVentStore((state)=> state.scrollToItem) ;
   const [error, setError] = useState<string | null>(null);
   const skip = useProfileVentStore((state)=> state.scrollSkip);
@@ -55,6 +55,7 @@ export const ProfilePage = () => {
     if(scrollToRef.current ) {
           scrollToRef.current.scrollIntoView();
       }
+       // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
 
   useEffect(() => {
@@ -113,6 +114,7 @@ export const ProfilePage = () => {
           controller.abort(); 
       };
     }
+     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skip, category,refreshButton]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {

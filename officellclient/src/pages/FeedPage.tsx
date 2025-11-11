@@ -22,7 +22,7 @@ import RefreshFeed from "../components/vent/RefreshFeed";
 
 export const FeedPage = () => {
 
-  const scrollToRef = useRef<null | HTMLElement>(null);
+  const scrollToRef = useRef<null | HTMLDivElement>(null);
   const scrollToCard= useVentStore((state)=> state.scrollToItem) ;
   const [error, setError] = useState<string | null>(null);
   const refreshButton = useVentStore((state)=> state.refreshButton);
@@ -77,6 +77,7 @@ export const FeedPage = () => {
     if( scrollToRef.current ) {
           scrollToRef.current.scrollIntoView();
       }
+       // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
 
 useEffect(() => {
@@ -129,6 +130,7 @@ useEffect(() => {
       controller.abort(); 
     };
   }
+   // eslint-disable-next-line react-hooks/exhaustive-deps
 }, [skip, category, refreshButton]);
 
 

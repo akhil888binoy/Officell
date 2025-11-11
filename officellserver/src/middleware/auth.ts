@@ -1,6 +1,5 @@
 import jwt, { Secret, JwtPayload } from 'jsonwebtoken';
 import { Request, Response, NextFunction } from 'express';
-import { SECRET_KEY } from '../controllers/user.contoller';
 
 export interface MyPayload extends JwtPayload {
     _id: number; 
@@ -13,7 +12,7 @@ export const auth = async (req: Request | any , res: Response, next: NextFunctio
         if (!token) {
             throw new Error();
         }
-        const decoded =  jwt.verify(token, SECRET_KEY);
+        const decoded =  jwt.verify(token, process.env.SECRET_KEY  as jwt.Secret);
         req.decoded = decoded; 
         next();
     } catch (err) {
@@ -22,18 +21,18 @@ export const auth = async (req: Request | any , res: Response, next: NextFunctio
             return res.status(401).send('Access Denied. No refresh token provided.');
         }
         try {
-            const decoded  = jwt.verify(refreshToken, SECRET_KEY) as MyPayload ;
-            const token = jwt.sign({_id : decoded._id}, SECRET_KEY , {
+            const decoded  = jwt.verify(refreshToken, process.env.SECRET_KEY  as jwt.Secret) as MyPayload ;
+            const token = jwt.sign({_id : decoded._id}, process.env.SECRET_KEY  as jwt.Secret , {
                 expiresIn: '1h',
             });
             res.cookie('Auth', token, {
                 maxAge: 1 * 60 * 60 * 1000, // 60 minutes   
             }); 
-            const decodedtoken = jwt.verify(token, SECRET_KEY);
+            const decodedtoken = jwt.verify(token, process.env.SECRET_KEY  as jwt.Secret);
             req.decoded = decodedtoken; 
             next();
         } catch (error) {
-            res.redirect("http://localhost:5173/sessionexpired")
+            res.redirect(`${process.env.FRONTEND_URL}/sessionexpired`)
             return res.status(400).send('Invalid refresh token.');
             
         }

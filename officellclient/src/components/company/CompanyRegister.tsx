@@ -67,6 +67,7 @@ const CompanyRegister = () => {
     useEffect(()=>{
       logoutcompanies();
       logoutTrendingVents();
+       // eslint-disable-next-line react-hooks/exhaustive-deps
     },[])
     
 

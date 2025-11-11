@@ -91,18 +91,17 @@ export const CategoryBarM = ({ category, onSelect }: CategoryBarProps) => {
         <div className="flex flex-col gap-4 p-4">
         {categories.map((cat, index) => (
             <button
-            key={index}
-            onClick={handleCategory}
-            value={cat.name}
-            className={`flex items-center gap-3 px-4 py-3 text-sm font-dmsans font-light tracking-[1px] rounded-4xl
-                border border-gray-700 bg-gray-800 text-gray-200
-                hover:bg-gray-700 hover:border-gray-500 hover:scale-[1.02] 
-                active:scale-95 active:bg-gray-600
-                focus:outline-none
-                transition-all duration-200 ease-in-out shadow-sm
-                ${category === cat.name?'border-2 border-white':''}`}>
-            <span className="text-lg">{cat.icon}</span>
-            {cat.name}
+              key={index}
+              onClick={handleCategory}
+              value={cat.name}
+              className={`flex items-center gap-2 px-3 py-2 text-xs font-dmsans font-light tracking-[0.5px] rounded-3xl
+                  border border-gray-700 bg-gray-800 text-gray-200
+                  hover:bg-gray-700 hover:border-gray-500 hover:scale-[1.01]
+                  active:scale-95 active:bg-gray-600
+                  transition-all duration-200 ease-in-out shadow-sm
+                  ${category === cat.name ? 'border border-white' : ''}`}>
+              <span className="text-base">{cat.icon}</span>
+              {cat.name}
             </button>
         ))}
         </div>

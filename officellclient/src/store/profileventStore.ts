@@ -1,8 +1,9 @@
 
 import {create} from 'zustand';
 import { persist, createJSONStorage } from "zustand/middleware";
+import type { ProfileVentState } from '../types/vent';
 
-const profileventStore=(set,get)=>({
+const profileventStore=(set,get): ProfileVentState=>({
     
     scrollSkip:0,
     scrollLoading : true,

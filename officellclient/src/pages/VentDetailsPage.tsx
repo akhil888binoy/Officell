@@ -15,13 +15,14 @@ import { FaSkullCrossbones } from "react-icons/fa";
 import useProfileVentStore from "../store/profileventStore";
 import useCompanyVentStore from "../store/companyventStore";
 import useTrendingVentStore from "../store/trendingventStore";
+import type { Vent } from "../types/vent";
 
 
 
 
 export const VentDetailsPage = () => {
 
-  const {id} = useParams();
+  const {id} = useParams<{id: string }>();
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [skip, setSkip] = useState(0);
@@ -31,11 +32,11 @@ export const VentDetailsPage = () => {
   const location = useUserStore((state) => state.location);
   const user = useUserStore((state) => state.user);
   const addComments = useCommentStore((state)=>state.addComments);
-  const [vent , setVent] = useState();
+  const [vent , setVent] = useState<Vent | null>(null);
   const feedVent = useVentStore((state) => state.getVent(id || ""));
-  const profileVent = useProfileVentStore((state)=> state.getVent(id));
-  const companyVent = useCompanyVentStore((state)=> state.getVent(id));
-  const trendingVent = useTrendingVentStore((state)=>state.getVent(id));
+  const profileVent = useProfileVentStore((state)=> state.getVent(id || ""));
+  const companyVent = useCompanyVentStore((state)=> state.getVent(id || ""));
+  const trendingVent = useTrendingVentStore((state)=>state.getVent(id || ""));
   const comments = useCommentStore((state)=>state.comments);
   const resetComments = useCommentStore((state)=>state.resetComments);
 
@@ -48,10 +49,12 @@ export const VentDetailsPage = () => {
     trendingVent ||
     null; 
     setVent(selectedVent);
+     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id,interact]);
 
   useEffect(()=>{
       resetComments();
+       // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {
@@ -96,6 +99,7 @@ export const VentDetailsPage = () => {
       },100) ;
       return()=>clearTimeout(timer);
     }
+     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skip, id]);
 
     const handleScroll = (e) => {

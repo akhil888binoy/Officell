@@ -45,7 +45,7 @@ app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" } 
 }));
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: process.env.FRONTEND_URL,
     credentials: true
 }));
 app.use(express.static('src/public/'));

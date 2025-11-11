@@ -1,9 +1,10 @@
 
 import {create} from 'zustand';
 import { persist, createJSONStorage } from "zustand/middleware";
+import type { CompanyState } from '../types/company';
 
 
-const companyStore=(set,get)=>({
+const companyStore=(set,get): CompanyState=>({
     scrollSkip:0,
     scrollLoading : true,
     scrollLoadinMore: false,

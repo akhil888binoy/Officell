@@ -22,9 +22,9 @@ import RefreshFeed from "../components/vent/RefreshFeed";
 
 export const CompanyDetailsPage = () => {
 
+  const {id} = useParams<{id: string }>();
   const scrollToRef = useRef<null | HTMLDivElement>(null);
   const scrollToCard= useCompanyVentStore((state)=> state.scrollToItem) ;
-  const {id} = useParams();
   const [error, setError] = useState<string | null>(null);
   const skip = useCompanyVentStore((state)=> state.scrollSkip);
   const loadingMore = useCompanyVentStore((state)=> state.scrollLoadinMore);
@@ -33,7 +33,7 @@ export const CompanyDetailsPage = () => {
   const hasMore = useCompanyVentStore((state)=> state.scrollHasMore);
   const location = useUserStore((state) => state.location);
   const user = useUserStore((state) => state.user);
-  const company = useCompanyStore((state)=>state.getCompany(id));
+  const company = useCompanyStore((state)=>state.getCompany(id || ""));
   const addVents = useCompanyVentStore((state) => state.addVents);
   const addScrollSkip = useCompanyVentStore((state)=> state.addScrollSkip);
   const addloading = useCompanyVentStore((state)=> state.addScrollLoading);
@@ -94,6 +94,7 @@ useEffect(() => {
         controller.abort(); 
     };
     }
+     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skip, id, category,refreshButton]);
 
 
@@ -143,7 +144,7 @@ useEffect(() => {
             industry={company.industry} 
             city={company.city} 
             country={company.country}
-            vents_count={company._count.vents}
+            vents_count={company._count?.vents ? company._count.vents : 0}
             domain={company.domain}
           />
           } 

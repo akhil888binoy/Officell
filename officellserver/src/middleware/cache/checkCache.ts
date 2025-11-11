@@ -29,7 +29,7 @@ export const checkCacheProfile = async( req: Request | any , res: Response, next
         const redis =  await redisConnection();
         const ip = req.ip;
         const {_id} = req.decoded;
-        const location = geoip.lookup("207.97.227.239");
+        const location = geoip.lookup(ip);
         const cacheProfile = await redis.get(`Profile:${_id}`);
         if(cacheProfile){
             res.json({

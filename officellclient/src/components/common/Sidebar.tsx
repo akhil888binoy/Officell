@@ -106,19 +106,7 @@ export const Sidebar = () => {
               ⟢ OFFICELL
             </h1>
             <ul className="space-y-5 font-medium mt-10">
-              {/* Profile */}
-              <li>
-                <a href="/profile" className={`flex 
-                    items-center p-2 
-                    rounded-lg
-                  hover:bg-gray-700 
-                    group
-                  ${page.pathname === '/profile'? 'text-gray-950  bg-gray-50 ':' text-white'}
-                  `}>
-                  <span className="text-[20px] lg:text-[25px]"><VscAccount /></span> 
-                  <span className="ms-3 text-[20px] lg:text-[18px] font-dmsans tracking-[1px] font-light">Profile</span>
-                </a>
-              </li>
+              
               {/* Feed */}
               <li>
                 <a href="/feed" className={`flex 
@@ -155,6 +143,19 @@ export const Sidebar = () => {
                   `}>
                   <span className="text-[20px] lg:text-[25px]"><RiBuilding2Line /></span> 
                   <span className="ms-3 text-[20px] lg:text-[18px] font-dmsans tracking-[1px] font-light">Companies</span>
+                </a>
+              </li>
+              {/* Profile */}
+              <li>
+                <a href="/profile" className={`flex 
+                    items-center p-2 
+                    rounded-lg
+                  hover:bg-gray-700 
+                    group
+                  ${page.pathname === '/profile'? 'text-gray-950  bg-gray-50 ':' text-white'}
+                  `}>
+                  <span className="text-[20px] lg:text-[25px]"><VscAccount /></span> 
+                  <span className="ms-3 text-[20px] lg:text-[18px] font-dmsans tracking-[1px] font-light">Profile</span>
                 </a>
               </li>
             </ul>
