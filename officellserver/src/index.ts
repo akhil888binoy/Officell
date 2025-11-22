@@ -9,7 +9,7 @@ import { ventRouter } from "./routes/vent.route";
 import { companyRouter } from "./routes/company.route";
 import { reportRouter } from "./routes/report.route";
 import { commentRouter } from "./routes/comment.route";
-import {  PrismaClient } from './generated/prisma';
+import { PrismaClient } from '@prisma/client';
 import { withAccelerate } from '@prisma/extension-accelerate';
 import { createClient } from "redis";
 import multer, { Multer } from 'multer';
